@@ -96,17 +96,17 @@ require_once __DIR__ . '/includes/header.php';
         <div class="auth-badge">Create your account</div>
         <h2 class="auth-aside-title">Join<br>Cloudie.</h2>
         <p class="auth-aside-sub">
-          Secure cloud storage with an AI malware analyzer and AES-256
-          encryption &mdash; your key never leaves your hands.
+          Files are scanned (VirusTotal first, then an AI analyzer for PDFs) and
+          encrypted with AES-256. You receive the key; only its hash is stored.
         </p>
         <ul class="auth-points">
           <li>
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            32-feature Random Forest scan
+            VirusTotal + Random Forest scan
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 0 1 12 0v2M5 10h14v10H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            End-to-end AES-256-CBC
+            AES-256-CBC encryption
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>

@@ -225,20 +225,20 @@ require_once __DIR__ . '/includes/header.php';
         <h2 class="auth-aside-title">Welcome<br>back.</h2>
         <p class="auth-aside-sub">
           Your files are scanned, encrypted with AES-256, and locked behind a
-          key only you hold.
+          key issued to you.
         </p>
         <ul class="auth-points">
           <li>
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            AI malware analyzer on every upload
+            VirusTotal scan + AI analysis for PDFs
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 0 1 12 0v2M5 10h14v10H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            AES-256-CBC, keys held by you
+            AES-256-CBC, only a key hash stored
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            VirusTotal corroboration
+            VirusTotal as primary detector
           </li>
         </ul>
       </div>
