@@ -14,20 +14,24 @@ give PowerShell commands with full absolute paths, and full drop-in files
 
 ## Where things live
 
-| What | Path |
-|---|---|
-| **Code (single source of truth, git repo)** | `C:\xampp\htdocs\cloudie\` |
-| Same folder, project view | `C:\Users\aqeeflew\Desktop\Cloudie\app\` (junction → htdocs) |
-| Flask API | `C:\xampp\htdocs\cloudie\flask_api\` (Windows venv: `.venv`) |
-| DB schema | `C:\xampp\htdocs\cloudie\database\cloudie_schema.sql` |
-| Thesis, deck, poster | `Desktop\Cloudie\docs\thesis-and-presentation\` |
-| Figures | `Desktop\Cloudie\docs\figures\` |
-| Old training script (reference only) | `Desktop\Cloudie\ml\train_model.py` |
-| Old copies, backups | `Desktop\Cloudie\archive\` (never run from here) |
-| Deploy / ops command notes | `Desktop\text folder\cloudieee starttupp.txt` |
-| Recovery report (2026-10-12) | `Desktop\Cloudie\docs\PROJECT_RECOVERY.md` |
+Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 
-There is **no** `start-cloudie.bat`. It does not exist anywhere on disk.
+| What | Path (relative to `C:\xampp\htdocs\cloudie\`) |
+|---|---|
+| PHP front-end | `*.php`, `includes\`, `assets\` |
+| Flask API | `flask_api\` (Windows venv: `flask_api\.venv`, not in git) |
+| DB schema | `database\cloudie_schema.sql` |
+| Thesis, report, deck, poster | `docs\thesis-and-presentation\` |
+| Figures / diagrams / screenshots | `docs\figures\` |
+| Deploy + ops command notes | `docs\DEPLOY_NOTES.txt` |
+| Recovery report (2026-10-12) | `docs\PROJECT_RECOVERY.md` |
+| Old setup notes (May 2026, outdated) | `docs\SETUP-original.md` |
+| Old training script (reference only) | `ml\train_model.py` |
+
+- `docs\`, `ml\`, `database\` have `.htaccess` (`Require all denied`) so XAMPP does not serve them,
+  and they are in `.gcloudignore` / `.dockerignore` so they never go into the Cloud Run image.
+- Old copies and backups (not needed to run anything): `C:\Users\aqeeflew\Desktop\Cloudie\archive\`.
+- There is **no** `start-cloudie.bat`.
 
 ## Architecture
 
@@ -98,7 +102,7 @@ cd C:\xampp\htdocs\cloudie
 gcloud run deploy cloudie-php --source . --region asia-southeast1 --allow-unauthenticated
 ```
 
-The full first-time `cloudie-php` command (env vars + secrets) is in `cloudieee starttupp.txt`.
+The full first-time `cloudie-php` command (env vars + secrets) is in `docs\DEPLOY_NOTES.txt`.
 A plain redeploy keeps existing env vars and secrets.
 
 If Cloud SQL was stopped to save credit:

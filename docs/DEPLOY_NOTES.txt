@@ -1,0 +1,61 @@
+gcloud sql instances patch cloudie-db --activation-policy ALWAYS
+
+
+gcloud sql instances describe cloudie-db --format="value(state)"
+
+
+======================================================================================
+
+https://cloudie-php-800476519477.asia-southeast1.run.app
+
+======================================================================================
+
+cd C:\xampp\htdocs\cloudie
+
+gcloud run deploy cloudie-php `
+  --source . `
+  --region asia-southeast1 `
+  --platform managed `
+  --allow-unauthenticated `
+  --memory 512Mi `
+  --cpu 1 `
+  --add-cloudsql-instances "cloudie-499914:asia-southeast1:cloudie-db" `
+  --set-secrets "DB_PASS=cloudie-db-pass:latest,SMTP_PASS=cloudie-gmail-pass:latest" `
+  --set-env-vars "^|^USE_CLOUD_STORAGE=true|GCS_BUCKET=cloudie-499914-files|GCP_PROJECT_ID=cloudie-499914|DB_HOST=/cloudsql/cloudie-499914:asia-southeast1:cloudie-db|DB_NAME=cloudie_db|DB_USER=cloudie_user|SCANNER_URL=https://cloudie-flask-800476519477.asia-southeast1.run.app/scan|SCANNER_HEALTH=https://cloudie-flask-800476519477.asia-southeast1.run.app/health|DISPLAY_ERRORS=0|MAIL_ENABLED=true|SMTP_USER=aqeef1303@gmail.com|SMTP_FROM=aqeef1303@gmail.com|SMTP_FROM_NAME=Cloudie"
+
+
+cd C:\xampp\htdocs\cloudie
+
+gcloud run deploy cloudie-php `
+  --source . `
+  --region asia-southeast1 `
+  --platform managed `
+  --allow-unauthenticated `
+  --memory 512Mi `
+  --cpu 1 `
+  --add-cloudsql-instances "cloudie-499914:asia-southeast1:cloudie-db" `
+  --set-secrets "DB_PASS=cloudie-db-pass:latest,SMTP_PASS=cloudie-gmail-pass:latest" `
+  --set-env-vars "^|^USE_CLOUD_STORAGE=true|GCS_BUCKET=cloudie-499914-files|GCP_PROJECT_ID=cloudie-499914|DB_HOST=/cloudsql/cloudie-499914:asia-southeast1:cloudie-db|DB_NAME=cloudie_db|DB_USER=cloudie_user|SCANNER_URL=https://cloudie-flask-800476519477.asia-southeast1.run.app/scan|SCANNER_HEALTH=https://cloudie-flask-800476519477.asia-southeast1.run.app/health|DISPLAY_ERRORS=0|MAIL_ENABLED=true|SMTP_USER=aqeef1303@gmail.com|SMTP_FROM=aqeef1303@gmail.com|SMTP_FROM_NAME=Cloudie"
+
+DELETE FROM file_keys WHERE file_id IN (SELECT file_id FROM files WHERE user_id = 4);
+DELETE FROM files     WHERE user_id = 4;
+DELETE FROM actions   WHERE user_id = 4;
+DELETE FROM authentication WHERE user_id = 4;
+DELETE FROM users     WHERE user_id = 4;
+
+=========================================================================================================
+
+& "C:\xampp\mysql\bin\mysql.exe" -h 34.143.161.161 -u cloudie_user -p cloudie_db
+
+==================================================================================================================
+
+cd C:\xampp\htdocs\cloudie\flask_api
+gcloud config set project cloudie-499914
+gcloud run deploy cloudie-flask --source . --region asia-southeast1 --allow-unauthenticated
+
+
+================================================================================================================
+
+cd C:\xampp\htdocs\cloudie
+gcloud config set project cloudie-499914
+gcloud run deploy cloudie-php --source . --region asia-southeast1 --allow-unauthenticated
