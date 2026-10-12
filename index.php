@@ -262,26 +262,12 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-lg-8">
           <h4 class="lp-dev-name">Aqeef Azhar</h4>
           <p class="lp-role">BSc (Hons) Netcentric Computing &mdash; Universiti Teknologi MARA (UiTM)</p>
-          <p class="lp-feature-text mb-4">
+          <p class="lp-feature-text mb-0">
             Cloudie is my Final Year Project (CSP650), built to explore how malware
             detection (VirusTotal plus an AI analyzer) and AES encryption can work together in a
             single, usable cloud-storage workflow. Supervised by
             <strong>Dr. Fakariah Hani Binti Mohd Ali</strong>.
           </p>
-          <div class="d-flex flex-wrap gap-2">
-            <a href="https://github.com/your-username" target="_blank" rel="noopener" class="btn btn-cloudie-outline btn-sm">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              GitHub
-            </a>
-            <a href="https://www.linkedin.com/in/your-handle" target="_blank" rel="noopener" class="btn btn-cloudie-outline btn-sm">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.8"/></svg>
-              LinkedIn
-            </a>
-            <a href="mailto:you@example.com" class="btn btn-cloudie-outline btn-sm">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8"/><path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              Email
-            </a>
-          </div>
         </div>
         <div class="col-lg-4">
           <ul class="lp-fact-list mb-0">
