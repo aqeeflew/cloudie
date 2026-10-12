@@ -255,6 +255,16 @@ $emailSent = send_key_email(
     $fileId
 );
 
+// Per-detector summary for the result chips (VirusTotal is the primary detector)
+$vtInfo      = is_array($report['virustotal'] ?? null) ? $report['virustotal'] : [];
+$vtAvailable = !empty($vtInfo['available']);
+$vtChip      = $vtAvailable
+             ? 'VirusTotal ' . (int)($vtInfo['malicious'] ?? 0) . '/' . (int)($vtInfo['total'] ?? 0) . ' flagged'
+             : 'VirusTotal: no result';
+$aiChip      = ($probPct !== null && !empty($report['is_pdf']))
+             ? 'AI ' . $probPct . '% malicious'
+             : '';
+
 $pageTitle = $isSuspicious ? 'Stored with warning' : 'Upload successful';
 // The key is shown only on this response; a theme-toggle navigation would lose it.
 $hideThemeToggle = true;
@@ -295,7 +305,7 @@ require_once __DIR__ . '/includes/header.php';
         <?php if ($isSuspicious): ?>
           <div class="step warn"><span class="sdot"></span>Suspicious (AI)</div>
         <?php else: ?>
-          <div class="step done"><span class="sdot"></span>Clean<?= $probPct !== null ? ' · ' . e(100 - $probPct) . '% safe' : '' ?></div>
+          <div class="step done"><span class="sdot"></span>Clean · <?= e($vtChip) ?><?= $aiChip !== '' ? ' · ' . e($aiChip) : '' ?></div>
         <?php endif; ?>
         <div class="step done"><span class="sdot"></span>Encrypted</div>
         <div class="step done"><span class="sdot"></span>Stored</div>
