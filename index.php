@@ -168,8 +168,8 @@ require_once __DIR__ . '/includes/header.php';
           <div class="lp-stat-icon">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div class="lp-stat-value">99.8%</div>
-          <div class="lp-stat-label">Validation accuracy</div>
+          <div class="lp-stat-value">99.87%</div>
+          <div class="lp-stat-label">Hold-out accuracy (size-based: 99.46%)</div>
         </div>
       </div>
       <div class="col-6 col-lg-3 reveal" style="--d:90ms">
