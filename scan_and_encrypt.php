@@ -281,7 +281,7 @@ require_once __DIR__ . '/includes/header.php';
         </span>
         <h2 class="m-0">Stored, but flagged suspicious</h2>
         <p class="text-muted m-0">
-          <strong><?= e($origName) ?></strong> was cleared by VirusTotal, but
+          <strong><?= e($origName) ?></strong> <?= $vtAvailable ? 'was cleared by VirusTotal, but' : 'got no result from VirusTotal, and' ?>
           the AI structural analyzer flagged it. It was encrypted with AES-256
           and stored, and is tagged <strong>Suspicious</strong> in your vault.
         </p>
@@ -293,7 +293,8 @@ require_once __DIR__ . '/includes/header.php';
         </span>
         <h2 class="m-0">File secured</h2>
         <p class="text-muted m-0">
-          <strong><?= e($origName) ?></strong> was scanned, verified clean,
+          <strong><?= e($origName) ?></strong> was scanned
+          (<?= $vtAvailable ? 'VirusTotal: clean' : 'VirusTotal: no result' ?>; AI analysis: no flag),
           encrypted with AES-256, and stored.
         </p>
       </div>
@@ -313,8 +314,9 @@ require_once __DIR__ . '/includes/header.php';
 
       <?php if ($isSuspicious): ?>
       <div class="alert alert-warning" style="text-align:left">
-        <strong>Why is this flagged?</strong> VirusTotal's signature engines did
-        not detect a known threat, but Cloudie's AI found structural features
+        <strong>Why is this flagged?</strong> <?= $vtAvailable
+          ? "VirusTotal's signature engines did not detect a known threat"
+          : 'VirusTotal returned no result for this file' ?>, but Cloudie's AI found structural features
         (e.g. embedded JavaScript or auto-run actions) often seen in malicious
         PDFs. Open it with caution.
       </div>
