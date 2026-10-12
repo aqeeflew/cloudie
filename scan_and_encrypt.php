@@ -254,6 +254,8 @@ $emailSent = send_key_email(
 );
 
 $pageTitle = $isSuspicious ? 'Stored with warning' : 'Upload successful';
+// The key is shown only on this response; a theme-toggle navigation would lose it.
+$hideThemeToggle = true;
 require_once __DIR__ . '/includes/header.php';
 ?>
 <div class="row justify-content-center">
@@ -326,8 +328,15 @@ require_once __DIR__ . '/includes/header.php';
              href="data:application/octet-stream;base64,<?= base64_encode("Cloudie AES key for: $origName\n$keyHex\n") ?>"
              download="cloudie-key-<?= e($fileId) ?>.txt">Download key (.txt)</a>
           <a class="btn btn-cloudie-outline" href="view_report.php?id=<?= (int)$fileId ?>">View report</a>
-          <a class="btn btn-cloudie" href="dashboard.php">Go to my files</a>
+          <a class="btn btn-cloudie" href="dashboard.php" id="goFiles"
+             aria-disabled="true" tabindex="-1"
+             style="opacity:.45;pointer-events:none">Go to my files</a>
         </div>
+
+        <label class="key-saved">
+          <input type="checkbox" id="keySaved">
+          <span>I have saved my key (copied it, downloaded it, or stored the QR).</span>
+        </label>
       </div>
     </div>
   </div>
@@ -354,9 +363,30 @@ require_once __DIR__ . '/includes/header.php';
   color:var(--amber);border-radius:12px;padding:12px 16px;font-size:14px;margin-bottom:16px}
 
 .key-section{border-top:1px solid var(--line);padding-top:22px;margin-top:6px}
+.key-saved{display:flex;align-items:flex-start;justify-content:center;gap:10px;
+  margin-top:18px;font-size:13.5px;font-weight:500;color:var(--txt);cursor:pointer;text-align:left}
+.key-saved input{margin-top:3px;flex:none}
 </style>
 
 <script>
+// The key exists only on this page: warn before leaving until the user confirms.
+(function () {
+  var box = document.getElementById('keySaved');
+  var go  = document.getElementById('goFiles');
+  function guard(e) { e.preventDefault(); e.returnValue = ''; }
+  window.addEventListener('beforeunload', guard);
+  box.addEventListener('change', function () {
+    if (box.checked) {
+      window.removeEventListener('beforeunload', guard);
+      go.style.opacity = ''; go.style.pointerEvents = '';
+      go.removeAttribute('aria-disabled'); go.removeAttribute('tabindex');
+    } else {
+      window.addEventListener('beforeunload', guard);
+      go.style.opacity = '.45'; go.style.pointerEvents = 'none';
+      go.setAttribute('aria-disabled', 'true'); go.setAttribute('tabindex', '-1');
+    }
+  });
+})();
 function copyKey() {
   navigator.clipboard.writeText(document.getElementById('keyBox').innerText);
   alert('Key copied to clipboard.');

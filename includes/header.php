@@ -664,6 +664,7 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
       </div>
       <?php endif; ?>
       <div class="topbar-right">
+        <?php if (empty($hideThemeToggle)): ?>
         <a class="icon-btn" href="<?= $toggleHref ?>" title="Toggle theme">
           <?php if ($theme === 'dark'): ?>
             <svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
@@ -671,6 +672,7 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           <?php endif; ?>
         </a>
+        <?php endif; ?>
         <?php if ($cu): ?>
           <div class="umenu" id="userMenu">
             <button type="button"
