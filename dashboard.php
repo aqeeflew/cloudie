@@ -91,6 +91,8 @@ function row_verdict(array $row): string {
   </a>
 </div>
 
+<p class="small mb-3"><strong>Suspicious</strong> = VirusTotal found nothing, but the AI flagged structural features of the file. It is stored and encrypted; open it with caution. Malicious files are blocked and never stored.</p>
+
 <!-- summary cards -->
 <div class="summary">
   <div class="scard">
@@ -154,7 +156,7 @@ function row_verdict(array $row): string {
         <td class="fcol" data-label="Size"><?= e(fmt_size((int)$row['file_size'])) ?></td>
         <td data-label="Verdict">
           <?php if ($rv === 'suspicious'): ?>
-            <span class="verdict v-susp">
+            <span class="verdict v-susp" title="VirusTotal found nothing, but the AI flagged structural features. Stored; open with caution.">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Suspicious
             </span>
           <?php else: ?>

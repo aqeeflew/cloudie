@@ -11,12 +11,15 @@
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// --- theme persistence (cookie, survives reloads & logins) ---
-if (isset($_GET['theme']) && in_array($_GET['theme'], ['dark', 'light'], true)) {
+// --- theme persistence ---
+// The ?theme= param is normally handled earlier by cl_apply_theme_param()
+// (includes/auth.php). This is only a fallback for pages that skip auth.php.
+if (isset($_GET['theme']) && in_array($_GET['theme'], ['dark', 'light'], true)
+    && $_SERVER['REQUEST_METHOD'] === 'GET') {
     setcookie('cloudie_theme', $_GET['theme'], time() + 60 * 60 * 24 * 365, '/');
-    // reload to current page without the ?theme param
-    $self = strtok($_SERVER['REQUEST_URI'], '?');
-    header('Location: ' . $self);
+    $rest = $_GET; unset($rest['theme']);
+    $qs = http_build_query($rest);
+    header('Location: ' . basename($_SERVER['SCRIPT_NAME']) . ($qs !== '' ? '?' . $qs : ''));
     exit;
 }
 $theme = $_COOKIE['cloudie_theme'] ?? 'dark';
@@ -27,9 +30,10 @@ $cu = function_exists('current_user') ? current_user() : null;
 // current page filename, for nav highlighting
 $cur = basename($_SERVER['SCRIPT_NAME']);
 
-// theme toggle link points back to the same page
-$toggleHref = htmlspecialchars(strtok($_SERVER['REQUEST_URI'], '?'))
-            . '?theme=' . ($theme === 'dark' ? 'light' : 'dark');
+// theme toggle link points back to the same page, keeping its query string
+$tq = $_GET;
+$tq['theme'] = ($theme === 'dark' ? 'light' : 'dark');
+$toggleHref = htmlspecialchars(basename($_SERVER['SCRIPT_NAME']) . '?' . http_build_query($tq));
 
 // Fetch sidebar folders for all authenticated pages
 $sidebarFolders = [];
@@ -571,11 +575,10 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
       </a>
       <nav class="nav">
         <a href="dashboard.php" class="<?= $cur==='dashboard.php'?'active':'' ?>"><svg viewBox="0 0 24 24" fill="none"><path d="M3 11l9-7 9 7M5 10v9h14v-9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>My files</a>
-        <a href="upload.php" class="<?= $cur==='upload.php'?'active':'' ?>"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L8 8m4-4l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Upload</a>
       </nav>
       <div class="nav-label nav-label-row">
         <span>My Folders</span>
-        <button class="nav-folder-add" id="folderAddBtn" title="New folder" type="button">
+        <button class="nav-folder-add" id="folderAddBtn" title="New folder" aria-label="New folder" type="button">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -583,7 +586,7 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
       <div class="nav-folder-form" id="folderFormWrap">
         <form method="POST" action="create_folder.php">
           <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
-          <input type="text" name="folder_name" class="nav-fi" placeholder="Folder name…" maxlength="50" required autocomplete="off">
+          <input type="text" name="folder_name" class="nav-fi" aria-label="Folder name" placeholder="Folder name…" maxlength="50" required autocomplete="off">
           <div class="nav-fcolors">
             <?php
             $colorDefs = ['cyan'=>'var(--cyan)','violet'=>'var(--violet)','green'=>'var(--green)','amber'=>'var(--amber)','red'=>'var(--red)'];
@@ -621,10 +624,6 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
         <?php endforeach; endif; ?>
       </nav>
 
-      <div class="nav-label">Security</div>
-      <nav class="nav">
-        <a href="dashboard.php" class="<?= $cur==='dashboard.php'&&!isset($_GET['id'])?'active':'' ?>"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Scan reports</a>
-      </nav>
       <div class="storage">
         <div class="storage-top">
           <span>Encrypted storage</span>
@@ -656,22 +655,24 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
       <?php if ($cur === 'dashboard.php'): ?>
       <div class="search">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-3.2-3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <input id="vaultSearch" placeholder="Search your encrypted vault…" autocomplete="off">
+        <input id="vaultSearch" aria-label="Search your encrypted vault" placeholder="Search your encrypted vault…" autocomplete="off">
       </div>
       <?php endif; ?>
       <div class="topbar-right">
-        <a class="icon-btn" href="<?= $toggleHref ?>" title="Toggle theme">
+        <?php if (empty($hideThemeToggle)): ?>
+        <a class="icon-btn" href="<?= $toggleHref ?>" title="Toggle theme" aria-label="Toggle light/dark theme">
           <?php if ($theme === 'dark'): ?>
             <svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
           <?php else: ?>
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           <?php endif; ?>
         </a>
+        <?php endif; ?>
         <?php if ($cu): ?>
           <div class="umenu" id="userMenu">
             <button type="button"
                     class="avatar umenu-btn <?= $cur === 'profile.php' ? 'active' : '' ?>"
-                    aria-haspopup="true" aria-expanded="false" title="Account">
+                    aria-haspopup="true" aria-expanded="false" title="Account" aria-label="Account menu">
               <?= strtoupper(substr($cu['username'] ?? 'U', 0, 1)) ?>
             </button>
             <div class="umenu-panel">

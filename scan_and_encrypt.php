@@ -63,7 +63,9 @@ if (!move_uploaded_file($f['tmp_name'], $tmpPath)) {
 $scan = scan_file_with_ai($tmpPath, $origName);
 if (!$scan['ok']) {
     @unlink($tmpPath);
-    flash_set('error', 'Malware scan failed: ' . ($scan['error'] ?? 'unknown'));
+    error_log('scan failed: ' . ($scan['error'] ?? 'unknown'));   // technical detail stays in the log
+    flash_set('error', 'The malware scan could not be completed, so your file was not stored. '
+                     . 'Please try again in a minute. If it keeps happening, try a smaller file.');
     header('Location: upload.php'); exit;
 }
 $report  = $scan['data'];
@@ -253,7 +255,19 @@ $emailSent = send_key_email(
     $fileId
 );
 
+// Per-detector summary for the result chips (VirusTotal is the primary detector)
+$vtInfo      = is_array($report['virustotal'] ?? null) ? $report['virustotal'] : [];
+$vtAvailable = !empty($vtInfo['available']);
+$vtChip      = $vtAvailable
+             ? 'VirusTotal ' . (int)($vtInfo['malicious'] ?? 0) . '/' . (int)($vtInfo['total'] ?? 0) . ' flagged'
+             : 'VirusTotal: no result';
+$aiChip      = ($probPct !== null && !empty($report['is_pdf']))
+             ? 'AI ' . $probPct . '% malicious'
+             : '';
+
 $pageTitle = $isSuspicious ? 'Stored with warning' : 'Upload successful';
+// The key is shown only on this response; a theme-toggle navigation would lose it.
+$hideThemeToggle = true;
 require_once __DIR__ . '/includes/header.php';
 ?>
 <div class="row justify-content-center">
@@ -267,7 +281,7 @@ require_once __DIR__ . '/includes/header.php';
         </span>
         <h2 class="m-0">Stored, but flagged suspicious</h2>
         <p class="text-muted m-0">
-          <strong><?= e($origName) ?></strong> was cleared by VirusTotal, but
+          <strong><?= e($origName) ?></strong> <?= $vtAvailable ? 'was cleared by VirusTotal, but' : 'got no result from VirusTotal, and' ?>
           the AI structural analyzer flagged it. It was encrypted with AES-256
           and stored, and is tagged <strong>Suspicious</strong> in your vault.
         </p>
@@ -279,7 +293,8 @@ require_once __DIR__ . '/includes/header.php';
         </span>
         <h2 class="m-0">File secured</h2>
         <p class="text-muted m-0">
-          <strong><?= e($origName) ?></strong> was scanned, verified clean,
+          <strong><?= e($origName) ?></strong> was scanned
+          (<?= $vtAvailable ? 'VirusTotal: clean' : 'VirusTotal: no result' ?>; AI analysis: no flag),
           encrypted with AES-256, and stored.
         </p>
       </div>
@@ -291,7 +306,7 @@ require_once __DIR__ . '/includes/header.php';
         <?php if ($isSuspicious): ?>
           <div class="step warn"><span class="sdot"></span>Suspicious (AI)</div>
         <?php else: ?>
-          <div class="step done"><span class="sdot"></span>Clean<?= $probPct !== null ? ' · ' . e(100 - $probPct) . '% safe' : '' ?></div>
+          <div class="step done"><span class="sdot"></span>Clean · <?= e($vtChip) ?><?= $aiChip !== '' ? ' · ' . e($aiChip) : '' ?></div>
         <?php endif; ?>
         <div class="step done"><span class="sdot"></span>Encrypted</div>
         <div class="step done"><span class="sdot"></span>Stored</div>
@@ -299,8 +314,9 @@ require_once __DIR__ . '/includes/header.php';
 
       <?php if ($isSuspicious): ?>
       <div class="alert alert-warning" style="text-align:left">
-        <strong>Why is this flagged?</strong> VirusTotal's signature engines did
-        not detect a known threat, but Cloudie's AI found structural features
+        <strong>Why is this flagged?</strong> <?= $vtAvailable
+          ? "VirusTotal's signature engines did not detect a known threat"
+          : 'VirusTotal returned no result for this file' ?>, but Cloudie's AI found structural features
         (e.g. embedded JavaScript or auto-run actions) often seen in malicious
         PDFs. Open it with caution.
       </div>
@@ -309,8 +325,9 @@ require_once __DIR__ . '/includes/header.php';
       <div class="key-section">
         <h5 class="mb-1">Your AES key</h5>
         <p class="text-muted small mb-3">
-          Save this key. <strong>You'll need it to view, download, or delete this file.</strong>
-          We never store it — lose it and the file can't be recovered.
+          Save this key. <strong>You need it to view, download, and also to delete this file.</strong>
+          Cloudie stores only a SHA-256 hash of it, so if you lose it the file can't be recovered
+          or deleted.
           <?php if ($emailSent): ?>
             <br>A copy has also been sent to <strong><?= e((string)($user['email'] ?? '')) ?></strong>.
           <?php endif; ?>
@@ -326,8 +343,15 @@ require_once __DIR__ . '/includes/header.php';
              href="data:application/octet-stream;base64,<?= base64_encode("Cloudie AES key for: $origName\n$keyHex\n") ?>"
              download="cloudie-key-<?= e($fileId) ?>.txt">Download key (.txt)</a>
           <a class="btn btn-cloudie-outline" href="view_report.php?id=<?= (int)$fileId ?>">View report</a>
-          <a class="btn btn-cloudie" href="dashboard.php">Go to my files</a>
+          <a class="btn btn-cloudie" href="dashboard.php" id="goFiles"
+             aria-disabled="true" tabindex="-1"
+             style="opacity:.45;pointer-events:none">Go to my files</a>
         </div>
+
+        <label class="key-saved">
+          <input type="checkbox" id="keySaved">
+          <span>I have saved my key (copied it, downloaded it, or stored the QR).</span>
+        </label>
       </div>
     </div>
   </div>
@@ -354,9 +378,30 @@ require_once __DIR__ . '/includes/header.php';
   color:var(--amber);border-radius:12px;padding:12px 16px;font-size:14px;margin-bottom:16px}
 
 .key-section{border-top:1px solid var(--line);padding-top:22px;margin-top:6px}
+.key-saved{display:flex;align-items:flex-start;justify-content:center;gap:10px;
+  margin-top:18px;font-size:13.5px;font-weight:500;color:var(--txt);cursor:pointer;text-align:left}
+.key-saved input{margin-top:3px;flex:none}
 </style>
 
 <script>
+// The key exists only on this page: warn before leaving until the user confirms.
+(function () {
+  var box = document.getElementById('keySaved');
+  var go  = document.getElementById('goFiles');
+  function guard(e) { e.preventDefault(); e.returnValue = ''; }
+  window.addEventListener('beforeunload', guard);
+  box.addEventListener('change', function () {
+    if (box.checked) {
+      window.removeEventListener('beforeunload', guard);
+      go.style.opacity = ''; go.style.pointerEvents = '';
+      go.removeAttribute('aria-disabled'); go.removeAttribute('tabindex');
+    } else {
+      window.addEventListener('beforeunload', guard);
+      go.style.opacity = '.45'; go.style.pointerEvents = 'none';
+      go.setAttribute('aria-disabled', 'true'); go.setAttribute('tabindex', '-1');
+    }
+  });
+})();
 function copyKey() {
   navigator.clipboard.writeText(document.getElementById('keyBox').innerText);
   alert('Key copied to clipboard.');
