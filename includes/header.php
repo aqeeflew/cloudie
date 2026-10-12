@@ -11,12 +11,15 @@
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// --- theme persistence (cookie, survives reloads & logins) ---
-if (isset($_GET['theme']) && in_array($_GET['theme'], ['dark', 'light'], true)) {
+// --- theme persistence ---
+// The ?theme= param is normally handled earlier by cl_apply_theme_param()
+// (includes/auth.php). This is only a fallback for pages that skip auth.php.
+if (isset($_GET['theme']) && in_array($_GET['theme'], ['dark', 'light'], true)
+    && $_SERVER['REQUEST_METHOD'] === 'GET') {
     setcookie('cloudie_theme', $_GET['theme'], time() + 60 * 60 * 24 * 365, '/');
-    // reload to current page without the ?theme param
-    $self = strtok($_SERVER['REQUEST_URI'], '?');
-    header('Location: ' . $self);
+    $rest = $_GET; unset($rest['theme']);
+    $qs = http_build_query($rest);
+    header('Location: ' . basename($_SERVER['SCRIPT_NAME']) . ($qs !== '' ? '?' . $qs : ''));
     exit;
 }
 $theme = $_COOKIE['cloudie_theme'] ?? 'dark';
@@ -27,9 +30,10 @@ $cu = function_exists('current_user') ? current_user() : null;
 // current page filename, for nav highlighting
 $cur = basename($_SERVER['SCRIPT_NAME']);
 
-// theme toggle link points back to the same page
-$toggleHref = htmlspecialchars(strtok($_SERVER['REQUEST_URI'], '?'))
-            . '?theme=' . ($theme === 'dark' ? 'light' : 'dark');
+// theme toggle link points back to the same page, keeping its query string
+$tq = $_GET;
+$tq['theme'] = ($theme === 'dark' ? 'light' : 'dark');
+$toggleHref = htmlspecialchars(basename($_SERVER['SCRIPT_NAME']) . '?' . http_build_query($tq));
 
 // Fetch sidebar folders for all authenticated pages
 $sidebarFolders = [];
