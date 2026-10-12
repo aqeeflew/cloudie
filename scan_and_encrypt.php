@@ -311,8 +311,9 @@ require_once __DIR__ . '/includes/header.php';
       <div class="key-section">
         <h5 class="mb-1">Your AES key</h5>
         <p class="text-muted small mb-3">
-          Save this key. <strong>You'll need it to view, download, or delete this file.</strong>
-          We never store it — lose it and the file can't be recovered.
+          Save this key. <strong>You need it to view, download, and also to delete this file.</strong>
+          Cloudie stores only a SHA-256 hash of it, so if you lose it the file can't be recovered
+          or deleted.
           <?php if ($emailSent): ?>
             <br>A copy has also been sent to <strong><?= e((string)($user['email'] ?? '')) ?></strong>.
           <?php endif; ?>
