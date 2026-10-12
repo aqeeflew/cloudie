@@ -123,7 +123,7 @@ require_once __DIR__ . '/includes/header.php';
         <input type="hidden" name="action" value="<?= e($action) ?>">
         <input type="hidden" name="id"     value="<?= (int)$file_id ?>">
 
-        <label>Paste your AES key (64 hex chars)</label>
+        <label for="aesKeyInput">Paste your AES key (64 hex chars)</label>
         <input type="text" name="aes_key" id="aesKeyInput" class="form-control"
                placeholder="e.g. 7f3c…d2"
                pattern="[0-9a-fA-F]{64}" required autofocus>

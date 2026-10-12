@@ -131,35 +131,35 @@ require_once __DIR__ . '/includes/header.php';
         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
 
         <div class="field">
-          <label>Username</label>
+          <label for="regUser">Username</label>
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.6"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <input type="text" name="username" class="form-control" required
+            <input type="text" name="username" id="regUser" class="form-control" required
                    value="<?= e($_POST['username'] ?? '') ?>" placeholder="Pick a username">
           </div>
         </div>
 
         <div class="field">
-          <label>Email</label>
+          <label for="regEmail">Email</label>
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            <input type="email" name="email" class="form-control" required
+            <input type="email" name="email" id="regEmail" class="form-control" required
                    value="<?= e($_POST['email'] ?? '') ?>" placeholder="you@example.com">
           </div>
         </div>
 
         <div class="field">
-          <label>Phone <span style="color:var(--txt-faint);font-weight:400">(optional)</span></label>
+          <label for="regPhone">Phone <span style="color:var(--txt-faint);font-weight:400">(optional)</span></label>
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M6 4h3l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            <input type="text" name="phone" class="form-control"
+            <input type="text" name="phone" id="regPhone" class="form-control"
                    value="<?= e($_POST['phone'] ?? '') ?>" placeholder="012-3456789">
           </div>
         </div>
 
         <div class="field-row">
           <div class="field" style="margin-bottom:0">
-            <label>Password</label>
+            <label for="pw">Password</label>
             <div class="input-icon">
               <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
               <input type="password" name="password" id="pw" class="form-control"
@@ -170,7 +170,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
           </div>
           <div class="field" style="margin-bottom:0">
-            <label>Confirm</label>
+            <label for="pw2">Confirm</label>
             <div class="input-icon">
               <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
               <input type="password" name="confirm" id="pw2" class="form-control"

@@ -230,25 +230,25 @@ require_once __DIR__ . '/includes/header.php';
       <input type="hidden" name="action" value="details">
 
       <div class="mb-3">
-        <label>Username</label>
+        <label for="dUser">Username</label>
         <input type="text" name="username" id="dUser" class="form-control" required
                minlength="3" maxlength="64" value="<?= e($vUsername) ?>"
                data-original="<?= e($p['username']) ?>">
       </div>
       <div class="mb-3">
-        <label>Email</label>
+        <label for="dEmail">Email</label>
         <input type="email" name="email" id="dEmail" class="form-control" required
                value="<?= e($vEmail) ?>" data-original="<?= e($p['email']) ?>">
         <div class="pf-hint" id="emailHint">Changing your email sends a new verification link to the new address.</div>
       </div>
       <div class="mb-3">
-        <label>Phone <span style="color:var(--txt-faint);font-weight:400">(optional)</span></label>
+        <label for="dPhone">Phone <span style="color:var(--txt-faint);font-weight:400">(optional)</span></label>
         <input type="text" name="phone" id="dPhone" class="form-control"
                value="<?= e($vPhone) ?>" placeholder="012-3456789"
                data-original="<?= e($p['phone_num'] ?? '') ?>">
       </div>
       <div class="mb-3">
-        <label>Current password</label>
+        <label for="dPass">Current password</label>
         <div class="pw-wrap">
           <input type="password" name="current_password" id="dPass" class="form-control" required
                  autocomplete="current-password" placeholder="Confirm it's you">
@@ -274,7 +274,7 @@ require_once __DIR__ . '/includes/header.php';
       <input type="hidden" name="action" value="password">
 
       <div class="mb-3">
-        <label>Current password</label>
+        <label for="pwCur">Current password</label>
         <div class="pw-wrap">
           <input type="password" name="current_password" id="pwCur" class="form-control"
                  required autocomplete="current-password">
@@ -284,7 +284,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
       </div>
       <div class="mb-3">
-        <label>New password</label>
+        <label for="pwNew">New password</label>
         <div class="pw-wrap">
           <input type="password" name="new_password" id="pwNew" class="form-control"
                  minlength="8" required autocomplete="new-password" placeholder="Min. 8 characters">
@@ -296,7 +296,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="pw-note" id="pwNote"></div>
       </div>
       <div class="mb-3">
-        <label>Confirm new password</label>
+        <label for="pwConf">Confirm new password</label>
         <div class="pw-wrap">
           <input type="password" name="confirm_password" id="pwConf" class="form-control"
                  minlength="8" required autocomplete="new-password" placeholder="Repeat new password">

@@ -275,8 +275,8 @@ require_once __DIR__ . '/includes/header.php';
         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="action" value="verify_otp">
         <div class="field">
-          <label>6-digit code</label>
-          <input type="text" name="otp" class="form-control otp-input"
+          <label for="otpCode">6-digit code</label>
+          <input type="text" name="otp" id="otpCode" class="form-control otp-input"
                  inputmode="numeric" autocomplete="one-time-code"
                  pattern="[0-9]{6}" maxlength="6" required autofocus
                  placeholder="••••••">
@@ -332,17 +332,17 @@ require_once __DIR__ . '/includes/header.php';
         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
 
         <div class="field">
-          <label>Username or email</label>
+          <label for="loginId">Username or email</label>
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.6"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <input type="text" name="login" class="form-control" required
+            <input type="text" name="login" id="loginId" class="form-control" required
                    autofocus value="<?= e($_POST['login'] ?? '') ?>"
                    placeholder="you@example.com">
           </div>
         </div>
 
         <div class="field">
-          <label>Password</label>
+          <label for="pw">Password</label>
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
             <input type="password" name="password" id="pw" class="form-control" required
