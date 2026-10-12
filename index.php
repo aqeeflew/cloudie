@@ -218,7 +218,7 @@ require_once __DIR__ . '/includes/header.php';
           <div class="lp-tech-badges">
             <span class="lp-tbadge lp-tbadge-cyan">PHP</span>
             <span class="lp-tbadge lp-tbadge-violet">Apache</span>
-            <span class="lp-tbadge lp-tbadge-amber">Bootstrap</span>
+            <span class="lp-tbadge lp-tbadge-amber">HTML/CSS</span>
           </div>
         </div>
         <div class="col-sm-6 col-lg-3">
