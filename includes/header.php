@@ -245,6 +245,12 @@ h1,h2,h3,h4,h5{font-family:'Space Grotesk';letter-spacing:-.02em;color:var(--txt
 .btn-cloudie-outline:hover{border-color:var(--cyan);color:var(--cyan)}
 .btn-danger{background:rgba(255,93,108,.14);border-color:rgba(255,93,108,.3);color:var(--red)}
 .btn-danger:hover{background:rgba(255,93,108,.22);color:var(--red)}
+/* row actions: View/Download stay labelled, secondary actions are icon-only (label shown on phones) */
+.fa-group .btn{white-space:nowrap}
+.btn-ico{padding:7px 9px}
+.btn-ico .lbl{display:none}
+@media(min-width:701px){.fa-group{flex-wrap:nowrap}}
+@media(max-width:700px){.btn-ico{padding:7px 12px}.btn-ico .lbl{display:inline}.fa-group .btn{min-height:38px}}
 .w-100{width:100%}.me-2{margin-right:.6rem}.m-0{margin:0}
 
 /* alerts */
