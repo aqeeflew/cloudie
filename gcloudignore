@@ -1,0 +1,10 @@
+.git/
+*.bak.php
+*.bak
+dashboard.bak.php
+vendor/
+.env
+*.log
+encrypted/
+uploads/
+keys/

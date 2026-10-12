@@ -1,0 +1,81 @@
+{
+  "mode": "split",
+  "design": "stratified random 75/25 hold-out",
+  "feature_count": 33,
+  "feature_order": [
+    "name",
+    "pdf_size",
+    "metadata_size",
+    "pages",
+    "xref_length",
+    "title_characters",
+    "isEncrypted",
+    "embedded_files",
+    "images",
+    "contains_text",
+    "header",
+    "obj",
+    "endobj",
+    "stream",
+    "endstream",
+    "xref",
+    "trailer",
+    "startxref",
+    "pageno",
+    "encrypt",
+    "ObjStm",
+    "JS",
+    "Javascript",
+    "AA",
+    "OpenAction",
+    "Acroform",
+    "JBIG2Decode",
+    "RichMedia",
+    "launch",
+    "EmbeddedFile",
+    "XFA",
+    "URI",
+    "Colors"
+  ],
+  "training": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "roc_auc": 1.0,
+    "confusion_matrix": [
+      [
+        6797,
+        0
+      ],
+      [
+        0,
+        6797
+      ]
+    ],
+    "n_samples": 13594,
+    "n_malicious": 6797,
+    "n_benign": 6797
+  },
+  "held_out": {
+    "accuracy": 0.9980141218005296,
+    "precision": 0.9995573262505534,
+    "recall": 0.9964695498676082,
+    "f1": 0.9980110497237569,
+    "roc_auc": 0.999737280603012,
+    "confusion_matrix": [
+      [
+        2265,
+        1
+      ],
+      [
+        8,
+        2258
+      ]
+    ],
+    "n_samples": 4532,
+    "n_malicious": 2266,
+    "n_benign": 2266
+  },
+  "generalization_gap_accuracy": 0.001985878199470381
+}

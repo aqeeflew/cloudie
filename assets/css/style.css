@@ -1,0 +1,201 @@
+/* =========================================================
+   Cloudie - Triple-layered Secure Cloud System
+   matches the cyan/violet wave-on-dark mockups in Chapter 3.
+   ========================================================= */
+
+:root {
+    --cl-bg-1: #0b0f2a;
+    --cl-bg-2: #1a0c3a;
+    --cl-cyan: #19e3ff;
+    --cl-cyan-2: #45a8ff;
+    --cl-violet: #6b2bd9;
+    --cl-text: #e7ecff;
+    --cl-muted: #a3aacc;
+    --cl-card: rgba(255,255,255,0.96);
+    --cl-card-text: #1c2046;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--cl-text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                 Helvetica, Arial, sans-serif;
+    background:
+        radial-gradient(1200px 600px at 90% 110%, rgba(25,227,255,.18), transparent 60%),
+        radial-gradient(1200px 600px at 10% -10%, rgba(107,43,217,.35), transparent 60%),
+        linear-gradient(160deg, var(--cl-bg-1) 0%, var(--cl-bg-2) 100%);
+    background-attachment: fixed;
+}
+
+/* ---- Navigation ---- */
+.cloudie-nav {
+    background: rgba(8, 10, 30, 0.65) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.cloudie-nav .nav-link { color: var(--cl-text) !important; opacity: .85; }
+.cloudie-nav .nav-link:hover { opacity: 1; color: var(--cl-cyan) !important; }
+.brand-text {
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--cl-text);
+    background: linear-gradient(90deg, var(--cl-cyan), var(--cl-cyan-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.btn-cloudie {
+    background: linear-gradient(90deg, var(--cl-cyan), var(--cl-cyan-2));
+    color: #0a1230;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    padding: .55rem 1.4rem;
+    transition: transform .08s ease, box-shadow .2s ease;
+}
+.btn-cloudie:hover {
+    color: #0a1230;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(25,227,255,.35);
+}
+
+.btn-cloudie-outline {
+    background: transparent;
+    color: var(--cl-cyan);
+    border: 1px solid rgba(25,227,255,.55);
+    border-radius: 999px;
+    font-weight: 600;
+    padding: .55rem 1.4rem;
+}
+.btn-cloudie-outline:hover {
+    color: #0a1230;
+    background: linear-gradient(90deg, var(--cl-cyan), var(--cl-cyan-2));
+}
+
+/* ---- Hero ---- */
+.hero { padding: 4rem 0 3rem; }
+.hero h1 {
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    background: linear-gradient(90deg, #fff, #19e3ff 60%, #45a8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero p { color: var(--cl-muted); max-width: 560px; }
+
+/* ---- Card surfaces (login/upload/etc.) ---- */
+.cl-card {
+    background: var(--cl-card);
+    color: var(--cl-card-text);
+    border-radius: 22px;
+    padding: 2rem;
+    box-shadow: 0 18px 60px rgba(0,0,0,.35);
+}
+.cl-card h2, .cl-card h3, .cl-card h4, .cl-card h5 {
+    color: var(--cl-card-text);
+}
+.cl-card label { font-weight: 600; color: #444a72; }
+
+/* ---- File dashboard ---- */
+.file-table {
+    background: var(--cl-card);
+    color: var(--cl-card-text);
+    border-radius: 18px;
+    overflow: hidden;
+}
+.file-table th { background: #eaf6fb; }
+.file-row td { vertical-align: middle; }
+.file-actions a, .file-actions button { margin-right: .35rem; }
+
+/* ---- Drop zone ---- */
+.dropzone {
+    border: 2px dashed rgba(0,0,0,.22);
+    border-radius: 18px;
+    padding: 3rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background .15s ease;
+    color: #485072;
+}
+.dropzone.hover { background: #f1faff; border-color: var(--cl-cyan-2); }
+
+/* ---- Scan report ---- */
+.report-tile {
+    background: #f5f8ff;
+    border: 1px solid #e1e7f5;
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    height: 100%;
+}
+.report-tile.tile-ok     { background: #e8fff4; border-color: #b4ecd0; }
+.report-tile.tile-danger { background: #ffeded; border-color: #f6c5c5; }
+.report-tile.tile-info   { background: #eaf3ff; border-color: #c3d8f5; }
+.report-tile .tile-label {
+    font-size: .8rem;
+    color: #6c7290;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.report-tile .tile-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: .2rem;
+}
+
+.cl-table { background: #fff; border-radius: 10px; overflow: hidden; }
+.cl-table th { background: #eef2fb; color: #303763; }
+.cl-table td, .cl-table th { vertical-align: middle; }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        word-break: break-all; font-size: .85rem; }
+
+.indicator-list {
+    list-style: none; padding-left: 0; margin: 0;
+}
+.indicator-list li {
+    padding: .55rem .8rem;
+    border: 1px solid #f6c5c5;
+    background: #fff5f5;
+    border-radius: 10px;
+    margin-bottom: .35rem;
+}
+.ind-name {
+    font-weight: 700; color: #b21f1f; margin-right: .5rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.ind-desc { color: #5a5a5a; font-size: .9rem; }
+
+.qr-img { max-width: 220px; border-radius: 12px; }
+.key-box {
+    background: #f3f5fb;
+    border: 1px dashed #c5cbe2;
+    border-radius: 10px;
+    padding: .8rem;
+    font-family: monospace;
+    font-size: .9rem;
+    word-break: break-all;
+    color: #1c2046;
+}
+
+/* ---- Footer ---- */
+.cloudie-footer {
+    color: var(--cl-muted);
+    border-top: 1px solid rgba(255,255,255,.06);
+    margin-top: 4rem;
+}
+
+/* ---- Misc helpers ---- */
+.text-cyan { color: var(--cl-cyan) !important; }
+.success-banner {
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #0e1a3d;
+}

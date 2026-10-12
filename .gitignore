@@ -1,0 +1,28 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+flask_api_backup_before_*/
+
+# PHP / Composer
+vendor/
+
+# Runtime data (never commit user files or keys)
+encrypted/
+uploads/
+keys/
+flask_api/prediction_log.csv
+
+# Secrets
+.env
+*.env
+*service-account*.json
+*credentials*.json
+
+# Noise
+*.log
+*.bak
+*.bak-*
+*.bak.php

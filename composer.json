@@ -1,0 +1,12 @@
+{
+    "name": "cloudie/php-app",
+    "description": "Cloudie secure cloud storage PHP frontend",
+    "require": {
+        "google/cloud-storage": "^1.42"
+    },
+    "config": {
+        "platform": {
+            "php": "8.3"
+        }
+    }
+}
