@@ -168,13 +168,8 @@ function row_verdict(array $row): string {
         <td class="fcol" data-label="Uploaded"><?= e(date('M j, Y', strtotime($row['uploaded_at']))) ?></td>
         <td data-label="Actions">
           <div class="fa-group">
-            <a href="view_report.php?id=<?= (int)$row['file_id'] ?>"
-               class="btn btn-sm btn-cloudie-outline" title="View scan report">
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/><path d="M9 12h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              Report
-            </a>
             <a href="decrypt.php?action=view&id=<?= (int)$row['file_id'] ?>"
-               class="btn btn-sm btn-cloudie-outline" title="View decrypted file">
+               class="btn btn-sm btn-cloudie" title="View decrypted file">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
               View
             </a>
@@ -183,12 +178,17 @@ function row_verdict(array $row): string {
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M12 16V4m0 12-4-4m4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
               Download
             </a>
+            <a href="view_report.php?id=<?= (int)$row['file_id'] ?>"
+               class="btn btn-sm btn-cloudie-outline btn-ico" aria-label="View scan report" title="View scan report">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/><path d="M9 12h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span class="lbl">Report</span>
+            </a>
             <span class="fa-sep"></span>
             <a href="decrypt.php?action=delete&id=<?= (int)$row['file_id'] ?>"
-               class="btn btn-sm btn-danger" title="Delete file"
+               class="btn btn-sm btn-danger btn-ico" aria-label="Delete file" title="Delete file"
                data-delete-name="<?= e($row['file_name']) ?>">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Delete
+              <span class="lbl">Delete</span>
             </a>
           </div>
         </td>
