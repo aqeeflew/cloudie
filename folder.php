@@ -208,7 +208,7 @@ $fcolor = $colorVar[$folder['color']] ?? 'var(--cyan)';
         <td class="fcol" data-label="Size"><?= fmt_size((int)$row['file_size']) ?></td>
         <td data-label="Verdict">
           <?php if ($rv==='suspicious'): ?>
-            <span class="verdict v-susp"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Suspicious</span>
+            <span class="verdict v-susp" title="VirusTotal found nothing, but the AI flagged structural features. Stored; open with caution."><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Suspicious</span>
           <?php else: ?>
             <span class="verdict v-clean"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Clean</span>
           <?php endif; ?>
