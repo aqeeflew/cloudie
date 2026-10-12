@@ -1,9 +1,8 @@
 {
   "mode": "split",
-  "design": "stratified random 75/25 hold-out",
-  "feature_count": 33,
+  "design": "distribution hold-out on 'pdf_size' >= 79.000 (top quartile held out)",
+  "feature_count": 32,
   "feature_order": [
-    "name",
     "pdf_size",
     "metadata_size",
     "pages",
@@ -45,37 +44,37 @@
     "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        6797,
+        4886,
         0
       ],
       [
         0,
-        6797
+        8597
       ]
     ],
-    "n_samples": 13594,
-    "n_malicious": 6797,
-    "n_benign": 6797
+    "n_samples": 13483,
+    "n_malicious": 8597,
+    "n_benign": 4886
   },
   "held_out": {
-    "accuracy": 0.9980141218005296,
-    "precision": 0.9995573262505534,
-    "recall": 0.9964695498676082,
-    "f1": 0.9980110497237569,
-    "roc_auc": 0.999737280603012,
+    "accuracy": 0.9946155502907603,
+    "precision": 0.9846153846153847,
+    "recall": 0.9613733905579399,
+    "f1": 0.9728555917480999,
+    "roc_auc": 0.9984140618818976,
     "confusion_matrix": [
       [
-        2265,
-        1
+        4170,
+        7
       ],
       [
-        8,
-        2258
+        18,
+        448
       ]
     ],
-    "n_samples": 4532,
-    "n_malicious": 2266,
-    "n_benign": 2266
+    "n_samples": 4643,
+    "n_malicious": 466,
+    "n_benign": 4177
   },
-  "generalization_gap_accuracy": 0.001985878199470381
+  "generalization_gap_accuracy": 0.00538444970923968
 }

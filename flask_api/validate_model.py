@@ -71,9 +71,32 @@ def _load_csv(path):
         sys.exit(f"ERROR: file not found: {path}")
     df = pd.read_csv(path)
     # Drop obvious non-feature columns often present in these datasets.
-    for junk in ("Filename", "filename", "FileName", "md5", "MD5", "sha256", "hash"):
+    # "name" is the CIC-Evasive-PDFMal2022 file identifier, NOT a feature;
+    # keeping it is what produced the old 33-column reports.
+    for junk in ("name", "Filename", "filename", "FileName", "md5", "MD5", "sha256", "hash"):
         if junk in df.columns:
             df = df.drop(columns=[junk])
+    return _encode_cloudie_columns(df)
+
+
+def _encode_cloudie_columns(df):
+    """Encode the two text columns in Final.csv the same way the deployed
+    model (malware_rf.pkl) was trained, so validation measures the same
+    32-feature pipeline that runs in production:
+      contains_text : "Yes"/"No"   -> 1/0
+      header        : "%PDF-1.6"   -> 1.6  (PDF version number)
+    Without this, pd.to_numeric() silently turns both columns into 0.
+    """
+    df = df.copy()
+    if "contains_text" in df.columns and not pd.api.types.is_numeric_dtype(df["contains_text"]):
+        df["contains_text"] = (
+            df["contains_text"].astype(str).str.strip().str.lower()
+            .map({"yes": 1, "no": 0}).fillna(0).astype(int)
+        )
+    if "header" in df.columns and not pd.api.types.is_numeric_dtype(df["header"]):
+        df["header"] = pd.to_numeric(
+            df["header"].astype(str).str.extract(r"(\d+\.\d+)")[0], errors="coerce"
+        ).fillna(0.0)
     return df
 
 

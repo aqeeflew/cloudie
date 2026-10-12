@@ -33,8 +33,8 @@ FEATURE_NAMES = [
     "isEncrypted",         # 6  encryption flag (0/1)
     "embedded_files",      # 7  count of embedded files
     "images",              # 8  count of images
-    "contains_text",       # 9  amount of text (proxy count of BT operators)
-    "header",              # 10 header marker present / version proxy
+    "contains_text",       # 9  has text: 1/0 (dataset "Yes"/"No")
+    "header",              # 10 PDF version from %PDF-x.y, e.g. 1.6 (0 if missing)
     "obj",                 # 11 count of "obj" markers
     "endobj",              # 12 count of "endobj" markers
     "stream",              # 13 count of "stream" markers
@@ -130,8 +130,13 @@ def extract_features(file_path: str) -> dict:
         feats["pdf_size"] = round(len(blob) / 1024.0, 2)  # KB
 
         # header / version
+        # The model was trained on the version number ("%PDF-1.6" -> 1.6),
+        # so send the version, not a 1/0 "header present" flag.
         header_match = re.search(rb"%PDF-(\d+)\.(\d+)", blob[:1024])
-        feats["header"] = 1 if header_match else 0
+        feats["header"] = (
+            float(f"{int(header_match.group(1))}.{int(header_match.group(2))}")
+            if header_match else 0
+        )
 
         # metadata block size (between <x:xmpmeta ...> ... </x:xmpmeta> if present)
         meta_match = re.search(rb"<x:xmpmeta.*?</x:xmpmeta>", blob, re.DOTALL)
@@ -155,8 +160,9 @@ def extract_features(file_path: str) -> dict:
         feats["embedded_files"] = _safe_count(blob, b"/EmbeddedFile")
         feats["images"] = len(re.findall(rb"/Subtype\s*/Image", blob))
 
-        # text proxy: count of BT (begin text) operators
-        feats["contains_text"] = _safe_count(blob, b"BT")
+        # text present: 1 if any BT (begin text) operator, else 0.
+        # Matches the dataset's "Yes"/"No" column, which the model saw as 1/0.
+        feats["contains_text"] = 1 if _safe_count(blob, b"BT") > 0 else 0
 
         # colors heuristic: occurrences of /Colors
         feats["Colors"] = _safe_count(blob, b"/Colors")
