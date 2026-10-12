@@ -63,7 +63,9 @@ if (!move_uploaded_file($f['tmp_name'], $tmpPath)) {
 $scan = scan_file_with_ai($tmpPath, $origName);
 if (!$scan['ok']) {
     @unlink($tmpPath);
-    flash_set('error', 'Malware scan failed: ' . ($scan['error'] ?? 'unknown'));
+    error_log('scan failed: ' . ($scan['error'] ?? 'unknown'));   // technical detail stays in the log
+    flash_set('error', 'The malware scan could not be completed, so your file was not stored. '
+                     . 'Please try again in a minute. If it keeps happening, try a smaller file.');
     header('Location: upload.php'); exit;
 }
 $report  = $scan['data'];
