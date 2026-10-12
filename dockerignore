@@ -1,9 +1,0 @@
-.git/
-*.bak.php
-*.bak
-vendor/
-.env
-*.log
-encrypted/
-uploads/
-keys/

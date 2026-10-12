@@ -1,0 +1,20 @@
+.git/
+*.bak.php
+*.bak
+dashboard.bak.php
+vendor/
+.env
+*.log
+encrypted/
+uploads/
+keys/
+
+# Flask API is deployed separately as cloudie-flask
+flask_api/
+
+# Repo / docs (not needed in the image)
+.gitignore
+CLAUDE.md
+docs/
+*.bak-*
+database/

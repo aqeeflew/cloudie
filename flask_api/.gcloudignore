@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+prediction_log.csv
+flask_api_backup_before_*
+
+# Not needed at runtime
+Final.csv
+figures/
+validation_*
+validate_model.py
+*.bak-*

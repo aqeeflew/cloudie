@@ -56,8 +56,8 @@ require_once __DIR__ . '/includes/header.php';
           </h4>
           <ol class="lp-howto mb-0">
             <li><span>You upload a file — any PDF, image, document, or archive.</span></li>
-            <li><span>Our Random Forest analyzer extracts 33 static features and predicts whether it's malicious.</span></li>
-            <li><span>VirusTotal cross-checks the result across 70+ antivirus engines.</span></li>
+            <li><span>VirusTotal checks the file against 70+ antivirus engines &mdash; this is the primary verdict.</span></li>
+            <li><span>Our Random Forest analyzer extracts 32 structural PDF features as a second, supporting signal.</span></li>
             <li><span>If clean, a fresh AES-256 key is generated and the file is encrypted in memory.</span></li>
             <li><span>You receive the key + a QR code. Without it, nobody can decrypt your data — not even us.</span></li>
           </ol>
@@ -123,7 +123,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
           </div>
           <h5 class="lp-feature-title mt-3">AI malware detection</h5>
-          <p class="lp-feature-text mb-0">A Random Forest classifier trained on the CIC-Evasive-PDFMal2022 dataset extracts 33 structural features from each PDF and predicts malicious vs. benign before storage.</p>
+          <p class="lp-feature-text mb-0">A Random Forest classifier trained on the CIC-Evasive-PDFMal2022 dataset extracts 32 structural features from each PDF as a supporting signal alongside VirusTotal, before storage.</p>
         </div>
       </div>
       <div class="col-md-4 reveal" style="--d:90ms">
@@ -186,7 +186,7 @@ require_once __DIR__ . '/includes/header.php';
           <div class="lp-stat-icon">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div class="lp-stat-value">33</div>
+          <div class="lp-stat-value">32</div>
           <div class="lp-stat-label">Structural features</div>
         </div>
       </div>

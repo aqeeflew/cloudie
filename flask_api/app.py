@@ -9,7 +9,8 @@ POST /analyze        -> analyse one uploaded PDF, return combined verdict
 Enhancements in this version
 ----------------------------
 1. predict_proba confidence scoring (not just a binary label)
-2. Explicit AI-primary / VT-corroborating verdict logic (verdict_engine.py)
+2. Explicit VT-primary / AI-supporting verdict logic (verdict_engine.py,
+   PRIMARY_DETECTOR = "VT")
 3. Robust feature extraction that never crashes on a bad PDF
 4. Per-scan prediction logging to CSV for Chapter 4 results
 
