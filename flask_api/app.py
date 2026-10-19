@@ -34,6 +34,7 @@ from flask import Flask, request, jsonify
 from feature_extractor import extract_features, FEATURE_NAMES
 from verdict_engine import combine, PRIMARY_DETECTOR
 from prediction_log import log_prediction
+import vt_client
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -183,54 +184,31 @@ def ai_predict(vector):
 # ---------------------------------------------------------------------------
 # VirusTotal second opinion
 # ---------------------------------------------------------------------------
-def vt_scan(file_path):
+def vt_scan(file_path, original_name="upload"):
     """
-    Submit the file to VirusTotal and return (positives, total).
-    Returns (None, None) if VT is not configured or the call fails.
-    Note: VT analysis can be asynchronous; this performs an upload + immediate
-    read of available results. For a full pipeline you may poll the analysis id.
+    Ask VirusTotal (PRIMARY detector) and return (positives, total).
+
+    Uses vt_client.scan_file: SHA-256 lookup first (known files are not
+    re-uploaded), otherwise upload and POLL until the analysis is completed.
+    HTTP 409 (already known) is resolved via the hash report; 429 / timeouts /
+    any error give (None, None) = "no result", never "clean". An analysis that
+    reports zero engines is also "no result".
+    positives = malicious + suspicious engines (same rule as before).
     """
     if not VT_API_KEY:
-        logger.info("VT_API_KEY not set; skipping VirusTotal second opinion.")
+        logger.info("VT_API_KEY not set; skipping VirusTotal.")
         return None, None
     try:
-        with open(file_path, "rb") as fh:
-            resp = requests.post(
-                VT_FILE_URL,
-                headers={"x-apikey": VT_API_KEY},
-                files={"file": fh},
-                timeout=VT_TIMEOUT,
-            )
-        if resp.status_code not in (200, 201):
-            logger.warning("VT upload returned HTTP %s", resp.status_code)
+        rep = vt_client.scan_file(file_path, original_name, api_key=VT_API_KEY)
+        if not rep.get("available") or not rep.get("total"):
+            logger.warning("VT returned no engine results (total=%s)", rep.get("total"))
             return None, None
-
-        analysis_id = resp.json().get("data", {}).get("id")
-        if not analysis_id:
-            return None, None
-
-        analysis = requests.get(
-            f"https://www.virustotal.com/api/v3/analyses/{analysis_id}",
-            headers={"x-apikey": VT_API_KEY},
-            timeout=VT_TIMEOUT,
-        )
-        if analysis.status_code != 200:
-            return None, None
-
-        stats = (
-            analysis.json()
-            .get("data", {})
-            .get("attributes", {})
-            .get("stats", {})
-        )
-        positives = int(stats.get("malicious", 0)) + int(stats.get("suspicious", 0))
-        total = sum(int(v) for v in stats.values()) if stats else None
-        return positives, total
+        return int(rep["malicious"]) + int(rep["suspicious"]), int(rep["total"])
     except requests.RequestException as exc:
         logger.warning("VT request error: %s", exc)
         return None, None
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("VT unexpected error: %s", exc)
+    except Exception as exc:  # noqa: BLE001 - incl. TimeoutError, VTConfigError
+        logger.warning("VT unavailable: %s", exc)
         return None, None
 
 
@@ -267,17 +245,28 @@ def analyze():
     try:
         uploaded.save(tmp_path)
 
-        # 1) Robust feature extraction
-        ext = extract_features(tmp_path)
-        vector = ext["vector"]
-        extraction_ok = ext["extraction_ok"]
-        extraction_error = ext["error"]
+        # Magic-byte gate: the Random Forest only understands PDFs. Any other
+        # file type skips structural analysis and is judged by VirusTotal alone.
+        with open(tmp_path, "rb") as _fh:
+            is_pdf = b"%PDF-" in _fh.read(1024)
 
-        # 2) AI primary prediction with confidence
-        ai_proba, ai_label = ai_predict(vector)
+        if is_pdf:
+            # 1) Robust feature extraction
+            ext = extract_features(tmp_path)
+            vector = ext["vector"]
+            extraction_ok = ext["extraction_ok"]
+            extraction_error = ext["error"]
 
-        # 3) VirusTotal second opinion (corroborating)
-        vt_positives, vt_total = vt_scan(tmp_path)
+            # 2) Supporting signal: Random Forest probability
+            ai_proba, ai_label = ai_predict(vector)
+        else:
+            ext = {"features": {n: 0 for n in FEATURE_NAMES}, "vector": [],
+                   "extraction_ok": True, "error": None}
+            extraction_ok, extraction_error = True, None
+            ai_proba, ai_label = None, None
+
+        # 3) PRIMARY detector: VirusTotal
+        vt_positives, vt_total = vt_scan(tmp_path, uploaded.filename)
 
         # 4) Combined verdict
         result = combine(
@@ -334,7 +323,9 @@ def analyze():
             indicators.append(f"VirusTotal: {vt_positives} engine(s) flagged it")
         if result["disagreement"]:
             indicators.append("AI and VirusTotal disagree (logged for review)")
-        if not extraction_ok:
+        if not is_pdf:
+            indicators.append("Not a PDF: structural AI analysis skipped (VirusTotal only)")
+        elif not extraction_ok:
             indicators.append("PDF could not be fully parsed")
 
         # md5 / sha-256 / size of the uploaded file (PHP falls back to its own
@@ -412,7 +403,7 @@ def analyze():
             "filename": uploaded.filename,
             "file_sha256": file_sha256,
             "file_size": file_size,
-            "is_pdf": bool(ext["features"].get("header")),
+            "is_pdf": is_pdf,
 
             # ---- the 32 extracted structural features (the report's
             #      "Key features" table + "Show all 32 features" list) -------

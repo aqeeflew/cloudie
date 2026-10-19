@@ -316,7 +316,9 @@ require_once __DIR__ . '/includes/header.php';
           <?php endif; ?>
         </p>
 
-        <img src="<?= e($qrSrc) ?>" alt="AES key QR" class="my-3">
+        <?php if ($qrSrc !== ''): ?>
+          <img src="<?= e($qrSrc) ?>" alt="AES key QR" class="my-3">
+        <?php endif; ?>
 
         <div class="key-box mb-3" id="keyBox"><?= e($keyHex) ?></div>
 

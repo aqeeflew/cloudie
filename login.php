@@ -133,8 +133,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     [$sent, $code] = otp_issue($uid, (string)$u['email'], (string)$u['username']);
                     $stage = 'otp';
                     $otpEmailMasked = mask_email((string)$u['email']);
-                    $info = 'A new code has been issued.';
-                    if (!$sent) $devOtp = $code;
+                    if ($sent) {
+                        $info = 'A new code has been issued.';
+                    } elseif (!MAIL_ENABLED) {
+                        $info = 'A new code has been issued.';
+                        $devOtp = $code;          // local dev only: email is switched off
+                    } else {
+                        // email is ON but delivery failed: fail closed, never reveal the code
+                        $err = 'We could not email your code. Please try "Resend code" again in a minute.';
+                    }
                 }
             }
 
@@ -203,7 +210,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                (string)$row['username']);
                     $stage = 'otp';
                     $otpEmailMasked = mask_email((string)$row['email']);
-                    if (!$sent) $devOtp = $code;
+                    if (!$sent) {
+                        if (!MAIL_ENABLED) {
+                            $devOtp = $code;      // local dev only: email is switched off
+                        } else {
+                            // email is ON but delivery failed: fail closed, never reveal the code
+                            $err = 'We could not email your code. Please try "Resend code" again in a minute.';
+                        }
+                    }
                 }
             } else {
                 $err = 'Invalid credentials.';

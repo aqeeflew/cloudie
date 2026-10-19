@@ -2,7 +2,8 @@
     "name": "cloudie/php-app",
     "description": "Cloudie secure cloud storage PHP frontend",
     "require": {
-        "google/cloud-storage": "^1.42"
+        "google/cloud-storage": "^1.42",
+        "endroid/qr-code": "^4.8"
     },
     "config": {
         "platform": {

@@ -71,7 +71,7 @@ if ($dl === 'txt') {
 // Variables expected by includes/scan_report.php
 // ---------------------------------------------------------------
 $origName = $rec['file_name'];
-$rejected = ((int)$rec['is_clean'] !== 1);  // stored files are clean; defensive
+$rejected = false;  // only clean/suspicious files are ever stored; rejected ones have no DB row
 $fileId   = (int)$rec['file_id'];
 $keyHex   = null;   // we never show the key here
 $qrSrc    = null;
