@@ -20,6 +20,7 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/aes.php';
 require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/scanner.php';
+require_once __DIR__ . '/includes/upload_check.php';
 require_once __DIR__ . '/includes/qr.php';
 require_once __DIR__ . '/includes/mailer.php';
 
@@ -48,6 +49,11 @@ $origName = basename($f['name']);
 $ext      = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
 if ($ext === '' || !in_array($ext, ALLOWED_EXT, true)) {
     flash_set('error', 'That file type is not allowed.');
+    header('Location: upload.php'); exit;
+}
+
+if (!upload_magic_ok($f['tmp_name'], $ext)) {
+    flash_set('error', 'The file content does not match its ".' . $ext . '" extension, so it was not accepted.');
     header('Location: upload.php'); exit;
 }
 

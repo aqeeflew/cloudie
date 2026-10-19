@@ -210,6 +210,12 @@ a:hover{text-decoration:underline}
 .umenu-panel a:hover{background:var(--panel);color:var(--txt);text-decoration:none}
 .umenu-panel a svg{width:16px;height:16px;flex:none}
 .umenu-panel a.umenu-danger:hover{background:rgba(255,93,108,.1);color:var(--red)}
+.umenu-panel form{margin:0}
+.umenu-panel button.umenu-danger{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;
+  border:0;border-radius:9px;background:none;text-align:left;cursor:pointer;font:inherit;
+  font-size:13.5px;font-weight:500;color:var(--txt-dim);transition:.13s}
+.umenu-panel button.umenu-danger svg{width:16px;height:16px;flex:none}
+.umenu-panel button.umenu-danger:hover{background:rgba(255,93,108,.1);color:var(--red)}
 
 /* ---------- HEADINGS ---------- */
 h1,h2,h3,h4,h5{font-family:'Space Grotesk';letter-spacing:-.02em;color:var(--txt)}
@@ -690,10 +696,13 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
                 <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
                 My profile
               </a>
-              <a href="logout.php" class="umenu-danger">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.7"/><path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Log out
-              </a>
+              <form method="post" action="logout.php">
+                <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                <button type="submit" class="umenu-danger">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.7"/><path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Log out
+                </button>
+              </form>
             </div>
           </div>
         <?php endif; ?>

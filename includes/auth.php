@@ -71,7 +71,7 @@ function e(string $s): string {
 
 /** Absolute URL to a file in the app root (for links inside emails). */
 function app_url(string $path = ''): string {
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $scheme = is_https() ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $dir    = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
     return $scheme . '://' . $host . $dir . '/' . ltrim($path, '/');
