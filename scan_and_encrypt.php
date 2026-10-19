@@ -194,6 +194,16 @@ if (!storage_put_encrypted($encName, $cipherBytes)) {
 }
 @unlink($tmpPath);   // never keep cleartext on disk
 
+// The scan can take up to ~85 s (VirusTotal polling). The DB connection opened
+// at login may have been dropped meanwhile ("MySQL server has gone away"), so
+// check it and reconnect before the insert.
+try {
+    db()->query('SELECT 1');
+} catch (Throwable $e) {
+    error_log('DB connection lost during scan, reconnecting: ' . $e->getMessage());
+    db(true);
+}
+
 try {
     $pdo = db();
     $pdo->beginTransaction();
@@ -230,9 +240,13 @@ try {
     log_action($user['user_id'], 'ENCRYPT', $fileId, $keyId,
                'AES-256-CBC; verdict=' . $verdict . '; size=' . $f['size']);
 } catch (Throwable $e) {
-    if (db()->inTransaction()) db()->rollBack();
+    error_log('scan_and_encrypt store failed: ' . $e->getMessage());
+    try {
+        if (db()->inTransaction()) db()->rollBack();
+    } catch (Throwable $rb) {
+        error_log('rollback failed: ' . $rb->getMessage());   // connection already dead
+    }
     storage_delete_encrypted($encName);
-    error_log($e->getMessage());
     flash_set('error', 'Could not store encrypted file.');
     header('Location: upload.php'); exit;
 }

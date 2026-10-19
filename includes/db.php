@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-function db(): PDO {
+function db(bool $fresh = false): PDO {
     static $pdo = null;
+    if ($fresh) $pdo = null;   // drop a dead connection and reconnect
     if ($pdo === null) {
         // Build the DSN. On Cloud Run we connect to Cloud SQL over a Unix
         // socket whose path is injected as DB_HOST (e.g. /cloudsql/<conn>).
