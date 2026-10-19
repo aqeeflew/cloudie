@@ -14,10 +14,12 @@ Three modes are exposed:
 Free-tier limits:
     4 requests / minute, 500 / day, 32MB max upload.
 
-Notes for the thesis:
-    VirusTotal is used here as a SECOND opinion, alongside our Random Forest.
-    The AI verdict remains the primary detector — VT corroborates or
-    contradicts it.
+Notes:
+    VirusTotal is the PRIMARY detector in Cloudie (see verdict_engine.py);
+    the Random Forest is a supporting signal. This client is what app.py uses:
+    hash lookup first (known files are never re-uploaded), otherwise upload and
+    poll until the analysis is `completed`. A queued/incomplete analysis is
+    never reported as clean: it raises, and the caller treats it as "no result".
 """
 
 from __future__ import annotations
@@ -32,9 +34,10 @@ import requests
 
 
 VT_BASE     = "https://www.virustotal.com/api/v3"
-VT_TIMEOUT  = 30
+VT_TIMEOUT  = 20          # per HTTP request
 VT_MAX_POLL = 12          # try up to 12 * 5s = 60s for the analysis to finish
 VT_POLL_GAP = 5
+VT_BUDGET   = 85          # total seconds for one scan (PHP waits 115s, gunicorn 120s)
 
 log = logging.getLogger("cloudie.vt")
 
@@ -134,7 +137,8 @@ def _lookup_hash(sha256: str, api_key: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _upload_and_wait(path: str, name: str, api_key: str) -> Dict[str, Any]:
+def _upload_and_wait(path: str, name: str, api_key: str,
+                     sha256: str, deadline: float) -> Dict[str, Any]:
     """POST /files, then poll /analyses/{id} until it completes."""
     size = os.path.getsize(path)
     if size > 32 * 1024 * 1024:
@@ -149,11 +153,19 @@ def _upload_and_wait(path: str, name: str, api_key: str) -> Dict[str, Any]:
             files={"file": (name, f)},
             timeout=VT_TIMEOUT,
         )
+    if r.status_code == 409:
+        # 409 = VT already has this file: read the existing report instead.
+        report = _lookup_hash(sha256, api_key)
+        if report is not None:
+            return report
+    # 429 (rate limit) and any other error raise here -> caller: "no result".
     r.raise_for_status()
     analysis_id = r.json()["data"]["id"]
     log.info("VT upload accepted, analysis_id=%s", analysis_id)
 
     for attempt in range(VT_MAX_POLL):
+        if time.time() + VT_POLL_GAP > deadline:
+            break
         time.sleep(VT_POLL_GAP)
         r = requests.get(f"{VT_BASE}/analyses/{analysis_id}",
                          headers=_headers(api_key),
@@ -201,6 +213,7 @@ def scan_file(path: str, original_name: str,
     if not api_key:
         raise VTConfigError("VT_API_KEY environment variable is not set.")
 
+    deadline = time.time() + VT_BUDGET
     sha = _sha256_of(path)
     log.info("VT lookup sha256=%s", sha)
 
@@ -211,4 +224,4 @@ def scan_file(path: str, original_name: str,
         return cached
 
     log.info("VT cache miss - uploading file")
-    return _upload_and_wait(path, original_name, api_key)
+    return _upload_and_wait(path, original_name, api_key, sha, deadline)

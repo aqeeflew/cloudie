@@ -2,23 +2,23 @@
 /**
  * qr.php - Tiny QR helper.
  *
- * The thesis (Sec 3.3.7.6) describes the system showing a QR code containing
- * the AES key so the user can save it on their phone.
+ * Shows the AES key as a QR code so the user can save it on their phone.
  *
- * We avoid pulling in a heavy library by using two strategies:
+ * The QR is generated SERVER-SIDE with the `endroid/qr-code` Composer package
+ * and returned as a data: URI, so the key is never sent to any third party.
  *
- *   1. If the `endroid/qr-code` Composer package is installed, use it
- *      (fully offline, recommended for production).
- *   2. Otherwise, fall back to the public Google-Charts-style API at
- *      api.qrserver.com - the AES key never leaves the user's machine in
- *      that case because the URL is rendered client-side by the browser.
- *
- * Both paths return either a data: URI (offline) or an external URL
- * the <img> tag can load directly.
+ * If the package is not installed (for example local XAMPP before running
+ * `composer install`), this returns '' and the page shows the key as text
+ * only. There is deliberately NO online fallback: putting the key in a URL
+ * for an external QR service would leak it.
  */
 
 function qr_image_src(string $payload, int $size = 240): string {
-    // Path 1: endroid/qr-code if available
+    $autoload = __DIR__ . '/../vendor/autoload.php';
+    if (is_file($autoload)) {
+        require_once $autoload;
+    }
+
     if (class_exists('\\Endroid\\QrCode\\Builder\\Builder')) {
         try {
             $result = \Endroid\QrCode\Builder\Builder::create()
@@ -28,12 +28,8 @@ function qr_image_src(string $payload, int $size = 240): string {
                 ->build();
             return $result->getDataUri();
         } catch (Throwable $e) {
-            // fall through to path 2
+            error_log('qr_image_src failed: ' . $e->getMessage());
         }
     }
-
-    // Path 2: client-side render via public API
-    $encoded = urlencode($payload);
-    return "https://api.qrserver.com/v1/create-qr-code/"
-         . "?size={$size}x{$size}&data={$encoded}";
+    return '';
 }

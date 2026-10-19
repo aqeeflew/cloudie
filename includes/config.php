@@ -30,7 +30,7 @@ define('DB_CHARSET', 'utf8mb4');
 // In the cloud this becomes the cloudie-flask Cloud Run URL.
 define('SCANNER_URL',     env_or('SCANNER_URL',    'http://127.0.0.1:5000/scan'));
 define('SCANNER_HEALTH',  env_or('SCANNER_HEALTH', 'http://127.0.0.1:5000/health'));
-define('SCANNER_TIMEOUT', 60);   // seconds
+define('SCANNER_TIMEOUT', 115);  // seconds; Flask budget is 85 s (VT lookup/upload/poll), gunicorn 120 s
 
 // ---- Cloud Storage ----
 // USE_CLOUD_STORAGE=true makes encrypted blobs live in GCS_BUCKET.

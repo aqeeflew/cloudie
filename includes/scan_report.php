@@ -347,7 +347,7 @@ function _ts(int $t): string {
       <a href="dashboard.php" class="btn btn-cloudie-outline">Go to dashboard</a>
     </div>
 
-  <?php elseif ($keyHex && $qrSrc): ?>
+  <?php elseif ($keyHex): ?>
 
     <hr class="rpt-hr">
     <h4 style="text-align:center;margin-bottom:.5rem">Your AES-256 decryption key</h4>
@@ -355,9 +355,11 @@ function _ts(int $t): string {
       Save this key now &mdash; it is required to view, download, or delete this file.
       We do not store it; if you lose it, the file cannot be recovered.
     </p>
+    <?php if (!empty($qrSrc)): ?>
     <div style="text-align:center">
       <img src="<?= e($qrSrc) ?>" alt="AES key QR code" class="qr-img my-3">
     </div>
+    <?php endif; ?>
     <div class="key-box mb-3" id="keyBox"><?= e($keyHex) ?></div>
     <div style="display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center">
       <button class="btn btn-cloudie-outline" onclick="rptCopyKey()">Copy key</button>

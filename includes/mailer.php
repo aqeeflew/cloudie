@@ -52,6 +52,7 @@ function cloudie_make_mailer(): ?PHPMailer {
         $m->SMTPSecure = SMTP_SECURE;   // 'tls' or 'ssl'
         $m->Port       = SMTP_PORT;
         $m->CharSet    = 'UTF-8';
+        $m->Timeout    = 10;            // PHPMailer default is 300 s; mail runs inside page requests
         $m->setFrom(SMTP_FROM, SMTP_FROM_NAME);
         return $m;
     } catch (Exception $e) {
