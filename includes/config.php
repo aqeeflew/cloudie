@@ -84,16 +84,45 @@ define('OTP_TTL_MINUTES',    10);   // code validity window
 define('OTP_MAX_ATTEMPTS',    5);   // wrong codes before restarting login
 define('OTP_RESEND_SECONDS', 60);   // minimum gap between resends
 
+// ---- HTTPS detection (Cloud Run terminates TLS and sets X-Forwarded-Proto) ----
+function is_https(): bool {
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') return true;
+    return strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+}
+
 // ---- Session ----
+define('SESSION_IDLE_SECONDS', 1800);   // log out after 30 minutes without a request
 if (session_status() === PHP_SESSION_NONE) {
-    // Harden the session cookie
+    // Harden the session cookie. 'secure' only over HTTPS so local XAMPP (http) still works.
+    ini_set('session.gc_maxlifetime', (string)SESSION_IDLE_SECONDS);
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',
         'httponly' => true,
+        'secure'   => is_https(),
         'samesite' => 'Lax',
     ]);
     session_start();
+
+    // Idle timeout: an abandoned session is wiped and gets a new id.
+    if (!empty($_SESSION['last_seen'])
+        && time() - (int)$_SESSION['last_seen'] > SESSION_IDLE_SECONDS) {
+        $_SESSION = [];
+        session_regenerate_id(true);
+    }
+    $_SESSION['last_seen'] = time();
+}
+
+// ---- Security headers (sent on every page; CSP is future work) ----
+if (!headers_sent()) {
+    header('X-Frame-Options: SAMEORIGIN');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    // camera is needed on the decrypt page (QR scan); everything else is off
+    header('Permissions-Policy: camera=(self), microphone=(), geolocation=()');
+    if (is_https()) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
 }
 
 // ---- Make sure LOCAL storage dirs exist ----
@@ -104,6 +133,11 @@ $dirs = USE_CLOUD_STORAGE ? [UPLOAD_DIR] : [UPLOAD_DIR, ENCRYPTED_DIR, KEY_DIR];
 foreach ($dirs as $dir) {
     if (!is_dir($dir)) {
         @mkdir($dir, 0775, true);
+    }
+    // never serve these folders over HTTP (Apache reads .htaccess on XAMPP;
+    // the Docker image has an equivalent <DirectoryMatch> rule)
+    if (is_dir($dir) && !is_file($dir . '.htaccess')) {
+        @file_put_contents($dir . '.htaccess', "Require all denied\n");
     }
 }
 

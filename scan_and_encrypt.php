@@ -20,6 +20,7 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/aes.php';
 require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/scanner.php';
+require_once __DIR__ . '/includes/upload_check.php';
 require_once __DIR__ . '/includes/qr.php';
 require_once __DIR__ . '/includes/mailer.php';
 
@@ -48,6 +49,11 @@ $origName = basename($f['name']);
 $ext      = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
 if ($ext === '' || !in_array($ext, ALLOWED_EXT, true)) {
     flash_set('error', 'That file type is not allowed.');
+    header('Location: upload.php'); exit;
+}
+
+if (!upload_magic_ok($f['tmp_name'], $ext)) {
+    flash_set('error', 'The file content does not match its ".' . $ext . '" extension, so it was not accepted.');
     header('Location: upload.php'); exit;
 }
 
@@ -150,10 +156,11 @@ if ($verdict === 'malicious' || $verdict === 'error') {
               <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8h.01M12 12v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
             </div>
             <div>
-              <div class="vb-main">File could not be verified</div>
+              <div class="vb-main">VirusTotal error &mdash; file could not be verified</div>
               <div class="vb-sub">
-                Cloudie could not get a reliable verdict for
-                <strong><?= e($origName) ?></strong> and did not store it. Please try again.
+                VirusTotal did not return a result for
+                <strong><?= e($origName) ?></strong>, so Cloudie did not store it.
+                This can be a temporary rate limit or timeout. Please try again in a minute.
               </div>
             </div>
           </div>

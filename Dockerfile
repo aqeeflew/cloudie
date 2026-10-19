@@ -29,6 +29,14 @@ RUN { \
 # Enable mod_rewrite (handy if you add pretty URLs later)
 RUN a2enmod rewrite
 
+# Never serve the runtime data folders over HTTP (cleartext temp uploads, blobs, keys).
+RUN { \
+        echo '<DirectoryMatch "^/var/www/html/(uploads|encrypted|keys|database|docs|ml)">'; \
+        echo '    Require all denied'; \
+        echo '</DirectoryMatch>'; \
+    } > /etc/apache2/conf-available/cloudie-deny.conf \
+    && a2enconf cloudie-deny
+
 WORKDIR /var/www/html
 
 # Install PHP dependencies first (better build caching)
