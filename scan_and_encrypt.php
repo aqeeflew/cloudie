@@ -150,10 +150,11 @@ if ($verdict === 'malicious' || $verdict === 'error') {
               <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8h.01M12 12v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
             </div>
             <div>
-              <div class="vb-main">File could not be verified</div>
+              <div class="vb-main">VirusTotal error &mdash; file could not be verified</div>
               <div class="vb-sub">
-                Cloudie could not get a reliable verdict for
-                <strong><?= e($origName) ?></strong> and did not store it. Please try again.
+                VirusTotal did not return a result for
+                <strong><?= e($origName) ?></strong>, so Cloudie did not store it.
+                This can be a temporary rate limit or timeout. Please try again in a minute.
               </div>
             </div>
           </div>

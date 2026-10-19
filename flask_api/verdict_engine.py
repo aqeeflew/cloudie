@@ -1,4 +1,4 @@
-"""
+r"""
 verdict_engine.py — Cloudie combined verdict logic.
 
 POLICY (set by supervisor): VirusTotal is the PRIMARY detector; the AI
@@ -13,6 +13,7 @@ Decision matrix
                  tag suspicious)
 
 Rules in words:
+  * VT no result (any AI)   -> ERROR, blocked (fail closed; VT is primary).
   * Both clean              -> CLEAN, stored normally.
   * AI malicious, VT clean  -> SUSPICIOUS, stored but tagged.
   * VT malicious (any AI)   -> MALICIOUS, blocked (VT is primary authority).
@@ -86,6 +87,15 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True):
     # VT-PRIMARY POLICY (current)
     # ======================================================================
     if PRIMARY_DETECTOR == "VT":
+        # 0) FAIL CLOSED: VirusTotal is the primary detector. If it gave no
+        #    result (key missing, rate limit, timeout, analysis not finished),
+        #    the file is NOT stored, whatever the AI says.
+        if vt_positives is None:
+            return _result(
+                Verdict.ERROR, 0.0, ai_says_mal, None, False,
+                "VirusTotal (primary) returned no result. Upload blocked "
+                "until VirusTotal can verify the file.")
+
         # 1) VirusTotal is the authority: if it flags the file, block it,
         #    regardless of what the AI thinks.
         if vt_says_mal:
@@ -93,17 +103,15 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True):
                 Verdict.MALICIOUS, 0.95, ai_says_mal, vt_says_mal, disagreement,
                 "VirusTotal (primary) flagged the file. Upload blocked.")
 
-        # From here on, VT is either CLEAN or UNAVAILABLE.
+        # From here on, VirusTotal answered and did not flag the file.
 
         # 2) VT clean but AI flags structural features -> store, tag suspicious.
         if ai_says_mal:
-            note = ("AI structural analysis flagged the file while VirusTotal "
-                    "did not. Stored but tagged SUSPICIOUS for the user.")
-            if vt_says_mal is None:
-                note = ("AI structural analysis flagged the file; VirusTotal "
-                        "returned no result. Stored but tagged SUSPICIOUS.")
             return _result(Verdict.SUSPICIOUS, max(ai_conf, 0.5),
-                           ai_says_mal, vt_says_mal, disagreement, note)
+                           ai_says_mal, vt_says_mal, disagreement,
+                           "AI structural analysis flagged the file while "
+                           "VirusTotal did not. Stored but tagged SUSPICIOUS "
+                           "for the user.")
 
         # 3) AI clean (or AI failed) and VT did not flag it.
         if extraction_ok and ai_proba is not None:
@@ -111,14 +119,7 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True):
                            ai_says_mal, vt_says_mal, disagreement,
                            "Neither VirusTotal nor AI flagged the file.")
 
-        # AI unreliable (extraction failed or AI unavailable) AND VT clean/absent.
-        if vt_says_mal is None:
-            # No usable signal at all from either side -> be cautious.
-            return _result(Verdict.SUSPICIOUS, 0.4, ai_says_mal, vt_says_mal,
-                           disagreement,
-                           "AI signal unreliable and VirusTotal returned no "
-                           "result. Stored but tagged SUSPICIOUS for review.")
-        # VT explicitly clean, AI just unreliable -> trust VT (primary).
+        # VT explicitly clean, AI unavailable/unreliable (or not a PDF) -> trust VT.
         return _result(Verdict.CLEAN, 0.6, ai_says_mal, vt_says_mal,
                        disagreement,
                        "VirusTotal (primary) reports clean; AI signal was "
