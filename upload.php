@@ -10,8 +10,13 @@ require_once __DIR__ . '/includes/header.php';
     <div class="cl-card">
       <h3 class="mb-3">Upload a file</h3>
       <p class="text-muted">
-        Files are scanned with the AI malware analyzer first. Only files
-        verified as clean are encrypted with AES-256 and stored.
+        VirusTotal checks the file first, then Cloudie's AI analyzer (PDF files only).
+        Malicious files are blocked. Clean and suspicious files are encrypted with
+        AES-256-CBC on the server and stored.
+      </p>
+      <p class="small mb-3">
+        The file is sent to VirusTotal for scanning. Do not upload anything you are not
+        willing to share with them.
       </p>
 
       <form method="post" action="scan_and_encrypt.php"

@@ -1,6 +1,27 @@
 <?php
 require_once __DIR__ . '/db.php';
 
+/**
+ * Theme toggle (?theme=dark|light). Runs here, before any page logic, so pages
+ * that redirect early (folder, view_report, decrypt) still honour it. Keeps the
+ * rest of the query string (e.g. ?id=3) and only ever redirects to the same
+ * script by relative name.
+ */
+function cl_apply_theme_param(): void {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET'
+        || !isset($_GET['theme'])
+        || !in_array($_GET['theme'], ['dark', 'light'], true)) {
+        return;
+    }
+    setcookie('cloudie_theme', $_GET['theme'], time() + 60 * 60 * 24 * 365, '/');
+    $rest = $_GET;
+    unset($rest['theme']);
+    $qs = http_build_query($rest);
+    header('Location: ' . basename($_SERVER['SCRIPT_NAME']) . ($qs !== '' ? '?' . $qs : ''));
+    exit;
+}
+cl_apply_theme_param();
+
 function current_user(): ?array {
     if (empty($_SESSION['user_id'])) return null;
     static $cached = null;

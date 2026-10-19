@@ -30,7 +30,7 @@ if (!in_array($action, ['view', 'download', 'delete'], true) || $file_id <= 0) {
 
 // Look up the file (and key metadata) - must belong to current user
 $stmt = db()->prepare(
-    "SELECT f.file_id, f.file_name, f.stored_name, f.file_type,
+    "SELECT f.file_id, f.file_name, f.stored_name, f.file_type, f.file_size,
             k.key_id, k.key_hash, k.iv_b64
      FROM files f
      INNER JOIN file_keys k ON k.file_id = f.file_id
@@ -103,66 +103,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // GET -> render key form
 // -----------------------------------------------------------
 $pageTitle = ucfirst($action) . ' file';
+$copy = [
+  'view'     => ['Open file',     'Enter the key to decrypt this file and view it in your browser.', 'View file',        'btn-cloudie'],
+  'download' => ['Download file', 'Enter the key to decrypt this file and download the original.',   'Download file',    'btn-cloudie'],
+  'delete'   => ['Delete file',   'Enter the key to confirm you own this file, then delete it.',     'Decrypt & delete', 'btn-danger'],
+];
+[$heading, $lead, $btnText, $btnClass] = $copy[$action];
 require_once __DIR__ . '/includes/header.php';
 ?>
 <div class="row justify-content-center">
   <div class="col-lg-7">
     <div class="cl-card">
-      <h3 class="mb-1">Decrypt file using AES</h3>
-      <p class="text-muted">
-        Action: <strong><?= e(strtoupper($action)) ?></strong>
-        &middot; File: <strong><?= e($rec['file_name']) ?></strong>
-      </p>
+      <h2 class="mb-1"><?= e($heading) ?></h2>
+      <p class="text-muted mb-3"><?= e($lead) ?></p>
 
-      <?php if ($err): ?>
-        <div class="alert alert-danger"><?= e($err) ?></div>
+      <div class="dk-file">
+        <span class="dk-file-name"><?= e($rec['file_name']) ?></span>
+        <span class="dk-file-meta"><?= e(strtoupper($rec['file_type'])) ?> &middot; <?= e(cl_fmt_bytes((int)$rec['file_size'])) ?></span>
+      </div>
+
+      <?php if ($action === 'delete'): ?>
+        <div class="alert alert-danger">
+          <strong>This permanently deletes the file.</strong> The encrypted copy and its key record
+          are removed and cannot be recovered.
+        </div>
       <?php endif; ?>
 
-      <form method="post">
+      <?php if ($err): ?>
+        <div class="alert alert-danger" role="alert" id="keyErr"><?= e($err) ?></div>
+      <?php endif; ?>
+
+      <form method="post" id="keyForm" autocomplete="off">
         <input type="hidden" name="csrf"   value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="action" value="<?= e($action) ?>">
         <input type="hidden" name="id"     value="<?= (int)$file_id ?>">
 
-        <label>Paste your AES key (64 hex chars)</label>
-        <input type="text" name="aes_key" id="aesKeyInput" class="form-control"
-               placeholder="e.g. 7f3c…d2"
-               pattern="[0-9a-fA-F]{64}" required autofocus>
-        <div class="form-text">
-          Or use the QR code you saved at upload time — scan it with your
-          camera or upload the QR image, and the key is filled in for you.
+        <label for="aesKeyInput">Your AES key (64 characters, 0-9 and a-f)</label>
+        <div class="dk-field">
+          <input type="password" name="aes_key" id="aesKeyInput" class="form-control dk-input"
+                 placeholder="Paste or scan your key"
+                 pattern="[0-9a-fA-F]{64}" maxlength="64" required autofocus
+                 spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off">
+          <button type="button" class="dk-icon" id="keyToggle" aria-label="Show key" title="Show / hide key">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
+          </button>
+        </div>
+        <div class="dk-status" id="keyStatus" aria-live="polite">0 / 64 characters</div>
+
+        <div class="dk-tools">
+          <button type="button" class="btn btn-cloudie-outline btn-sm" id="keyPaste">Paste from clipboard</button>
+          <button type="button" class="btn btn-cloudie-outline btn-sm" id="qrCamBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M4 8a2 2 0 0 1 2-2h1.2l1.1-1.6A2 2 0 0 1 10 3.5h4a2 2 0 0 1 1.7.9L16.8 6H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg>
+            Scan QR
+          </button>
+          <button type="button" class="btn btn-cloudie-outline btn-sm" id="qrFileBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><rect x="3" y="3" width="18" height="18" rx="2.5" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M4 17l5-5 4 4 3-3 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Upload QR image
+          </button>
+          <input type="file" id="qrFileInput" accept="image/*" class="d-none">
         </div>
 
-        <div class="qr-scan mt-3">
-          <div class="d-flex flex-wrap gap-2">
-            <button type="button" class="btn btn-cloudie-outline btn-sm" id="qrCamBtn">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M4 8a2 2 0 0 1 2-2h1.2l1.1-1.6A2 2 0 0 1 10 3.5h4a2 2 0 0 1 1.7.9L16.8 6H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg>
-              Scan QR with camera
-            </button>
-            <button type="button" class="btn btn-cloudie-outline btn-sm" id="qrFileBtn">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><rect x="3" y="3" width="18" height="18" rx="2.5" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M4 17l5-5 4 4 3-3 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Upload QR image
-            </button>
-            <input type="file" id="qrFileInput" accept="image/*" class="d-none">
-          </div>
-
+        <div class="qr-scan">
           <div class="qr-cam-wrap d-none" id="qrCamWrap">
             <video id="qrVideo" playsinline muted autoplay></video>
             <div class="qr-cam-hint">Point the camera at your Cloudie key QR…</div>
             <button type="button" class="btn btn-cloudie-outline btn-sm" id="qrCamStop">Stop camera</button>
           </div>
-
           <div id="qrScanMsg" class="qr-scan-msg d-none" role="status"></div>
         </div>
 
+        <details class="dk-help">
+          <summary>Where do I find my key?</summary>
+          <p>
+            It was shown once right after you uploaded the file (as text and a QR code), and a copy was
+            emailed to <strong><?= e((string)($user['email'] ?? 'your account email')) ?></strong>.
+            Cloudie stores only a SHA-256 hash of it, so it cannot be shown again or recovered.
+          </p>
+        </details>
+
         <div class="d-flex justify-content-between mt-4">
           <a href="dashboard.php" class="btn btn-cloudie-outline">Cancel</a>
-          <button type="submit" class="btn btn-cloudie">
-            <?php switch ($action) {
-                  case 'view':     echo 'View file';     break;
-                  case 'download': echo 'Download file'; break;
-                  case 'delete':   echo 'Decrypt & delete'; break;
-            } ?>
-          </button>
+          <button type="submit" class="btn <?= $btnClass ?>" id="keySubmit" disabled><?= e($btnText) ?></button>
         </div>
       </form>
     </div>
@@ -170,8 +191,20 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 
 <style>
-.qr-scan{border:1px dashed var(--line-2);border-radius:12px;padding:14px 16px}
-.qr-scan .btn svg{flex:none}
+.dk-file{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  background:var(--panel);border:1px solid var(--line-2);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.dk-file-name{font-weight:600;word-break:break-all}
+.dk-file-meta{font-family:'JetBrains Mono';font-size:12px;color:var(--txt-faint);flex:none}
+.dk-field{position:relative}
+.dk-input{font-family:'JetBrains Mono',monospace;font-size:13px;padding-right:46px}
+.dk-icon{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;
+  display:grid;place-items:center;background:none;border:none;cursor:pointer;color:var(--txt-faint);border-radius:8px}
+.dk-icon:hover{color:var(--cyan);background:var(--panel-2)}
+.dk-status{font-size:12.5px;margin-top:7px;color:var(--txt-faint)}
+.dk-status.ok{color:var(--green)}
+.dk-status.bad{color:var(--red)}
+.dk-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.qr-scan{margin-top:4px}
 .qr-cam-wrap{text-align:center;margin-top:12px}
 #qrVideo{width:100%;max-width:340px;border-radius:12px;border:1px solid var(--line-2);
   background:#000;display:block;margin:0 auto 8px}
@@ -180,6 +213,10 @@ require_once __DIR__ . '/includes/header.php';
 .qr-scan-msg.ok{color:var(--green)}
 .qr-scan-msg.bad{color:var(--red)}
 #aesKeyInput.key-found{border-color:var(--green);box-shadow:0 0 0 3px rgba(52,224,161,.15)}
+.dk-help{margin-top:16px;font-size:13px;color:var(--txt-dim)}
+.dk-help summary{cursor:pointer;color:var(--cyan);font-weight:500}
+.dk-help p{margin-top:8px;line-height:1.5}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 </style>
 
 <script src="assets/js/jsQR.js"></script>
@@ -214,6 +251,7 @@ require_once __DIR__ . '/includes/header.php';
   function applyKey(key) {
     stopCam();
     input.value = key;
+    input.dispatchEvent(new Event('input'));
     input.classList.add('key-found');
     var submitBtn = input.form.querySelector('button[type="submit"]');
     setMsg('ok', 'Key read from QR — press “'
@@ -315,6 +353,61 @@ require_once __DIR__ . '/includes/header.php';
   });
 
   input.addEventListener('input', function () { input.classList.remove('key-found'); });
+})();
+</script>
+<script>
+(function () {
+  var input  = document.getElementById('aesKeyInput');
+  var status = document.getElementById('keyStatus');
+  var submit = document.getElementById('keySubmit');
+  var form   = document.getElementById('keyForm');
+  var toggle = document.getElementById('keyToggle');
+  var paste  = document.getElementById('keyPaste');
+  var err    = document.getElementById('keyErr');
+
+  function refresh() {
+    var v = input.value.trim();
+    var ok = /^[0-9a-fA-F]{64}$/.test(v);
+    var bad = v.length > 0 && /[^0-9a-fA-F]/.test(v);
+    submit.disabled = !ok;
+    status.className = 'dk-status' + (ok ? ' ok' : (bad ? ' bad' : ''));
+    status.textContent = ok ? '\u2713 Key format looks right'
+      : bad ? '\u2717 Only 0-9 and a-f are allowed'
+      : v.length + ' / 64 characters';
+  }
+  input.addEventListener('input', refresh);
+  refresh();
+  if (err) input.focus();
+
+  toggle.addEventListener('click', function () {
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    toggle.setAttribute('aria-label', show ? 'Hide key' : 'Show key');
+  });
+
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    paste.addEventListener('click', function () {
+      navigator.clipboard.readText().then(function (t) {
+        var m = /[0-9a-fA-F]{64}/.exec(t || '');
+        input.value = m ? m[0] : (t || '').trim().slice(0, 64);
+        refresh();
+        input.focus();
+      }).catch(function () {
+        status.className = 'dk-status bad';
+        status.textContent = 'Could not read the clipboard \u2014 paste into the box with Ctrl+V.';
+      });
+    });
+  } else {
+    paste.style.display = 'none';
+  }
+
+  // brief busy state; downloads do not reload the page, so re-enable shortly
+  form.addEventListener('submit', function () {
+    var label = submit.textContent;
+    submit.disabled = true;
+    submit.textContent = 'Decrypting\u2026';
+    setTimeout(function () { submit.textContent = label; refresh(); }, 4000);
+  });
 })();
 </script>
 <?php require_once __DIR__ . '/includes/footer.php';

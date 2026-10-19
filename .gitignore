@@ -26,3 +26,6 @@ flask_api/prediction_log.csv
 *.bak
 *.bak-*
 *.bak.php
+
+# Local backups
+backup/

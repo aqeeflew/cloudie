@@ -19,9 +19,10 @@ require_once __DIR__ . '/includes/header.php';
           Storage
         </h1>
         <p class="lead mt-4 lp-subtle reveal" style="--d:120ms">
-          Cloudie scans every upload with an AI malware analyzer trained on
-          thousands of PDF samples, then encrypts the file with AES-256
-          before it ever touches storage. Only you, with your key, can read it back.
+          Cloudie checks every upload with VirusTotal first, then with a Random Forest
+          analyzer trained on thousands of PDF samples, and encrypts the file on the
+          server with AES-256-CBC before it is stored. Only a SHA-256 hash of your key
+          is kept, so you need your key to read the file back.
         </p>
         <div class="mt-4 d-flex flex-wrap gap-3 reveal" style="--d:180ms">
           <?php if (current_user()): ?>
@@ -55,11 +56,11 @@ require_once __DIR__ . '/includes/header.php';
             How it works
           </h4>
           <ol class="lp-howto mb-0">
-            <li><span>You upload a file — any PDF, image, document, or archive.</span></li>
-            <li><span>VirusTotal checks the file against 70+ antivirus engines &mdash; this is the primary verdict.</span></li>
-            <li><span>Our Random Forest analyzer extracts 32 structural PDF features as a second, supporting signal.</span></li>
-            <li><span>If clean, a fresh AES-256 key is generated and the file is encrypted in memory.</span></li>
-            <li><span>You receive the key + a QR code. Without it, nobody can decrypt your data — not even us.</span></li>
+            <li><span>You upload a file — a PDF, image, document, or archive of an allowed type.</span></li>
+            <li><span>VirusTotal checks the file against 70+ antivirus engines &mdash; this is the primary verdict. The file is sent to VirusTotal for this check.</span></li>
+            <li><span>For PDFs, our Random Forest analyzer extracts 32 structural features as a second, supporting signal.</span></li>
+            <li><span>Malicious files are blocked. Clean and suspicious files are encrypted on the server with a fresh AES-256-CBC key and stored.</span></li>
+            <li><span>You receive the key + a QR code (and a copy by email). Only a SHA-256 hash of the key is stored, so you need the key to view, download, or delete the file.</span></li>
           </ol>
         </div>
       </div>
@@ -134,8 +135,8 @@ require_once __DIR__ . '/includes/header.php';
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
           </div>
-          <h5 class="lp-feature-title mt-3">VirusTotal corroboration</h5>
-          <p class="lp-feature-text mb-0">The verdict engine cross-checks the AI result against VirusTotal's 70+ signature-based engines. Agreement raises confidence; disagreement is surfaced as a fusion signal.</p>
+          <h5 class="lp-feature-title mt-3">VirusTotal first</h5>
+          <p class="lp-feature-text mb-0">VirusTotal's 70+ signature-based engines give the primary verdict and can block a file. The AI result is a supporting signal: if VirusTotal is clean but the AI flags a PDF, the file is stored and tagged Suspicious.</p>
         </div>
       </div>
       <div class="col-md-4 reveal" style="--d:180ms">
@@ -147,7 +148,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
           </div>
           <h5 class="lp-feature-title mt-3">AES-256-CBC encryption</h5>
-          <p class="lp-feature-text mb-0">Clean files are encrypted in memory with a freshly generated AES-256 key. You hold the key — without it, the data cannot be decrypted by anyone, including the server.</p>
+          <p class="lp-feature-text mb-0">Clean and suspicious files are encrypted on the server with a freshly generated AES-256-CBC key. Cloudie keeps only a SHA-256 hash of the key, so you need your key to read the file back.</p>
         </div>
       </div>
     </div>
@@ -217,7 +218,7 @@ require_once __DIR__ . '/includes/header.php';
           <div class="lp-tech-badges">
             <span class="lp-tbadge lp-tbadge-cyan">PHP</span>
             <span class="lp-tbadge lp-tbadge-violet">Apache</span>
-            <span class="lp-tbadge lp-tbadge-amber">Bootstrap</span>
+            <span class="lp-tbadge lp-tbadge-amber">HTML/CSS</span>
           </div>
         </div>
         <div class="col-sm-6 col-lg-3">
@@ -261,26 +262,12 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-lg-8">
           <h4 class="lp-dev-name">Aqeef Azhar</h4>
           <p class="lp-role">BSc (Hons) Netcentric Computing &mdash; Universiti Teknologi MARA (UiTM)</p>
-          <p class="lp-feature-text mb-4">
-            Cloudie is my Final Year Project (CSP650), built to explore how AI-based
-            malware detection and strong client-side encryption can work together in a
+          <p class="lp-feature-text mb-0">
+            Cloudie is my Final Year Project (CSP650), built to explore how malware
+            detection (VirusTotal plus an AI analyzer) and AES encryption can work together in a
             single, usable cloud-storage workflow. Supervised by
             <strong>Dr. Fakariah Hani Binti Mohd Ali</strong>.
           </p>
-          <div class="d-flex flex-wrap gap-2">
-            <a href="https://github.com/your-username" target="_blank" rel="noopener" class="btn btn-cloudie-outline btn-sm">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              GitHub
-            </a>
-            <a href="https://www.linkedin.com/in/your-handle" target="_blank" rel="noopener" class="btn btn-cloudie-outline btn-sm">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.8"/></svg>
-              LinkedIn
-            </a>
-            <a href="mailto:you@example.com" class="btn btn-cloudie-outline btn-sm">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8"/><path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              Email
-            </a>
-          </div>
         </div>
         <div class="col-lg-4">
           <ul class="lp-fact-list mb-0">
