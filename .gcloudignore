@@ -19,3 +19,7 @@ docs/
 *.bak-*
 database/
 ml/
+
+# Local backups (never ship)
+backup/
+backup-*/
