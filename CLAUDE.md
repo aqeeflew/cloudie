@@ -50,8 +50,8 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - URLs: `https://cloudie-php-800476519477.asia-southeast1.run.app`,
   `https://cloudie-flask-800476519477.asia-southeast1.run.app`
   (the `...-2q6nug2xha-as.a.run.app` URLs also work).
-- **Live status (2026-10-21):** deployed from `main` after PR #9
-  (php `cloudie-php-00033-4xc`, flask `cloudie-flask-00007-z2z`). The earlier HTTP 503 was
+- **Live status (2026-10-21):** deployed from `main` after PR #12
+  (php `cloudie-php-00035-stt`, flask `cloudie-flask-00009-7fx`). The earlier HTTP 503 was
   **billing disabled** (Cloud SQL `SUSPENDED`, reason `BILLING_ISSUE`); billing is active again.
 - **Flask is private** (Cloud Run IAM): only the service account
   `800476519477-compute@developer.gserviceaccount.com` has `roles/run.invoker`; `allUsers` was removed.
@@ -63,7 +63,13 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - **VirusTotal is PRIMARY, Random Forest is SECONDARY** (`verdict_engine.py`, `PRIMARY_DETECTOR = "VT"`).
   - **VT no result** (no key, 429, timeout, unfinished analysis) → ERROR, blocked (fail closed).
   - VT malicious → MALICIOUS, blocked.
-  - VT clean + AI malicious → SUSPICIOUS, stored but tagged.
+  - VT clean + AI malicious → SUSPICIOUS, stored but tagged, **only if the risk gate passes**:
+    RF score >= 0.5 AND (a strong risk indicator is present — `JS`, `Javascript`, `OpenAction`, `AA`,
+    `launch`, `EmbeddedFile`, `RichMedia`, `XFA`, `JBIG2Decode` — OR score >= 0.85). Otherwise CLEAN, AI verdict
+    shown as UNCERTAIN (`verdict_engine.py`: `AI_HIGH_CONFIDENCE`, `STRONG_RISK_FEATURES`). Held-out cost:
+    recall 99.69% → 99.38%, FP 0. Reason: tiny PDFs with no metadata block looked like malware to the RF.
+  - The scan report has a "Why this AI score" card (`flask_api/feature_explain.py`, exact tree-path
+    contributions + `feature_reference.json` built by `ml/build_feature_reference.py`).
   - Both clean → CLEAN.
   - VT HTTP 409 = file already known; `vt_client.py` resolves it through the hash report.
   - Non-PDF files skip the RF (magic-byte gate) and are judged by VirusTotal only.
@@ -82,7 +88,9 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - **AES-256-CBC:** random 32-byte key and 16-byte IV per file (`includes/aes.php`).
   - Only `sha256(key)` is stored, in `file_keys.key_hash`.
   - The real key goes to the user by email/QR.
-  - CBC has no built-in integrity. This is mitigated by hash checks. AES-GCM is future work.
+  - CBC has no built-in integrity. `decrypt.php` now compares the decrypted bytes with the hash recorded at
+    upload (SHA-256 from `files.scan_report`, else `files.file_md5`) via `verify_plaintext_integrity()`; a
+    mismatch is not served and is logged as `INTEGRITY_FAIL`. Not applied to delete. AES-GCM is future work.
 - **Storage:** Cloud Run is stateless, so blobs go to GCS via `includes/storage.php`. Local XAMPP uses `encrypted/`.
 - **Email:** PHPMailer 6.9.1 (`includes/PHPMailer/src/`) + Gmail SMTP. Best-effort, never blocks.
   - Sends welcome, AES key, OTP, and verification emails.
@@ -152,7 +160,8 @@ If Cloud SQL was stopped to save credit:
 Done: billing/503 fixed and redeployed (2026-10-20); `VT_API_KEY` attached; VT polling, PDF gate,
 fail-closed, QR, OTP, header and upload hardening live; Flask made private with IAM (2026-10-21).
 
-1. Post-decrypt integrity check (hash), rate limiting on login/register/upload, CSP, README and basic tests.
+1. Rate limiting on login/register/upload, CSP, README and basic tests. (Post-decrypt integrity check: done.)
+   Also: build a real-world benign PDF set (100-200 files) to measure the false-positive rate.
 2. Replace the placeholder GitHub, LinkedIn and email links in `index.php` (real URLs needed).
 3. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
 4. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,

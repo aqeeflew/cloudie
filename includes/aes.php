@@ -101,6 +101,33 @@ function hash_aes_key(string $key): string {
     return hash('sha256', $key);
 }
 
+/**
+ * Check a decrypted file against the fingerprint recorded at upload time.
+ *
+ * AES-CBC has no authentication tag, so a tampered or corrupted ciphertext can
+ * still decrypt "successfully" to different bytes. Comparing the plaintext with
+ * the original file's hash catches that.
+ *
+ * Uses SHA-256 from the stored scan report when present (all new uploads),
+ * otherwise the stored MD5 (files.file_md5). Returns:
+ *   ['ok' => bool, 'method' => 'sha256' | 'md5' | 'none']
+ * 'none' (ok = true) only when the row has nothing to compare against.
+ */
+function verify_plaintext_integrity(string $plain, ?string $md5, ?string $scan_report_json): array {
+    $report = $scan_report_json ? json_decode($scan_report_json, true) : null;
+    $sha    = is_array($report) ? ($report['file_sha256'] ?? null) : null;
+
+    if (is_string($sha) && preg_match('/^[0-9a-f]{64}$/i', $sha)) {
+        return ['ok'     => hash_equals(strtolower($sha), hash('sha256', $plain)),
+                'method' => 'sha256'];
+    }
+    if (is_string($md5) && preg_match('/^[0-9a-f]{32}$/i', $md5)) {
+        return ['ok'     => hash_equals(strtolower($md5), md5($plain)),
+                'method' => 'md5'];
+    }
+    return ['ok' => true, 'method' => 'none'];
+}
+
 function key_to_hex(string $raw_key): string {
     return bin2hex($raw_key);
 }
