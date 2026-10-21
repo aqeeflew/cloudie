@@ -51,7 +51,7 @@ DELETE FROM users     WHERE user_id = 4;
 
 cd C:\xampp\htdocs\cloudie\flask_api
 gcloud config set project cloudie-499914
-gcloud run deploy cloudie-flask --source . --region asia-southeast1 --allow-unauthenticated
+gcloud run deploy cloudie-flask --source . --region asia-southeast1 --no-allow-unauthenticated
 
 
 ================================================================================================================

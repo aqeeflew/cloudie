@@ -109,13 +109,16 @@ Local defaults live in `includes/config.php` (`getenv()` first, then local fallb
 ```powershell
 gcloud config set project cloudie-499914
 cd C:\xampp\htdocs\cloudie\flask_api
-gcloud run deploy cloudie-flask --source . --region asia-southeast1 --allow-unauthenticated
+gcloud run deploy cloudie-flask --source . --region asia-southeast1 --no-allow-unauthenticated
 cd C:\xampp\htdocs\cloudie
 gcloud run deploy cloudie-php --source . --region asia-southeast1 --allow-unauthenticated
 ```
 
 The full first-time `cloudie-php` command (env vars + secrets) is in `docs\DEPLOY_NOTES.txt`.
 A plain redeploy keeps existing env vars and secrets.
+**Flask must be deployed with `--no-allow-unauthenticated`** (it is private; `--allow-unauthenticated` would
+re-add `allUsers` as invoker and reopen it). Check afterwards: `gcloud run services get-iam-policy cloudie-flask`
+must list only the compute service account.
 
 If Cloud SQL was stopped to save credit:
 `gcloud sql instances patch cloudie-db --activation-policy ALWAYS`

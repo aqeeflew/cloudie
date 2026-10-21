@@ -35,6 +35,7 @@ from feature_extractor import extract_features, FEATURE_NAMES
 from verdict_engine import combine, PRIMARY_DETECTOR
 from prediction_log import log_prediction
 import vt_client
+from feature_explain import build_explanation
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -268,6 +269,12 @@ def analyze():
         # 3) PRIMARY detector: VirusTotal
         vt_positives, vt_total = vt_scan(tmp_path, uploaded.filename)
 
+        # Explainable AI: why the Random Forest gave this score (never affects the verdict)
+        explanation = None
+        if is_pdf and ai_proba is not None and MODEL is not None:
+            explanation = build_explanation(
+                MODEL, MODEL_FEATURES if MODEL_FEATURES else FEATURE_NAMES, ext["features"])
+
         # 4) Combined verdict
         result = combine(
             ai_proba=ai_proba,
@@ -411,6 +418,7 @@ def analyze():
 
             # ---- richer structure the report card renders ------------------
             "ai": ai_block,
+            "explanation": explanation,
             "virustotal": vt_block,
             "combined": combined_block,
             "extraction": {
