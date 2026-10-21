@@ -21,6 +21,7 @@ require_once __DIR__ . '/includes/aes.php';
 require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/scanner.php';
 require_once __DIR__ . '/includes/upload_check.php';
+require_once __DIR__ . '/includes/ratelimit.php';
 require_once __DIR__ . '/includes/qr.php';
 require_once __DIR__ . '/includes/mailer.php';
 
@@ -62,6 +63,16 @@ if (!move_uploaded_file($f['tmp_name'], $tmpPath)) {
     flash_set('error', 'Could not save the upload.');
     header('Location: upload.php'); exit;
 }
+
+// Upload rate limit: every scan uses VirusTotal quota (free tier: 4 requests/min)
+[$rlUp, $rlUpWait] = rl_blocked('upload_user', (string)$user['user_id']);
+if ($rlUp) {
+    @unlink($tmpPath);
+    flash_set('error', 'Too many uploads in a short time. Please try again in '
+                       . rl_wait_text($rlUpWait) . '.');
+    header('Location: upload.php'); exit;
+}
+rl_hit('upload_user', (string)$user['user_id']);
 
 // ---------------------------------------------------------------
 // 2. Scan (Flask: VirusTotal primary + Random Forest supporting)
