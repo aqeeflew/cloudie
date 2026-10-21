@@ -268,6 +268,20 @@ require_once __DIR__ . '/includes/header.php';
             single, usable cloud-storage workflow. Supervised by
             <strong>Dr. Fakariah Hani Binti Mohd Ali</strong>.
           </p>
+          <div class="lp-links">
+            <a class="lp-link" href="https://github.com/aqeeflew/cloudie" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a10.9 10.9 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+              <span>Source code</span>
+            </a>
+            <a class="lp-link" href="https://www.linkedin.com/in/aqeefazhar" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+              <span>LinkedIn</span>
+            </a>
+            <a class="lp-link" href="mailto:aqeef1303@gmail.com">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg>
+              <span>Email</span>
+            </a>
+          </div>
         </div>
         <div class="col-lg-4">
           <ul class="lp-fact-list mb-0">
@@ -449,6 +463,12 @@ require_once __DIR__ . '/includes/header.php';
   /* CREDITS */
   .lp-dev-name { color: var(--lp-accent); font-weight: 800; margin-bottom: .25rem; }
   .lp-role { color: var(--lp-violet); font-weight: 600; font-size: .98rem; margin-bottom: 1rem; }
+  .lp-links { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.1rem; }
+  .lp-link { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .95rem;
+    border-radius: 999px; border: 1px solid var(--lp-card-border); color: var(--lp-accent);
+    font-weight: 600; font-size: .9rem; text-decoration: none; transition: .15s; }
+  .lp-link:hover, .lp-link:focus-visible { background: rgba(25,227,255,.14); border-color: var(--lp-accent); text-decoration: none; }
+  .lp-link svg { width: 17px; height: 17px; flex: none; }
   .lp-fact-list { list-style: none; padding: 0; margin: 0; }
   .lp-fact-list li { display: flex; justify-content: space-between; gap: 1rem;
     padding: .7rem 0; border-bottom: 1px solid var(--lp-divider);
