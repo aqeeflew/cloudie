@@ -219,6 +219,9 @@ function _ts(int $t): string {
       <?php endforeach; ?>
     </table>
   </div>
+  <?php if (!empty($expl['gate']['note'])): ?>
+    <p style="font-size:13px;margin:.7rem 0 0;color:var(--txt)"><strong>Risk gate:</strong> <?= e((string)$expl['gate']['note']) ?></p>
+  <?php endif; ?>
   <?php foreach (($expl['caveats'] ?? []) as $cv): ?>
     <div style="font-size:13px;margin-top:.7rem;padding:12px 16px;border-radius:12px;background:rgba(255,194,75,.1);border:1px solid rgba(255,194,75,.3);color:var(--amber)"><?= e((string)$cv) ?></div>
   <?php endforeach; ?>
