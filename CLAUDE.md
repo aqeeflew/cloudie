@@ -95,6 +95,15 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - **Email:** PHPMailer 6.9.1 (`includes/PHPMailer/src/`) + Gmail SMTP. Best-effort, never blocks.
   - Sends welcome, AES key, OTP, and verification emails.
 
+## Tests
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
+```
+
+PHP tests in `tests\php\run.php` (41 checks, no DB), Flask tests in `flask_api\tests\` (32, `unittest`, VT mocked).
+Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
+
 ## Run locally (Windows)
 
 ```powershell
@@ -165,7 +174,7 @@ If Cloud SQL was stopped to save credit:
 Done: billing/503 fixed and redeployed (2026-10-20); `VT_API_KEY` attached; VT polling, PDF gate,
 fail-closed, QR, OTP, header and upload hardening live; Flask made private with IAM (2026-10-21).
 
-1. CSP, README and basic tests. (Rate limiting: done, see Gotchas.) (Post-decrypt integrity check: done.)
+1. CSP. (Done: rate limiting, README, tests.) (Post-decrypt integrity check: done.)
    Also: build a real-world benign PDF set (100-200 files) to measure the false-positive rate.
 2. Replace the placeholder GitHub, LinkedIn and email links in `index.php` (real URLs needed).
 3. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
