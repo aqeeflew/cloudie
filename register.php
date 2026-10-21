@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/mailer.php';
+require_once __DIR__ . '/includes/ratelimit.php';
 
 db_ensure_auth();
 
@@ -12,7 +13,11 @@ $err = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf($_POST['csrf'] ?? null)) {
         $err = 'Invalid request.';
+    } elseif (($rl = rl_blocked('register_ip', client_ip()))[0]) {
+        $err = 'Too many sign-up attempts from your network. Please try again in '
+             . rl_wait_text($rl[1]) . '.';
     } else {
+        rl_hit('register_ip', client_ip());
         $username = trim($_POST['username'] ?? '');
         $email    = trim($_POST['email'] ?? '');
         $phone    = trim($_POST['phone']    ?? '');

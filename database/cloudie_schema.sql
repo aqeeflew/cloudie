@@ -119,6 +119,18 @@ CREATE TABLE IF NOT EXISTS actions (
         REFERENCES file_keys(key_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ------------------------------------------------------------
+-- RATE_LIMITS table (login / OTP / register / upload throttling)
+-- Created automatically by includes/ratelimit.php; keys are SHA-256 hashes.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS rate_limits (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    bucket     VARCHAR(32)  NOT NULL,
+    k          CHAR(64)     NOT NULL,
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_rl (bucket, k, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Useful indexes
 CREATE INDEX idx_files_user      ON files(user_id);
 CREATE INDEX idx_actions_user    ON actions(user_id);

@@ -9,6 +9,7 @@
  */
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/mailer.php';
+require_once __DIR__ . '/includes/ratelimit.php';
 
 db_ensure_auth();
 
@@ -43,6 +44,7 @@ function otp_issue(int $uid, string $email, string $username): array {
           WHERE user_id = ?"
     )->execute([password_hash($code, PASSWORD_DEFAULT), $uid]);
     $_SESSION['otp_last_sent'] = time();
+    rl_hit('otp_send', (string)$uid);
     return [send_otp_email($email, $username, $code), $code];
 }
 
@@ -62,8 +64,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ------------------------------------------------------------
         if ($action === 'verify_otp') {
             $uid = (int)($_SESSION['otp_uid'] ?? 0);
+            [$otpLocked, $otpWait] = $uid > 0 ? rl_blocked('otp_fail', (string)$uid) : [false, 0];
             if ($uid <= 0) {
                 $err = 'Your session expired — please log in again.';
+            } elseif ($otpLocked) {
+                unset($_SESSION['otp_uid']);
+                $err = 'Too many incorrect codes. Please try again in ' . rl_wait_text($otpWait) . '.';
             } else {
                 $stmt = db()->prepare(
                     "SELECT a.otp_hash, a.otp_attempts,
@@ -90,11 +96,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                           WHERE user_id = ?")
                        ->execute([bin2hex(random_bytes(16)), $uid]);
                     unset($_SESSION['otp_uid'], $_SESSION['otp_last_sent']);
+                    rl_clear('otp_fail', (string)$uid);
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $uid;
                     log_action($uid, 'LOGIN', null, null, 'password + OTP');
                     header('Location: dashboard.php'); exit;
                 } else {
+                    rl_hit('otp_fail', (string)$uid);
                     db()->prepare(
                         "UPDATE authentication SET otp_attempts = otp_attempts + 1
                           WHERE user_id = ?")->execute([$uid]);
@@ -125,6 +133,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$u) {
                     unset($_SESSION['otp_uid']);
                     $err = 'Your session expired — please log in again.';
+                } elseif (($rl = rl_blocked('otp_send', (string)$uid))[0]) {
+                    $stage = 'otp';
+                    $otpEmailMasked = mask_email((string)$u['email']);
+                    $err = 'Too many codes requested. Please try again in ' . rl_wait_text($rl[1]) . '.';
                 } elseif (time() - (int)($_SESSION['otp_last_sent'] ?? 0) < OTP_RESEND_SECONDS) {
                     $stage = 'otp';
                     $otpEmailMasked = mask_email((string)$u['email']);
@@ -150,7 +162,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ------------------------------------------------------------
         } elseif ($action === 'resend_verify') {
             $login = trim($_POST['login'] ?? '');
-            if ($login !== '') {
+            [$vLocked] = rl_blocked('verify_send', client_ip());
+            if ($login !== '' && !$vLocked) {
+                rl_hit('verify_send', client_ip());
                 $stmt = db()->prepare(
                     "SELECT u.user_id, u.username, u.email, a.email_verified
                      FROM users u
@@ -179,6 +193,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $login = trim($_POST['login'] ?? '');
             $pass  = $_POST['password']    ?? '';
 
+            // Brute-force protection: too many recent failures for this account or this IP
+            [$lockAcct, $waitAcct] = rl_blocked('login_acct', $login);
+            [$lockIp,   $waitIp]   = rl_blocked('login_ip', client_ip());
+            if ($lockAcct || $lockIp) {
+                $err = 'Too many failed attempts. Please try again in '
+                     . rl_wait_text(max($waitAcct, $waitIp)) . '.';
+                error_log('rate_limit: login blocked (acct=' . ($lockAcct ? 'y' : 'n') . ', ip=' . ($lockIp ? 'y' : 'n') . ')');
+            } else {
             $stmt = db()->prepare(
                 "SELECT u.user_id, u.username, u.email, u.password_hash,
                         a.email_verified
@@ -190,6 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $row = $stmt->fetch();
 
             if ($row && password_verify($pass, $row['password_hash'])) {
+                rl_clear('login_acct', $login);
                 // accounts older than the authentication table: create the row
                 if ($row['email_verified'] === null) {
                     db()->prepare(
@@ -203,6 +226,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ((int)$row['email_verified'] !== 1) {
                     $err = 'Please verify your email address first — check your inbox for the link.';
                     $showResendVerify = true;
+                } elseif (($rlOtp = rl_blocked('otp_send', (string)$row['user_id']))[0]) {
+                    $err = 'Too many codes requested. Please try again in ' . rl_wait_text($rlOtp[1]) . '.';
                 } else {
                     $_SESSION['otp_uid'] = (int)$row['user_id'];
                     [$sent, $code] = otp_issue((int)$row['user_id'],
@@ -220,8 +245,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             } else {
+                rl_hit('login_acct', $login);
+                rl_hit('login_ip', client_ip());
                 $err = 'Invalid credentials.';
             }
+            }   // end: not rate-limited
         }
     }
 }

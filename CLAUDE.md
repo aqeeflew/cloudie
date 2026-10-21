@@ -151,6 +151,11 @@ If Cloud SQL was stopped to save credit:
 - Local MySQL (XAMPP) must be running; "MySQL server has gone away" usually means it is stopped.
 - `qr.php` has no online fallback by design (a QR service would see the AES key). Without
   `composer install` the key is shown as text only on local XAMPP.
+- **Rate limiting** (`includes/ratelimit.php`, table `rate_limits`, keys SHA-256 hashed; policies in `RL_POLICY`):
+  login 5 failed/15 min per account and 20 per IP, OTP 10 wrong codes/h and 5 emails/h per account, 5 verification
+  emails/h per IP, register 8/h per IP, upload 10/10 min per user. State is in the DB (not the session) because
+  Cloud Run instances do not share sessions. Client IP = last `X-Forwarded-For` entry behind Cloud Run.
+  To unlock a locked-out test account: `DELETE FROM rate_limits;`.
 - Keep local backups in `backup/` or `backup-*/` (both are ignored by `.gcloudignore` / `.dockerignore`).
 - On real-world PDFs the RF gives P(malicious) ≈ 0.41–0.43 (close to the 0.5 cut-off). The model is less
   certain outside the dataset distribution. This is a good argument for VT being primary.
@@ -160,7 +165,7 @@ If Cloud SQL was stopped to save credit:
 Done: billing/503 fixed and redeployed (2026-10-20); `VT_API_KEY` attached; VT polling, PDF gate,
 fail-closed, QR, OTP, header and upload hardening live; Flask made private with IAM (2026-10-21).
 
-1. Rate limiting on login/register/upload, CSP, README and basic tests. (Post-decrypt integrity check: done.)
+1. CSP, README and basic tests. (Rate limiting: done, see Gotchas.) (Post-decrypt integrity check: done.)
    Also: build a real-world benign PDF set (100-200 files) to measure the false-positive rate.
 2. Replace the placeholder GitHub, LinkedIn and email links in `index.php` (real URLs needed).
 3. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
