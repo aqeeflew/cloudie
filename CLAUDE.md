@@ -5,8 +5,9 @@ Student: Muhammad Aqeef bin Azhar. Supervisor: Dr. Fakariah Hani Binti Mohd Ali.
 
 Cloudie is secure cloud storage. Every upload is scanned (VirusTotal first, a
 Random Forest PDF model second), then encrypted with AES-256-CBC before it is
-stored. Main goal right now: **thesis defense**. Every technical claim must be
-defensible and consistent with the thesis.
+stored. Main goal right now: **competition** (live demo + judges trying the app).
+The thesis is no longer a deliverable, but every claim in the UI and in the demo
+must still match the code (see `docs\AUDIT_REPORT.md`).
 
 Talk to Aqeef in casual Malay/English. He works in PowerShell on Windows, so
 give PowerShell commands with full absolute paths, and full drop-in files
@@ -38,23 +39,30 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - **cloudie-php** (Cloud Run, PHP 8.3 + Apache): auth (+ email verification and login OTP),
   upload, AES encryption, folders, dashboard, scan reports, decrypt.
 - **cloudie-flask** (Cloud Run, Python 3.12 + gunicorn): `/health`, `/scan` (= `/analyze`).
-  `feature_extractor.py` → RF in `malware_rf.pkl`; `vt_client.py`; `verdict_engine.py` combines them.
+  `app.py` → PDF magic-byte gate → `feature_extractor.py` → RF in `malware_rf.pkl`;
+  `vt_client.py` (hash lookup, upload, polling, 85 s budget); `verdict_engine.py` combines them.
 - **Cloud SQL MySQL** `cloudie-db`, public IP 34.143.161.161, DB `cloudie_db`, user `cloudie_user`.
   Cloud Run connects through the socket `/cloudsql/cloudie-499914:asia-southeast1:cloudie-db`.
 - **GCS** `cloudie-499914-files`: encrypted blobs when `USE_CLOUD_STORAGE=true`.
 - GCP project `cloudie-499914`, region `asia-southeast1`.
 - Secret Manager: `cloudie-db-pass` → `DB_PASS`, `cloudie-gmail-pass` → `SMTP_PASS`,
-  `cloudie-vt-key` → `VT_API_KEY` (Flask; confirm it is actually attached).
+  `cloudie-vt-key` → `VT_API_KEY` (Flask; confirmed attached on 2026-10-20).
 - URLs: `https://cloudie-php-800476519477.asia-southeast1.run.app`,
   `https://cloudie-flask-800476519477.asia-southeast1.run.app`
+  (the `...-2q6nug2xha-as.a.run.app` URLs also work).
+- **Live status (2026-10-20):** both services deployed from `main` after PR #7
+  (php `cloudie-php-00032-qdh`, flask `cloudie-flask-00007-z2z`). The earlier HTTP 503 was
+  **billing disabled** (Cloud SQL `SUSPENDED`, reason `BILLING_ISSUE`); billing is active again.
 
 ## Facts the code and thesis must agree on
 
 - **VirusTotal is PRIMARY, Random Forest is SECONDARY** (`verdict_engine.py`, `PRIMARY_DETECTOR = "VT"`).
+  - **VT no result** (no key, 429, timeout, unfinished analysis) → ERROR, blocked (fail closed).
   - VT malicious → MALICIOUS, blocked.
   - VT clean + AI malicious → SUSPICIOUS, stored but tagged.
   - Both clean → CLEAN.
-  - VT HTTP 409 = file already known, non-critical.
+  - VT HTTP 409 = file already known; `vt_client.py` resolves it through the hash report.
+  - Non-PDF files skip the RF (magic-byte gate) and are judged by VirusTotal only.
 - The verdict is `clean | suspicious | malicious` in `files.verdict VARCHAR(20)`. The column is added
   by `includes/db.php`. Old notes said VARCHAR(16); the real column is 20.
 - **RF model:** RandomForest, 200 trees, Gini, `class_weight="balanced"`, **32 features**.
@@ -122,14 +130,24 @@ If Cloud SQL was stopped to save credit:
   `& "C:\xampp\mysql\bin\mysql.exe" -h 34.143.161.161 -u cloudie_user -p cloudie_db`
   after adding your current IP to Cloud SQL Authorized Networks.
 - Never commit secrets, `.venv`, `encrypted/`, `uploads/`, `keys/` (see `.gitignore`).
+- Windows Defender quarantines EICAR in `C:\xampp\tmp` and `uploads\` on local XAMPP, so the local malicious
+  demo needs a temporary Defender exclusion (and `$env:TEMP`/`$env:TMP` set for the Flask window), or use Cloud Run.
+- Without `VT_API_KEY` every upload is blocked (fail closed). Set it in the Flask window for local demos.
+- Local MySQL (XAMPP) must be running; "MySQL server has gone away" usually means it is stopped.
+- `qr.php` has no online fallback by design (a QR service would see the AES key). Without
+  `composer install` the key is shown as text only on local XAMPP.
+- Keep local backups in `backup/` or `backup-*/` (both are ignored by `.gcloudignore` / `.dockerignore`).
 - On real-world PDFs the RF gives P(malicious) ≈ 0.41–0.43 (close to the 0.5 cut-off). The model is less
   certain outside the dataset distribution. This is a good argument for VT being primary.
 
 ## Open TODOs
 
-1. Live services returned HTTP 503 on 2026-10-12. Check billing, the Cloud Run revisions and Cloud SQL state, then redeploy.
-2. Deploy the 2026-10-12 fixes (extractor encoding, index.php text, ignore files) after Aqeef approves.
-3. Confirm `VT_API_KEY` is attached to `cloudie-flask` (`gcloud run services describe cloudie-flask`).
-4. Update the thesis Chapter 4 numbers and figures to 99.87% / 99.46%, and note that `name` was dropped.
-   `flask_api/figures/*.png` still show the old run.
-5. Replace the placeholder GitHub, LinkedIn and email links in `index.php`.
+Done: billing/503 fixed and redeployed (2026-10-20); `VT_API_KEY` attached; VT polling, PDF gate,
+fail-closed, QR, OTP, header and upload hardening live.
+
+1. **Flask has no authentication** (`--allow-unauthenticated`): anyone can call `/scan` (T4 in `docs\AUDIT_REPORT.md`).
+2. Post-decrypt integrity check (hash), rate limiting on login/register/upload, CSP, README and basic tests.
+3. Replace the placeholder GitHub, LinkedIn and email links in `index.php` (real URLs needed).
+4. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
+5. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,
+   VT-as-teacher feedback loop) and platform (retroactive rescan, hash-chained audit log).
