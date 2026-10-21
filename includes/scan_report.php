@@ -74,6 +74,11 @@ function _pct(float $x): string {
     if ($x > 1) $x /= 100;
     return number_format($x * 100, 2) . '%';
 }
+function _fx($v): string {
+    if ($v === null || $v === '') return '—';
+    $f = (float)$v;
+    return ($f == floor($f) && abs($f) < 1e12) ? number_format($f, 0, '.', '') : rtrim(rtrim(number_format($f, 2, '.', ''), '0'), '.');
+}
 function _ts(int $t): string {
     return $t ? date('Y-m-d H:i', $t) : '—';
 }
@@ -179,6 +184,46 @@ function _ts(int $t): string {
     </div>
 
   </div>
+
+  <!-- ══ WHY THIS AI SCORE (explainable AI) ═════════════════════ -->
+  <?php $expl = $report['explanation'] ?? null; ?>
+  <?php if (is_array($expl) && !empty($expl['top'])): ?>
+  <div class="rpt-section">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8h.01M12 12v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    Why this AI score
+  </div>
+  <p style="font-size:13px;color:var(--txt-dim);margin:0 0 .7rem">
+    Starting from a neutral <?= round(((float)($expl['base_rate'] ?? 0.5)) * 100) ?>%, these features moved the
+    model's malicious score the most (percentage points).
+  </p>
+  <div class="rpt-table-wrap" style="overflow-x:auto">
+    <table class="rpt-table">
+      <tr style="font-size:11.5px;color:var(--txt-faint)">
+        <td>Feature</td><td>This file</td><td>Typical benign</td><td>Typical malicious</td><td style="text-align:right">Effect</td>
+      </tr>
+      <?php foreach ($expl['top'] as $x):
+            $pts   = round(((float)($x['effect'] ?? 0)) * 100);
+            $isMal = ($x['direction'] ?? '') === 'malicious'; ?>
+        <tr>
+          <th>
+            <?= e((string)($x['meaning'] ?? $x['feature'] ?? '')) ?>
+            <span style="color:var(--txt-faint);font-family:'JetBrains Mono';font-size:.72rem;font-weight:400;margin-left:4px"><?= e((string)($x['feature'] ?? '')) ?></span>
+          </th>
+          <td style="font-family:'JetBrains Mono';font-size:.85rem"><?= e(_fx($x['value'] ?? null)) ?></td>
+          <td style="font-family:'JetBrains Mono';font-size:.85rem;color:var(--txt-dim)"><?= e(_fx($x['typical_benign'] ?? null)) ?></td>
+          <td style="font-family:'JetBrains Mono';font-size:.85rem;color:var(--txt-dim)"><?= e(_fx($x['typical_malicious'] ?? null)) ?></td>
+          <td style="text-align:right;font-weight:600;white-space:nowrap;color:<?= $isMal ? 'var(--red)' : 'var(--green)' ?>">
+            <?= $isMal ? '&#9650; +' : '&#9660; ' ?><?= (int)$pts ?> pts
+          </td>
+        </tr>
+      <?php endforeach; ?>
+    </table>
+  </div>
+  <?php foreach (($expl['caveats'] ?? []) as $cv): ?>
+    <div style="font-size:13px;margin-top:.7rem;padding:12px 16px;border-radius:12px;background:rgba(255,194,75,.1);border:1px solid rgba(255,194,75,.3);color:var(--amber)"><?= e((string)$cv) ?></div>
+  <?php endforeach; ?>
+  <p style="font-size:12px;color:var(--txt-faint);margin:.6rem 0 0"><?= e((string)($expl['note'] ?? '')) ?></p>
+  <?php endif; ?>
 
   <!-- ══ VIRUSTOTAL ══════════════════════════════════════════════ -->
   <div class="rpt-section">

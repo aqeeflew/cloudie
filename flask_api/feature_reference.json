@@ -1,0 +1,199 @@
+{
+  "source": "CIC-Evasive-PDFMal2022 (Final.csv)",
+  "n_benign": 9063,
+  "n_malicious": 9063,
+  "features": {
+    "pdf_size": {
+      "benign_median": 75.0,
+      "malicious_median": 9.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 100.0
+    },
+    "metadata_size": {
+      "benign_median": 319.0,
+      "malicious_median": 180.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 100.0
+    },
+    "pages": {
+      "benign_median": 2.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 90.7
+    },
+    "xref_length": {
+      "benign_median": 71.0,
+      "malicious_median": 10.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 100.0
+    },
+    "title_characters": {
+      "benign_median": 14.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 66.8,
+      "malicious_nonzero_pct": 15.4
+    },
+    "isEncrypted": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 0.7,
+      "malicious_nonzero_pct": 0.2
+    },
+    "embedded_files": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 0.1,
+      "malicious_nonzero_pct": 2.5
+    },
+    "images": {
+      "benign_median": -1.0,
+      "malicious_median": -1.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 90.7
+    },
+    "contains_text": {
+      "benign_median": 1.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 75.1,
+      "malicious_nonzero_pct": 8.0
+    },
+    "header": {
+      "benign_median": 1.4,
+      "malicious_median": 1.3,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 100.0
+    },
+    "obj": {
+      "benign_median": 44.0,
+      "malicious_median": 9.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 100.0
+    },
+    "endobj": {
+      "benign_median": 44.0,
+      "malicious_median": 9.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 100.0
+    },
+    "stream": {
+      "benign_median": 16.0,
+      "malicious_median": 3.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 99.5
+    },
+    "endstream": {
+      "benign_median": 16.0,
+      "malicious_median": 3.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 99.1
+    },
+    "xref": {
+      "benign_median": 2.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 82.4,
+      "malicious_nonzero_pct": 87.5
+    },
+    "trailer": {
+      "benign_median": 2.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 82.4,
+      "malicious_nonzero_pct": 97.5
+    },
+    "startxref": {
+      "benign_median": 2.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 100.0,
+      "malicious_nonzero_pct": 90.2
+    },
+    "pageno": {
+      "benign_median": 2.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 99.0,
+      "malicious_nonzero_pct": 95.2
+    },
+    "encrypt": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 0.7,
+      "malicious_nonzero_pct": 0.3
+    },
+    "ObjStm": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 32.9,
+      "malicious_nonzero_pct": 2.0
+    },
+    "JS": {
+      "benign_median": 0.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 3.4,
+      "malicious_nonzero_pct": 85.9
+    },
+    "Javascript": {
+      "benign_median": 0.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 3.6,
+      "malicious_nonzero_pct": 86.1
+    },
+    "AA": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 2.8,
+      "malicious_nonzero_pct": 2.9
+    },
+    "OpenAction": {
+      "benign_median": 0.0,
+      "malicious_median": 1.0,
+      "benign_nonzero_pct": 6.9,
+      "malicious_nonzero_pct": 69.6
+    },
+    "Acroform": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 30.1,
+      "malicious_nonzero_pct": 21.1
+    },
+    "JBIG2Decode": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 1.7,
+      "malicious_nonzero_pct": 0.1
+    },
+    "RichMedia": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 0.0,
+      "malicious_nonzero_pct": 0.3
+    },
+    "launch": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 0.1,
+      "malicious_nonzero_pct": 1.5
+    },
+    "EmbeddedFile": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 8.9,
+      "malicious_nonzero_pct": 11.6
+    },
+    "XFA": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 0.0,
+      "malicious_nonzero_pct": 11.8
+    },
+    "URI": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 13.6,
+      "malicious_nonzero_pct": 2.0
+    },
+    "Colors": {
+      "benign_median": 0.0,
+      "malicious_median": 0.0,
+      "benign_nonzero_pct": 0.0,
+      "malicious_nonzero_pct": 0.1
+    }
+  }
+}
