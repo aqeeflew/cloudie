@@ -176,7 +176,7 @@ fail-closed, QR, OTP, header and upload hardening live; Flask made private with 
 
 1. CSP. (Done: rate limiting, README, tests.) (Post-decrypt integrity check: done.)
    Also: build a real-world benign PDF set (100-200 files) to measure the false-positive rate.
-2. Replace the placeholder GitHub, LinkedIn and email links in `index.php` (real URLs needed).
+2. (done) Credit links on `index.php` point to the repo, LinkedIn and email.
 3. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
 4. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,
    VT-as-teacher feedback loop) and platform (retroactive rescan, hash-chained audit log).
