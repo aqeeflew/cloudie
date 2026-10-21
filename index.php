@@ -4,6 +4,8 @@ $pageTitle = 'Home';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
+<div class="lp-progress" id="lpProgress" aria-hidden="true"></div>
+
 <!-- ============ HERO ============ -->
 <section class="hero cl-screen lp">
   <div class="lp-aurora" aria-hidden="true"></div>
@@ -93,28 +95,43 @@ require_once __DIR__ . '/includes/header.php';
       <h2 class="lp-title">Cloud storage trusts files it never inspects</h2>
     </div>
     <div class="row g-4 g-lg-5 mt-1">
-      <div class="col-md-4 reveal" style="--d:0ms">
+      <div class="col-md-4 reveal" data-fx="left" style="--d:0ms">
         <div class="lp-card lp-feature h-100">
           <div class="lp-icon">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="fx fx-slip" aria-hidden="true">
+            <span class="fx-file"><svg viewBox="0 0 24 30" fill="none"><path d="M3 1h12l6 6v22H3z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15 1v6h6" stroke="currentColor" stroke-width="1.6"/></svg><i></i></span>
+            <span class="fx-box"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.6"/></svg>Storage</span>
+            <span class="fx-tick">&#10003; accepted</span>
+            <em>no inspection</em>
           </div>
           <h5 class="lp-feature-title">Malware slips through</h5>
           <p class="lp-feature-text mb-0">PDFs are a common delivery vehicle for embedded JavaScript, launch actions and exploits. Most storage platforms accept them blindly.</p>
         </div>
       </div>
-      <div class="col-md-4 reveal" style="--d:90ms">
+      <div class="col-md-4 reveal" data-fx="zoom" style="--d:90ms">
         <div class="lp-card lp-feature h-100">
           <div class="lp-icon">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 0 1 7.75-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="currentColor"/></svg>
+          </div>
+          <div class="fx fx-read" aria-hidden="true">
+            <span class="l"></span><span class="l w2"></span><span class="l w3"></span>
+            <span class="scan"></span>
+            <em>readable by the provider</em>
           </div>
           <h5 class="lp-feature-title">Files sit unencrypted</h5>
           <p class="lp-feature-text mb-0">Even when "encrypted at rest," the provider usually holds the keys — meaning they, or anyone who breaches them, can read your data.</p>
         </div>
       </div>
-      <div class="col-md-4 reveal" style="--d:180ms">
+      <div class="col-md-4 reveal" data-fx="right" style="--d:180ms">
         <div class="lp-card lp-feature h-100">
           <div class="lp-icon">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M11 8v3m0 3h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="fx fx-radar" aria-hidden="true">
+            <span class="ring"></span><span class="ring r2"></span><span class="sweep"></span><span class="blip"></span>
+            <em>one engine, one blind spot</em>
           </div>
           <h5 class="lp-feature-title">No second opinion</h5>
           <p class="lp-feature-text mb-0">A single scan engine can miss novel or evasive samples. There's rarely a fusion of independent detection signals.</p>
@@ -131,8 +148,9 @@ require_once __DIR__ . '/includes/header.php';
       <span class="lp-eyebrow">The approach</span>
       <h2 class="lp-title">Three independent layers of defense</h2>
     </div>
-    <div class="row g-4 g-lg-5 mt-1">
-      <div class="col-md-4 reveal" style="--d:0ms">
+    <div class="row g-4 g-lg-5 mt-1 lp-flow">
+      <span class="lp-flow-dot" aria-hidden="true"></span>
+      <div class="col-md-4 reveal" data-fx="zoom" style="--d:0ms">
         <div class="lp-card lp-feature h-100">
           <div class="lp-step-wrap">
             <div class="lp-step">01</div>
@@ -144,7 +162,7 @@ require_once __DIR__ . '/includes/header.php';
           <p class="lp-feature-text mb-0">A Random Forest classifier trained on the CIC-Evasive-PDFMal2022 dataset extracts 32 structural features from each PDF as a supporting signal alongside VirusTotal, before storage.</p>
         </div>
       </div>
-      <div class="col-md-4 reveal" style="--d:90ms">
+      <div class="col-md-4 reveal" data-fx="zoom" style="--d:90ms">
         <div class="lp-card lp-feature h-100">
           <div class="lp-step-wrap">
             <div class="lp-step">02</div>
@@ -156,7 +174,7 @@ require_once __DIR__ . '/includes/header.php';
           <p class="lp-feature-text mb-0">VirusTotal's 70+ signature-based engines give the primary verdict and can block a file. The AI result is a supporting signal: if VirusTotal is clean but the AI flags a PDF, the file is stored and tagged Suspicious.</p>
         </div>
       </div>
-      <div class="col-md-4 reveal" style="--d:180ms">
+      <div class="col-md-4 reveal" data-fx="zoom" style="--d:180ms">
         <div class="lp-card lp-feature h-100">
           <div class="lp-step-wrap">
             <div class="lp-step">03</div>
@@ -181,16 +199,17 @@ require_once __DIR__ . '/includes/header.php';
       <p class="lp-subtle mt-2" style="font-size:.97rem">Numbers from the CIC-Evasive-PDFMal2022 dataset, validated on a held-out test split.</p>
     </div>
     <div class="row g-4 g-lg-5 mt-1">
-      <div class="col-6 col-lg-3 reveal" style="--d:0ms">
+      <div class="col-6 col-lg-3 reveal" data-fx="zoom" style="--d:0ms">
         <div class="lp-stat">
-          <div class="lp-stat-icon">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="lp-ring" aria-hidden="true">
+            <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="19" pathLength="100"/><circle class="fg" cx="22" cy="22" r="19" pathLength="100" style="--off:0.13"/></svg>
+            <svg class="chk" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="lp-stat-value">99.87%</div>
           <div class="lp-stat-label">Hold-out accuracy (size-based: 99.46%)</div>
         </div>
       </div>
-      <div class="col-6 col-lg-3 reveal" style="--d:90ms">
+      <div class="col-6 col-lg-3 reveal" data-fx="zoom" style="--d:90ms">
         <div class="lp-stat">
           <div class="lp-stat-icon">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.7"/></svg>
@@ -199,7 +218,7 @@ require_once __DIR__ . '/includes/header.php';
           <div class="lp-stat-label">Training samples</div>
         </div>
       </div>
-      <div class="col-6 col-lg-3 reveal" style="--d:180ms">
+      <div class="col-6 col-lg-3 reveal" data-fx="zoom" style="--d:180ms">
         <div class="lp-stat">
           <div class="lp-stat-icon">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -208,7 +227,7 @@ require_once __DIR__ . '/includes/header.php';
           <div class="lp-stat-label">Structural features</div>
         </div>
       </div>
-      <div class="col-6 col-lg-3 reveal" style="--d:270ms">
+      <div class="col-6 col-lg-3 reveal" data-fx="zoom" style="--d:270ms">
         <div class="lp-stat">
           <div class="lp-stat-icon">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.7"/></svg>
@@ -262,6 +281,16 @@ require_once __DIR__ . '/includes/header.php';
             <span class="lp-tbadge lp-tbadge-amber">VirusTotal v3</span>
           </div>
         </div>
+      </div>
+    </div>
+    <?php $lpStack = ['PHP', 'Apache', 'Python', 'Flask', 'scikit-learn', 'Random Forest', 'pandas', 'MySQL',
+                      'AES-256-CBC', 'VirusTotal v3', 'Google Cloud Run', 'Cloud SQL', 'Cloud Storage',
+                      'Secret Manager', 'PHPMailer']; ?>
+    <div class="lp-marquee reveal" aria-hidden="true">
+      <div class="lp-marquee-track">
+        <?php for ($lpK = 0; $lpK < 2; $lpK++): foreach ($lpStack as $lpItem): ?>
+          <span<?= $lpK ? ' class="dup"' : '' ?>><?= htmlspecialchars($lpItem, ENT_QUOTES, 'UTF-8') ?></span>
+        <?php endforeach; endfor; ?>
       </div>
     </div>
   </div>
@@ -612,6 +641,127 @@ require_once __DIR__ . '/includes/header.php';
   @media (max-width: 820px) { .lp-dev { grid-template-columns: 1fr; text-align: center; }
     .lp-dev .lp-links { justify-content: center; } }
 
+  /* ---------- SCROLL PROGRESS ---------- */
+  .lp-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 100; pointer-events: none;
+    transform-origin: 0 50%; transform: scaleX(0);
+    background: linear-gradient(90deg, var(--lp-accent), var(--lp-violet), var(--lp-accent-2));
+    box-shadow: 0 0 12px rgba(25,227,255,.55); }
+
+  /* ---------- REVEAL VARIANTS ---------- */
+  .reveal[data-fx="left"]  { transform: translateX(-38px); }
+  .reveal[data-fx="right"] { transform: translateX(38px); }
+  .reveal[data-fx="zoom"]  { transform: scale(.9) translateY(14px); }
+  .reveal[data-fx].is-visible { transform: none; }
+  /* sideways entrances must never widen the page: clip each section, and go vertical-only on phones */
+  section.lp { overflow-x: clip; }
+  @media (max-width: 768px) {
+    .reveal[data-fx="left"], .reveal[data-fx="right"] { transform: translateY(22px); }
+  }
+
+  /* ---------- HEADING ACCENT LINE ---------- */
+  .lp-eyebrow::after { content: ''; display: inline-block; width: 0; height: 2px; margin-left: .75rem; vertical-align: middle;
+    border-radius: 2px; background: linear-gradient(90deg, var(--lp-accent), transparent); }
+  .reveal.is-visible .lp-eyebrow::after { width: 64px; transition: width 1s cubic-bezier(.16,1,.3,1) .35s; }
+
+  /* ---------- PROBLEM: mini scenes ---------- */
+  .fx { position: relative; height: 96px; margin: .1rem 0 1.1rem; border-radius: 14px; overflow: hidden;
+    background: var(--lp-card-bg-2); border: 1px solid var(--lp-card-border); }
+  .fx em { position: absolute; left: 12px; bottom: 7px; font-style: normal; font-size: .64rem; font-weight: 800;
+    letter-spacing: .1em; color: var(--lp-subtle); text-transform: uppercase; }
+  .reveal:not(.is-visible) .fx * { animation-play-state: paused; }
+
+  .fx-slip .fx-box { position: absolute; right: 14px; top: 40%; transform: translateY(-50%); display: flex; flex-direction: column;
+    align-items: center; gap: 2px; color: var(--lp-accent); font-size: .64rem; font-weight: 800; letter-spacing: .06em; }
+  .fx-slip .fx-box svg { width: 34px; height: 34px; }
+  .fx-slip .fx-file { position: absolute; left: 14px; top: 40%; margin-top: -17px; width: 26px; height: 32px;
+    color: var(--lp-card-head); animation: fxSlip 3.8s ease-in-out infinite; }
+  .fx-slip .fx-file svg { width: 100%; height: 100%; display: block; }
+  .fx-slip .fx-file i { position: absolute; right: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%;
+    background: #ff5d6c; animation: fxPing 1.3s ease-out infinite; }
+  .fx-slip .fx-tick { position: absolute; right: 12px; bottom: 7px; font-size: .66rem; font-weight: 800; color: #34e0a1;
+    opacity: 0; animation: fxTick 3.8s ease-in-out infinite; }
+  [data-theme="light"] .fx-slip .fx-tick { color: #0d8f63; }
+  @keyframes fxSlip { 0% { left: 14px; opacity: 0; } 10% { opacity: 1; } 62% { left: 56%; opacity: 1; }
+    74% { left: 62%; opacity: 0; } 100% { left: 62%; opacity: 0; } }
+  @keyframes fxTick { 0%, 62% { opacity: 0; } 72%, 92% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes fxPing { 0% { box-shadow: 0 0 0 0 rgba(255,93,108,.7); } 100% { box-shadow: 0 0 0 9px rgba(255,93,108,0); } }
+
+  .fx-read { padding: 16px 16px 28px; display: flex; flex-direction: column; gap: 9px; justify-content: center; }
+  .fx-read .l { height: 8px; width: 92%; border-radius: 6px;
+    background: linear-gradient(90deg, var(--lp-card-border), rgba(155,123,255,.4)); }
+  .fx-read .w2 { width: 70%; } .fx-read .w3 { width: 84%; }
+  .fx-read .scan { position: absolute; top: 0; bottom: 0; width: 56px; left: -70px;
+    background: linear-gradient(90deg, transparent, rgba(255,93,108,.3), transparent); animation: fxScan 3.2s ease-in-out infinite; }
+  @keyframes fxScan { to { left: 105%; } }
+
+  .fx-radar { display: grid; place-items: center; }
+  .fx-radar .ring, .fx-radar .sweep { position: absolute; border-radius: 50%; width: 72px; height: 72px; top: 8px; }
+  .fx-radar .ring { border: 1px solid var(--lp-pill-border); }
+  .fx-radar .r2 { width: 44px; height: 44px; top: 22px; }
+  .fx-radar .sweep { background: conic-gradient(from 0deg, transparent 0deg, rgba(25,227,255,.42) 70deg, transparent 71deg);
+    animation: lpSpin 3s linear infinite; }
+  .fx-radar .blip { position: absolute; top: 18px; left: calc(50% + 14px); width: 8px; height: 8px; border-radius: 50%;
+    background: #ff5d6c; opacity: .2; animation: fxBlip 3s ease-in-out infinite; }
+  @keyframes fxBlip { 0%, 100% { opacity: .15; } 40% { opacity: .55; } }
+
+  /* ---------- APPROACH: flow line with a travelling packet ---------- */
+  .lp-flow { position: relative; }
+  .lp-flow .lp-card { position: relative; z-index: 1; }
+  .lp-flow::before { content: ''; position: absolute; left: 5%; right: 5%; top: 3.2rem; height: 2px; z-index: 0;
+    background: linear-gradient(90deg, transparent, var(--lp-pill-border) 12%, var(--lp-pill-border) 88%, transparent); }
+  .lp-flow-dot { position: absolute; top: calc(3.2rem - 5px); left: 5%; width: 12px; height: 12px; border-radius: 50%; z-index: 0;
+    background: var(--lp-accent); box-shadow: 0 0 18px var(--lp-accent); opacity: 0; animation: lpTravel 5.4s ease-in-out infinite; }
+  @keyframes lpTravel { 0% { left: 5%; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { left: 95%; opacity: 0; } }
+  .lp-flow .lp-step-icon { animation: lpGlow 5.4s ease-in-out infinite; }
+  .lp-flow > .col-md-4:nth-of-type(2) .lp-step-icon { animation-delay: 1.8s; }
+  .lp-flow > .col-md-4:nth-of-type(3) .lp-step-icon { animation-delay: 3.6s; }
+  @keyframes lpGlow { 0%, 22%, 100% { box-shadow: 0 0 0 0 rgba(155,123,255,0); transform: none; }
+    10% { box-shadow: 0 0 0 8px rgba(155,123,255,.22); transform: scale(1.12); } }
+  @media (max-width: 768px) { .lp-flow::before, .lp-flow-dot { display: none; } }
+
+  /* ---------- RESULTS: gauge ring + floating icons ---------- */
+  .lp-ring { position: relative; width: 62px; height: 62px; display: grid; place-items: center; margin-bottom: .3rem; color: var(--lp-accent); }
+  .lp-ring > svg:first-child { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  .lp-ring circle { fill: none; stroke-width: 3.2; }
+  .lp-ring .bg { stroke: var(--lp-divider); }
+  .lp-ring .fg { stroke: var(--lp-accent); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100;
+    filter: drop-shadow(0 0 4px rgba(25,227,255,.55)); }
+  .reveal.is-visible .lp-ring .fg { stroke-dashoffset: var(--off, 0); transition: stroke-dashoffset 1.8s cubic-bezier(.16,1,.3,1) .25s; }
+  .lp-stat-icon { animation: fxFloat 4.2s ease-in-out infinite; }
+  .col-lg-3:nth-child(3) .lp-stat-icon { animation-delay: .7s; } .col-lg-3:nth-child(4) .lp-stat-icon { animation-delay: 1.4s; }
+  @keyframes fxFloat { 50% { transform: translateY(-5px); } }
+
+  /* ---------- TECH: badges pop in, stack ticker ---------- */
+  .lp-card.reveal:not(.is-visible) .lp-tbadge { opacity: 0; transform: translateY(8px) scale(.9); }
+  .lp-card.reveal.is-visible .lp-tbadge { animation: lpPop .55s cubic-bezier(.16,1,.3,1) both; }
+  .lp-tech-badges .lp-tbadge:nth-child(1) { animation-delay: .25s; }
+  .lp-tech-badges .lp-tbadge:nth-child(2) { animation-delay: .38s; }
+  .lp-tech-badges .lp-tbadge:nth-child(3) { animation-delay: .51s; }
+  @keyframes lpPop { from { opacity: 0; transform: translateY(8px) scale(.9); } to { opacity: 1; transform: none; } }
+  .lp-marquee { margin-top: 1.8rem; overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+  .lp-marquee-track { display: flex; width: max-content; animation: fxMarquee 42s linear infinite; }
+  .lp-marquee:hover .lp-marquee-track { animation-play-state: paused; }
+  .lp-marquee span { white-space: nowrap; margin-right: .7rem; font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: 1rem; color: var(--lp-subtle); padding: .5rem 1.15rem; border-radius: 999px;
+    border: 1px solid var(--lp-card-border); background: var(--lp-card-bg); }
+  @keyframes fxMarquee { to { transform: translateX(-50%); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lp-progress { display: none; }
+    .reveal[data-fx] { transform: none; }
+    .fx *, .lp-flow-dot, .lp-flow .lp-step-icon, .lp-stat-icon, .lp-marquee-track { animation: none !important; }
+    .fx-slip .fx-file { left: 40%; opacity: 1; } .fx-slip .fx-tick { opacity: 1; }
+    .fx-read .scan { display: none; }
+    .lp-ring .fg { stroke-dashoffset: var(--off, 0); transition: none; }
+    .lp-eyebrow::after { width: 64px; transition: none; }
+    .lp-card.reveal .lp-tbadge { animation: none; opacity: 1; transform: none; }
+    .lp-marquee-track { width: auto; flex-wrap: wrap; justify-content: center; row-gap: .6rem; }
+    .lp-marquee span.dup { display: none; }
+    .lp-marquee { -webkit-mask-image: none; mask-image: none; }
+  }
+
   /* SCROLL REVEAL */
   .reveal { opacity: 0; transform: translateY(22px);
     transition: opacity .65s cubic-bezier(.16,1,.3,1), transform .65s cubic-bezier(.16,1,.3,1);
@@ -746,6 +896,24 @@ require_once __DIR__ . '/includes/header.php';
       });
     });
   }
+})();
+
+(function () {
+  /* scroll progress bar (rAF-throttled, passive listener) */
+  var bar = document.getElementById('lpProgress');
+  if (!bar) return;
+  var ticking = false;
+  function update() {
+    var doc = document.documentElement;
+    var max = (doc.scrollHeight - window.innerHeight) || 1;
+    var p = Math.max(0, Math.min(1, (window.scrollY || doc.scrollTop) / max));
+    bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+    ticking = false;
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
 })();
 </script>
 
