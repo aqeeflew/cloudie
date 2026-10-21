@@ -23,3 +23,7 @@ ml/
 # Local backups (never ship)
 backup/
 backup-*/
+
+# README and tests are not needed at runtime
+README.md
+tests/

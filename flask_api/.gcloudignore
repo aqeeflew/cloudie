@@ -12,3 +12,6 @@ figures/
 validation_*
 validate_model.py
 *.bak-*
+
+# Tests are not needed at runtime
+tests/
