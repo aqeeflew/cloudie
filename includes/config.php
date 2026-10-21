@@ -31,6 +31,9 @@ define('DB_CHARSET', 'utf8mb4');
 define('SCANNER_URL',     env_or('SCANNER_URL',    'http://127.0.0.1:5000/scan'));
 define('SCANNER_HEALTH',  env_or('SCANNER_HEALTH', 'http://127.0.0.1:5000/health'));
 define('SCANNER_TIMEOUT', 115);  // seconds; Flask budget is 85 s (VT lookup/upload/poll), gunicorn 120 s
+// SCANNER_AUTH=iam  -> send a Google ID token (Cloud Run IAM; the Flask service is private).
+// SCANNER_AUTH=none -> no auth header (local XAMPP, Flask on 127.0.0.1).
+define('SCANNER_AUTH',    env_or('SCANNER_AUTH',   'none'));
 
 // ---- Cloud Storage ----
 // USE_CLOUD_STORAGE=true makes encrypted blobs live in GCS_BUCKET.
