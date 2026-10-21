@@ -32,7 +32,7 @@ import requests
 from flask import Flask, request, jsonify
 
 from feature_extractor import extract_features, FEATURE_NAMES
-from verdict_engine import combine, PRIMARY_DETECTOR
+from verdict_engine import combine, PRIMARY_DETECTOR, risk_indicators, AI_HIGH_CONFIDENCE
 from prediction_log import log_prediction
 import vt_client
 from feature_explain import build_explanation
@@ -275,13 +275,38 @@ def analyze():
             explanation = build_explanation(
                 MODEL, MODEL_FEATURES if MODEL_FEATURES else FEATURE_NAMES, ext["features"])
 
+        # Risk gate input: strong risk indicators present in the PDF (None for non-PDF / no AI)
+        ai_risk = risk_indicators(ext["features"]) if (is_pdf and ai_proba is not None) else None
+
         # 4) Combined verdict
         result = combine(
             ai_proba=ai_proba,
             vt_positives=vt_positives,
             vt_total=vt_total,
             extraction_ok=extraction_ok,
+            ai_risk=ai_risk,
         )
+
+        # Did the AI actually tag the file? (score >= 0.5 AND the risk gate passed)
+        ai_flagged = bool(ai_label) and (ai_risk is None or bool(ai_risk)
+                                         or ai_proba >= AI_HIGH_CONFIDENCE)
+        if explanation is not None and ai_risk is not None:
+            if ai_label and ai_flagged:
+                gate_note = ("Tagged: score is at least 50%% and the file has specific risk "
+                             "indicators (%s)." % ", ".join(ai_risk) if ai_risk else
+                             "Tagged: the score is very high (at least %d%%)." % round(AI_HIGH_CONFIDENCE * 100))
+            elif ai_label:
+                gate_note = ("Not tagged: the score reached 50%% but the file has no specific risk "
+                             "indicator and is below %d%%, so it is treated as a weak signal."
+                             % round(AI_HIGH_CONFIDENCE * 100))
+            else:
+                gate_note = "The score is below 50%, so the AI did not flag this file."
+            explanation["gate"] = {
+                "risk_indicators": ai_risk,
+                "high_confidence": AI_HIGH_CONFIDENCE,
+                "tagged": ai_flagged,
+                "note": gate_note,
+            }
 
         # 5) Log for Chapter 4
         log_prediction(
@@ -323,9 +348,17 @@ def analyze():
         # Indicators: concrete reasons the file was flagged, for the UI list.
         indicators = []
         if ai_proba is not None and ai_proba >= 0.5:
-            indicators.append(
-                f"AI structural score {round(ai_proba * 100, 1)}% malicious"
-            )
+            if ai_flagged:
+                indicators.append(
+                    f"AI structural score {round(ai_proba * 100, 1)}% malicious"
+                )
+            else:
+                indicators.append(
+                    f"AI structural score {round(ai_proba * 100, 1)}% but no specific risk "
+                    "indicator, so it was not tagged"
+                )
+        if ai_risk:
+            indicators.append("Risk indicators in the PDF: " + ", ".join(ai_risk))
         if vt_positives:
             indicators.append(f"VirusTotal: {vt_positives} engine(s) flagged it")
         if result["disagreement"]:
@@ -352,6 +385,8 @@ def analyze():
         # AI verdict as a word, for the report card.
         if ai_label is None:
             ai_verdict = "unknown"
+        elif ai_label and not ai_flagged:
+            ai_verdict = "uncertain"      # score >= 0.5 but the risk gate was not met
         else:
             ai_verdict = "malicious" if ai_label else "clean"
 

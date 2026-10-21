@@ -32,6 +32,19 @@ PRIMARY_DETECTOR = "VT"          # "VT" (current policy) or "AI" (old default)
 AI_MALICIOUS_THRESHOLD = 0.50    # RF predict_proba cutoff for "malicious"
 VT_MALICIOUS_MIN_HITS = 1        # VT engines flagging it to count as malicious
 
+# Risk gate for the AI "suspicious" tag. A Random Forest score >= 0.5 alone is not
+# enough: the file must also carry a specific risk indicator, or the score must be
+# very high. Without this, small PDFs without a metadata block (which look like
+# malware to the model) were tagged even with no risky content.
+AI_HIGH_CONFIDENCE = 0.85
+STRONG_RISK_FEATURES = ("JS", "Javascript", "OpenAction", "AA", "launch",
+                        "EmbeddedFile", "RichMedia", "XFA", "JBIG2Decode")
+
+
+def risk_indicators(features):
+    """Names of strong risk features present (value > 0) in a feature dict."""
+    return [n for n in STRONG_RISK_FEATURES if (features or {}).get(n, 0)]
+
 
 class Verdict(str, Enum):
     MALICIOUS = "malicious"     # blocked, never stored
@@ -50,7 +63,8 @@ def _vt_label(vt_positives):
     return vt_positives is not None and vt_positives >= VT_MALICIOUS_MIN_HITS
 
 
-def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True):
+def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True,
+            ai_risk=None):
     """
     Produce the combined Cloudie verdict under the VT-primary policy.
 
@@ -60,6 +74,8 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True):
     vt_positives : int | None    VT engines flagging the file, None if VT unavailable.
     vt_total : int | None        Total VT engines (reporting only).
     extraction_ok : bool         Whether feature extraction succeeded.
+    ai_risk : list | None        Strong risk indicators found in the PDF (see risk_indicators).
+                                 None = gate not applied (legacy behaviour).
 
     Returns
     -------
@@ -105,13 +121,22 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True):
 
         # From here on, VirusTotal answered and did not flag the file.
 
-        # 2) VT clean but AI flags structural features -> store, tag suspicious.
+        # 2) VT clean but AI flags structural features -> store, tag suspicious,
+        #    provided the risk gate passes (specific indicator, or very high score).
         if ai_says_mal:
-            return _result(Verdict.SUSPICIOUS, max(ai_conf, 0.5),
-                           ai_says_mal, vt_says_mal, disagreement,
-                           "AI structural analysis flagged the file while "
-                           "VirusTotal did not. Stored but tagged SUSPICIOUS "
-                           "for the user.")
+            gate_ok = (ai_risk is None) or bool(ai_risk) or ai_proba >= AI_HIGH_CONFIDENCE
+            if gate_ok:
+                return _result(Verdict.SUSPICIOUS, max(ai_conf, 0.5),
+                               ai_says_mal, vt_says_mal, disagreement,
+                               "AI structural analysis flagged the file while "
+                               "VirusTotal did not. Stored but tagged SUSPICIOUS "
+                               "for the user.")
+            return _result(Verdict.CLEAN, 0.6, ai_says_mal, vt_says_mal, disagreement,
+                           "The AI score is %d%% but the file has no specific risk "
+                           "indicator (JavaScript, auto-run actions, launch, embedded "
+                           "files) and the score is below %d%%, so it was not tagged. "
+                           "VirusTotal found nothing." % (round(ai_proba * 100),
+                                                          round(AI_HIGH_CONFIDENCE * 100)))
 
         # 3) AI clean (or AI failed) and VT did not flag it.
         if extraction_ok and ai_proba is not None:
