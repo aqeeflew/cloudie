@@ -31,6 +31,7 @@ if (!in_array($action, ['view', 'download', 'delete'], true) || $file_id <= 0) {
 // Look up the file (and key metadata) - must belong to current user
 $stmt = db()->prepare(
     "SELECT f.file_id, f.file_name, f.stored_name, f.file_type, f.file_size,
+            f.file_md5, f.scan_report,
             k.key_id, k.key_hash, k.iv_b64
      FROM files f
      INNER JOIN file_keys k ON k.file_id = f.file_id
@@ -69,8 +70,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $plain  = $cipher === null
                     ? null
                     : aes_decrypt_string($cipher, $rawKey, $iv);
+            // Integrity: AES-CBC has no MAC, so compare the plaintext with the hash
+            // recorded at upload. Not needed for delete (the file is being removed).
+            $integrity = ['ok' => true, 'method' => 'none'];
+            if ($plain !== null && $action !== 'delete') {
+                $integrity = verify_plaintext_integrity(
+                    $plain, $rec['file_md5'] ?? null, $rec['scan_report'] ?? null);
+            }
+
             if ($plain === null) {
                 $err = 'Decryption failed - the file may be corrupted.';
+            } elseif (!$integrity['ok']) {
+                $err = 'Integrity check failed: the decrypted file does not match the fingerprint '
+                     . 'recorded at upload, so it was not opened. The stored copy may be corrupted or '
+                     . 'tampered with.';
+                log_action($user['user_id'], 'INTEGRITY_FAIL',
+                           (int)$rec['file_id'], (int)$rec['key_id'],
+                           'method=' . $integrity['method'] . '; action=' . $action);
             } else {
                 log_action($user['user_id'], strtoupper($action),
                            (int)$rec['file_id'], (int)$rec['key_id']);
