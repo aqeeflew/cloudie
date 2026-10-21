@@ -50,9 +50,13 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - URLs: `https://cloudie-php-800476519477.asia-southeast1.run.app`,
   `https://cloudie-flask-800476519477.asia-southeast1.run.app`
   (the `...-2q6nug2xha-as.a.run.app` URLs also work).
-- **Live status (2026-10-20):** both services deployed from `main` after PR #7
-  (php `cloudie-php-00032-qdh`, flask `cloudie-flask-00007-z2z`). The earlier HTTP 503 was
+- **Live status (2026-10-21):** deployed from `main` after PR #9
+  (php `cloudie-php-00033-4xc`, flask `cloudie-flask-00007-z2z`). The earlier HTTP 503 was
   **billing disabled** (Cloud SQL `SUSPENDED`, reason `BILLING_ISSUE`); billing is active again.
+- **Flask is private** (Cloud Run IAM): only the service account
+  `800476519477-compute@developer.gserviceaccount.com` has `roles/run.invoker`; `allUsers` was removed.
+  PHP has `SCANNER_AUTH=iam` and sends a Google ID token (`includes/scanner.php`). Calling Flask directly
+  gives 403/401. Locally `SCANNER_AUTH` defaults to `none`. Rollback: re-add `allUsers` as invoker.
 
 ## Facts the code and thesis must agree on
 
@@ -143,11 +147,10 @@ If Cloud SQL was stopped to save credit:
 ## Open TODOs
 
 Done: billing/503 fixed and redeployed (2026-10-20); `VT_API_KEY` attached; VT polling, PDF gate,
-fail-closed, QR, OTP, header and upload hardening live.
+fail-closed, QR, OTP, header and upload hardening live; Flask made private with IAM (2026-10-21).
 
-1. **Flask has no authentication** (`--allow-unauthenticated`): anyone can call `/scan` (T4 in `docs\AUDIT_REPORT.md`).
-2. Post-decrypt integrity check (hash), rate limiting on login/register/upload, CSP, README and basic tests.
-3. Replace the placeholder GitHub, LinkedIn and email links in `index.php` (real URLs needed).
-4. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
-5. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,
+1. Post-decrypt integrity check (hash), rate limiting on login/register/upload, CSP, README and basic tests.
+2. Replace the placeholder GitHub, LinkedIn and email links in `index.php` (real URLs needed).
+3. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
+4. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,
    VT-as-teacher feedback loop) and platform (retroactive rescan, hash-chained audit log).
