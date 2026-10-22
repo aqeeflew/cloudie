@@ -36,6 +36,7 @@ from verdict_engine import combine, PRIMARY_DETECTOR, risk_indicators, AI_HIGH_C
 from prediction_log import log_prediction
 import vt_client
 from feature_explain import build_explanation
+import evasion_indicators
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -275,8 +276,20 @@ def analyze():
             explanation = build_explanation(
                 MODEL, MODEL_FEATURES if MODEL_FEATURES else FEATURE_NAMES, ext["features"])
 
-        # Risk gate input: strong risk indicators present in the PDF (None for non-PDF / no AI)
-        ai_risk = risk_indicators(ext["features"]) if (is_pdf and ai_proba is not None) else None
+        # Evasion-aware, rule-based findings (hidden keywords, payload tricks...). Never changes the
+        # 32-feature vector; strong findings can tag a PDF as suspicious on their own.
+        if is_pdf:
+            ev = evasion_indicators.analyze(tmp_path)
+        else:
+            ev = {"findings": [], "strong_ids": [], "error": None,
+                  "scanned": {"streams": 0, "inflated_bytes": 0, "truncated": False, "ms": 0}}
+        ev_strong = ev["strong_ids"]
+
+        # Risk gate input: strong risk indicators present in the PDF (None for non-PDF / no AI);
+        # strong evasion findings also count as specific risk indicators.
+        ai_risk = None
+        if is_pdf and ai_proba is not None:
+            ai_risk = list(dict.fromkeys(risk_indicators(ext["features"]) + ev_strong))
 
         # 4) Combined verdict
         result = combine(
@@ -285,6 +298,7 @@ def analyze():
             vt_total=vt_total,
             extraction_ok=extraction_ok,
             ai_risk=ai_risk,
+            evasion=ev_strong,
         )
 
         # Did the AI actually tag the file? (score >= 0.5 AND the risk gate passed)
@@ -301,6 +315,8 @@ def analyze():
                              % round(AI_HIGH_CONFIDENCE * 100))
             else:
                 gate_note = "The score is below 50%, so the AI did not flag this file."
+            if ev_strong and not ai_flagged:
+                gate_note += (" The file was tagged by the rule-based evasion checks instead (see the findings below).")
             explanation["gate"] = {
                 "risk_indicators": ai_risk,
                 "high_confidence": AI_HIGH_CONFIDENCE,
@@ -359,6 +375,9 @@ def analyze():
                 )
         if ai_risk:
             indicators.append("Risk indicators in the PDF: " + ", ".join(ai_risk))
+        for f in ev["findings"]:
+            if f["strong"]:
+                indicators.append("Evasion indicator: " + f["title"])
         if vt_positives:
             indicators.append(f"VirusTotal: {vt_positives} engine(s) flagged it")
         if result["disagreement"]:
@@ -453,6 +472,8 @@ def analyze():
 
             # ---- richer structure the report card renders ------------------
             "ai": ai_block,
+            "findings": ev["findings"],
+            "evasion": {"strong": ev_strong, "scanned": ev["scanned"], "error": ev["error"]},
             "explanation": explanation,
             "virustotal": vt_block,
             "combined": combined_block,

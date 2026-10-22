@@ -1,6 +1,7 @@
 """/scan end to end with VirusTotal mocked (no network, no API key needed)."""
 
 import io
+import os
 import unittest
 
 import helpers
@@ -49,6 +50,43 @@ class ScanApi(unittest.TestCase):
         self.assertEqual(j["ai"]["verdict"], "malicious")
         self.assertTrue(j["explanation"]["gate"]["tagged"])
         self.assertIn("JS", j["explanation"]["gate"]["risk_indicators"])
+
+    HIDDEN_JS = (b"%PDF-1.3\n1 0 obj\n<< /Type /Catalog /Open#41ction 4 0 R >>\nendobj\n"
+                 b"4 0 obj\n<< /S /J#61vaScr#69pt /J#53 (app.alert\\('Cloudie test'\\);) >>\nendobj\n"
+                 b"trailer\n<< /Root 1 0 R >>\n%%EOF\n")
+
+    def test_hidden_script_is_tagged_suspicious_by_the_evasion_layer(self):
+        j = self.scan(self.HIDDEN_JS, "hidden.pdf", vt_report())
+        self.assertEqual(j["verdict"], "suspicious")
+        self.assertIn("obfuscated_keywords", j["evasion"]["strong"])
+        self.assertEqual([f["id"] for f in j["findings"] if f["strong"]], ["obfuscated_keywords"])
+        self.assertTrue(any("Evasion indicator" in i for i in j["indicators"]))
+        # the 32-feature view of the model is untouched: the keywords are invisible to it
+        self.assertEqual(j["features"]["Javascript"], 0)
+        self.assertEqual(j["features"]["OpenAction"], 0)
+
+    def test_hidden_script_is_still_blocked_when_virustotal_flags_it(self):
+        self.assertEqual(self.scan(self.HIDDEN_JS, "hidden.pdf", vt_report(malicious=5))["verdict"], "malicious")
+
+    def test_plain_pdf_has_empty_findings(self):
+        j = self.scan(helpers.PDF_PLAIN, "a.pdf", vt_report())
+        self.assertEqual(j["findings"], [])
+        self.assertEqual(j["evasion"]["strong"], [])
+
+    def test_non_pdf_runs_no_evasion_checks(self):
+        j = self.scan(helpers.PNG_BYTES, "a.png", vt_report())
+        self.assertEqual(j["findings"], [])
+
+    @unittest.skipUnless(os.path.isdir(os.path.join(helpers.ROOT, "..", "docs")), "project docs folder not present")
+    def test_real_world_pdfs_produce_no_strong_findings(self):
+        docs = os.path.join(helpers.ROOT, "..", "docs")
+        pdfs = [os.path.join(d, f) for d, _, fs in os.walk(docs) for f in fs if f.lower().endswith(".pdf")]
+        if not pdfs:
+            self.skipTest("no PDFs under docs/")
+        import evasion_indicators as E
+        for p in pdfs:
+            r = E.analyze(p)
+            self.assertEqual(r["strong_ids"], [], os.path.basename(p))
 
     def test_vt_hit_blocks_even_a_plain_pdf(self):
         j = self.scan(helpers.PDF_PLAIN, "a.pdf", vt_report(malicious=12, suspicious=1))

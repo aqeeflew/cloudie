@@ -15,7 +15,7 @@ never stores the key, only its SHA-256 fingerprint.
 |---|---|---|---|
 | flags the file | any | **Malicious** | No, blocked |
 | no result (key missing, rate limit, timeout) | any | **Error** (fail closed) | No, blocked |
-| clean | score >= 50% **and** a strong risk indicator (or score >= 85%) | **Suspicious** | Yes, tagged |
+| clean | score >= 50% **and** a strong risk indicator (or score >= 85%), **or** a strong evasion finding | **Suspicious** | Yes, tagged |
 | clean | otherwise | **Clean** | Yes |
 
 - Non-PDF files skip the AI and are judged by VirusTotal alone.
@@ -45,6 +45,9 @@ sequenceDiagram
 ## Features
 
 - Upload scan: VirusTotal (hash lookup, upload, polling) + 32-feature Random Forest, explainable
+- **Evasion-aware checks** (`flask_api\evasion_indicators.py`): finds tricks that hide a PDF from keyword counters
+  (hex-escaped names like `/J#61vaScript`, exploit techniques in compressed scripts, embedded executables, shell launches,
+  appended payloads). Rule-based, bounded in time and memory, independent of the model. See `docs\EVASION_BENCHMARK.md`
 - AES-256-CBC per file: random 32-byte key and 16-byte IV, only `sha256(key)` is stored
 - Integrity check after decryption (SHA-256 recorded at upload), tampered files are not served
 - Accounts: email verification, password + emailed one-time code (2FA), bcrypt, CSRF
