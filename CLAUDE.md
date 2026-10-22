@@ -74,6 +74,11 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
     Bounded: 3 s, 1500 streams, 512 KB per stream, 8 MB total. Benchmark (synthetic, with honest limits):
     `docs/EVASION_BENCHMARK.md`, `ml/evasion_benchmark.py`. Demo PDFs: `python tests/make_demo_pdfs.py <folder>`
     (clean / visible script / hidden script).
+  - **Structure layer for other types** (lask_api/file_structure.py, office_structure.py, rchive_structure.py; see docs/STRUCTURE_CHECKS.md):
+    Office OOXML and ZIP files get rule-based checks (macro in a macro-free type, DDE, remote template, zip slip, zip bomb,
+    disguised/double-extension programs) and every upload gets a name-vs-content check. Strong findings tag a VT-clean file
+    SUSPICIOUS. The RF stays PDF-only. Not measured on real-world benign Office files (no FP rate claimed).
+    Demo files: `python tests/make_demo_files.py <folder>`.
   - The scan report has a "Why this AI score" card (`flask_api/feature_explain.py`, exact tree-path
     contributions + `feature_reference.json` built by `ml/build_feature_reference.py`).
   - Both clean → CLEAN.
@@ -115,7 +120,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
 ```
 
-PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (73, `unittest`, VT mocked).
+PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (126, `unittest`, VT mocked).
 Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
 
 ## Run locally (Windows)

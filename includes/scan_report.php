@@ -313,27 +313,35 @@ function _ts(int $t): string {
       <tr><th>MD5</th><td class="mono"><?= e($report['file_md5'] ?? '—') ?></td></tr>
       <tr><th>SHA-256</th><td class="mono"><?= e($report['file_sha256'] ?? '—') ?></td></tr>
       <tr><th>Size</th><td><?= number_format((int)($report['file_size'] ?? 0)) ?> bytes</td></tr>
-      <tr><th>Type</th><td><?= !empty($report['is_pdf']) ? 'PDF document' : 'Non-PDF' ?></td></tr>
+      <tr><th>Type</th><td><?= e((string)($report['file_type_label'] ?? (!empty($report['is_pdf']) ? 'PDF document' : 'Non-PDF'))) ?></td></tr>
     </table>
   </div>
 
   <!-- ══ EVASION & STRUCTURE FINDINGS ══════════════════════════ -->
   <?php $findings = is_array($report['findings'] ?? null) ? $report['findings'] : [];
-        $evChecked = isset($report['evasion']) && !empty($report['is_pdf']); ?>
+        $evChecked = isset($report['evasion']);
+        $isPdfRpt  = !empty($report['is_pdf']); ?>
   <?php if ($findings || $evChecked): ?>
   <div class="rpt-section">
     <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    Evasion &amp; structure findings
+    <?= $isPdfRpt ? 'Evasion &amp; structure findings' : 'Structure findings' ?>
     <span class="rpt-badge rpt-badge-cnt"><?= count($findings) ?></span>
   </div>
   <p style="font-size:13px;color:var(--txt-dim);margin:0 0 .7rem">
+    <?php if ($isPdfRpt): ?>
     Rule-based checks for tricks that hide a PDF from keyword-based detectors (hidden keywords, scripts in compressed
-    streams, appended payloads). They are independent of the AI score. A <strong>strong</strong> finding tags the file as suspicious.
+    streams, appended payloads). They are independent of the AI score.
+    <?php else: ?>
+    Rule-based checks of how this <?= e(strtolower((string)($report['file_type_label'] ?? 'file'))) ?> is built
+    (macros, auto-run fields, remote templates, disguised programs, archive tricks). They need no signature, so they
+    can flag a file VirusTotal has never seen. The AI model is PDF-only and was not used.
+    <?php endif; ?>
+    A <strong>strong</strong> finding tags the file as suspicious.
   </p>
   <?php if (!$findings): ?>
     <div class="rpt-empty">
       <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      No evasion tricks detected.
+      <?= $isPdfRpt ? 'No evasion tricks detected.' : 'No suspicious structure found.' ?>
     </div>
   <?php else: ?>
     <ul class="ind-list">

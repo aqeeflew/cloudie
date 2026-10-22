@@ -110,6 +110,51 @@ class ScanApi(unittest.TestCase):
         self.assertIsNone(j["ai"]["probability_malicious"])
         self.assertIsNone(j["explanation"])
 
+    # ---- structure checks for Office files and archives (VT clean, structure decides) ----------------
+    @staticmethod
+    def _zip(entries):
+        import zipfile
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for n, d in entries:
+                zf.writestr(n, d)
+        return buf.getvalue()
+
+    def test_docx_with_a_hidden_macro_is_suspicious_when_vt_is_clean(self):
+        ct = b"<Types><Override PartName='/word/vbaProject.bin' ContentType='application/vnd.ms-office.vbaProject'/></Types>"
+        data = self._zip([("[Content_Types].xml", ct), ("word/document.xml", b"<w:document/>"),
+                          ("word/vbaProject.bin", b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1 Sub AutoOpen()")])
+        j = self.scan(data, "invoice.docx", vt_report())
+        self.assertEqual(j["verdict"], "suspicious")
+        self.assertFalse(j["is_pdf"])
+        self.assertEqual(j["file_type"], "ooxml")
+        self.assertIn("macro_in_macrofree_type", j["evasion"]["strong"])
+        self.assertTrue(any("Structure indicator" in i for i in j["indicators"]))
+        self.assertIsNone(j["ai"]["probability_malicious"])          # the model stays PDF-only
+
+    def test_the_same_docx_is_blocked_when_virustotal_flags_it(self):
+        data = self._zip([("[Content_Types].xml", b"<Types>vbaProject</Types>"), ("word/document.xml", b"<w/>")])
+        self.assertEqual(self.scan(data, "a.docx", vt_report(malicious=7))["verdict"], "malicious")
+
+    def test_a_plain_zip_and_a_plain_docx_are_clean(self):
+        z = self._zip([("notes.txt", b"hello"), ("a.pdf", helpers.PDF_PLAIN)])
+        self.assertEqual(self.scan(z, "bundle.zip", vt_report())["verdict"], "clean")
+        d = self._zip([("[Content_Types].xml", b"<Types/>"), ("word/document.xml", b"<w:document/>")])
+        j = self.scan(d, "report.docx", vt_report())
+        self.assertEqual(j["verdict"], "clean")
+        self.assertEqual(j["findings"], [])
+
+    def test_a_program_renamed_to_pdf_is_suspicious_even_though_virustotal_is_clean(self):
+        pe = b"MZ" + b"\x90" * 62 + b"PE\x00\x00" + b"\x00" * 100
+        j = self.scan(pe, "cv.pdf", vt_report())
+        self.assertEqual(j["verdict"], "suspicious")
+        self.assertIn("type_mismatch_executable", j["evasion"]["strong"])
+        self.assertEqual(j["file_type"], "pe")
+
+    def test_structure_findings_never_override_a_missing_virustotal_result(self):
+        z = self._zip([("../evil.txt", b"x")])
+        self.assertEqual(self.scan(z, "a.zip", vt_error=TimeoutError("x"))["verdict"], "error")
+
     def test_non_pdf_with_vt_no_result_is_error(self):
         j = self.scan(helpers.PNG_BYTES, "a.png", vt_error=TimeoutError("x"))
         self.assertEqual(j["verdict"], "error")
