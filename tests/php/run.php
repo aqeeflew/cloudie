@@ -14,6 +14,7 @@ $ROOT = dirname(__DIR__, 2);
 require_once $ROOT . '/includes/aes.php';
 require_once $ROOT . '/includes/upload_check.php';
 require_once $ROOT . '/includes/ratelimit.php';   // db.php is loaded but no connection is opened
+require_once $ROOT . '/includes/audit.php';
 
 $passed = 0;
 $failed = 0;
@@ -125,6 +126,76 @@ check('keys never contain the raw value', strpos(rl_key('alice'), 'alice') === f
 check('every bucket has a [max, window] policy',
       count(array_filter(RL_POLICY, fn($p) => is_int($p[0]) && $p[0] > 0 && is_int($p[1]) && $p[1] > 0)) === count(RL_POLICY));
 check('wait text', rl_wait_text(30) === '30 seconds' && rl_wait_text(1) === '1 second' && rl_wait_text(900) === '15 minutes' && rl_wait_text(100) === '2 minutes');
+
+// ---------------------------------------------------------------------------
+echo "Tamper-evident audit chain\n";
+function audit_test_chain(int $uid, int $n): array {
+    $rows = []; $prev = AUDIT_GENESIS;
+    for ($i = 1; $i <= $n; $i++) {
+        $time = '2026-10-22 10:00:' . sprintf('%02d', $i);
+        $type = $i === 1 ? 'LOGIN' : 'SCAN';
+        $fr   = $i % 2 ? null : 100 + $i;
+        $det  = 'detail ' . $i;
+        $h    = audit_hash($prev, $uid, $type, $fr, null, $det, $time);
+        $rows[] = ['act_id' => 1000 + $i, 'act_type' => $type, 'details' => $det, 'act_time' => $time,
+                   'file_ref' => $fr, 'key_ref' => null, 'chain_seq' => $i, 'prev_hash' => $prev, 'row_hash' => $h];
+        $prev = $h;
+    }
+    return [$rows, ['seq' => $n, 'head' => $prev, 'mac' => audit_head_mac($uid, $n, $prev)]];
+}
+function kinds(array $res): array { return array_values(array_unique(array_column($res['problems'], 'kind'))); }
+
+[$rows, $head] = audit_test_chain(7, 6);
+$r = audit_verify_rows(7, $rows, $head);
+check('an untouched chain verifies (6 sealed)', $r['ok'] && $r['sealed'] === 6 && $r['head'] === $head['head']);
+check('hashes are deterministic', audit_hash(AUDIT_GENESIS, 7, 'LOGIN', null, null, 'x', 't') === audit_hash(AUDIT_GENESIS, 7, 'LOGIN', null, null, 'x', 't'));
+check('hash depends on the user (an entry cannot be moved to another account)',
+      audit_hash(AUDIT_GENESIS, 7, 'LOGIN', null, null, 'x', 't') !== audit_hash(AUDIT_GENESIS, 8, 'LOGIN', null, null, 'x', 't'));
+check('a chain of user 7 does not verify as user 8', !audit_verify_rows(8, $rows, $head)['ok']);
+
+$m = $rows; $m[2]['details'] = 'edited by an attacker';
+$r = audit_verify_rows(7, $m, $head);
+check('editing one entry is detected and pinpointed', !$r['ok'] && kinds($r) === ['edited'] && $r['problems'][0]['act_id'] === 1003);
+
+$m = $rows; $m[2]['act_type'] = 'LOGOUT';
+check('changing the event type is detected', !audit_verify_rows(7, $m, $head)['ok']);
+
+$m = $rows; $m[3]['file_ref'] = 999;
+check('changing the file reference is detected', !audit_verify_rows(7, $m, $head)['ok']);
+
+$m = $rows; $m[2]['details'] = 'forged';
+$m[2]['row_hash'] = hash('sha256', audit_canonical($m[2]['prev_hash'], 7, $m[2]['act_type'], $m[2]['file_ref'], null, 'forged', $m[2]['act_time']));
+check('recomputing the hash WITHOUT the secret key does not help the attacker', !audit_verify_rows(7, $m, $head)['ok']);
+
+$m = $rows; array_splice($m, 2, 1);
+$r = audit_verify_rows(7, $m, $head);
+check('deleting an entry from the middle is detected', !$r['ok'] && in_array('missing', kinds($r), true));
+
+$m = array_slice($rows, 0, 4);
+$r = audit_verify_rows(7, $m, $head);
+check('deleting the most recent entries is detected (sealed head)', !$r['ok'] && kinds($r) === ['tail']);
+
+$m = array_slice($rows, 0, 4);
+$fakeHead = ['seq' => 4, 'head' => $m[3]['row_hash'], 'mac' => str_repeat('a', 64)];
+check('rewriting the head without the key is detected', in_array('head', kinds(audit_verify_rows(7, $m, $fakeHead)), true));
+
+$m = $rows; $tmp = $m[2]; $m[2] = $m[3]; $m[3] = $tmp;
+check('reordering entries is detected', !audit_verify_rows(7, $m, $head)['ok']);
+
+$m = $rows; array_splice($m, 3, 0, [['act_id' => 1099, 'act_type' => 'DELETE', 'details' => 'fake', 'act_time' => '2026-10-22 10:00:30',
+        'file_ref' => null, 'key_ref' => null, 'chain_seq' => null, 'prev_hash' => null, 'row_hash' => null]]);
+$r = audit_verify_rows(7, $m, $head);
+check('an unsealed entry inserted inside the chain is detected', !$r['ok'] && in_array('unsealed', kinds($r), true));
+
+$legacy = [['act_id' => 5, 'act_type' => 'LOGIN', 'details' => null, 'act_time' => '2026-01-01 00:00:00',
+            'file_ref' => null, 'key_ref' => null, 'chain_seq' => null, 'prev_hash' => null, 'row_hash' => null]];
+$r = audit_verify_rows(7, array_merge($legacy, $rows), $head);
+check('earlier (unsealed) entries before the chain are reported, not flagged', $r['ok'] && $r['legacy'] === 1 && $r['sealed'] === 6);
+$r = audit_verify_rows(9, $legacy, null);
+check('a user with only earlier entries and no head is fine', $r['ok'] && $r['sealed'] === 0 && $r['legacy'] === 1);
+check('an empty log with no head is fine', audit_verify_rows(9, [], null)['ok']);
+check('wiping every sealed entry is detected', !audit_verify_rows(7, [], $head)['ok']);
+check('labels exist for the event codes', audit_label('LOGIN') === 'Signed in' && audit_label('XYZ') === 'XYZ');
 
 // ---------------------------------------------------------------------------
 echo "Syntax check (php -l) of every PHP file\n";

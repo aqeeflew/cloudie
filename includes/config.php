@@ -35,6 +35,11 @@ define('SCANNER_TIMEOUT', 115);  // seconds; Flask budget is 85 s (VT lookup/upl
 // SCANNER_AUTH=none -> no auth header (local XAMPP, Flask on 127.0.0.1).
 define('SCANNER_AUTH',    env_or('SCANNER_AUTH',   'none'));
 
+// ---- Audit trail seal ----
+// Secret that seals the tamper-evident audit chain (Secret Manager in production).
+// Empty = local development fallback key (the verify page then says the seal is unkeyed).
+define('AUDIT_HMAC_KEY',  env_or('AUDIT_HMAC_KEY', ''));
+
 // ---- Cloud Storage ----
 // USE_CLOUD_STORAGE=true makes encrypted blobs live in GCS_BUCKET.
 // Leave it unset/false locally to use the disk path below.

@@ -49,6 +49,8 @@ sequenceDiagram
 - Integrity check after decryption (SHA-256 recorded at upload), tampered files are not served
 - Accounts: email verification, password + emailed one-time code (2FA), bcrypt, CSRF
 - Rate limiting (login, OTP, register, upload), security headers, `Secure` cookies on HTTPS
+- **Tamper-evident audit trail**: every event is sealed into a per-user hash chain (HMAC-SHA256 with a server secret);
+  the *Audit trail* page re-verifies it live and pinpoints an edited, removed, inserted or reordered entry
 - Folders, dashboard, per-file scan reports (JSON/TXT download), audit log
 - Runs on **Google Cloud Run** (PHP + Flask, Cloud SQL, Cloud Storage, Secret Manager) and on local XAMPP
 
@@ -104,6 +106,7 @@ folders temporarily if you want to demo a blocked upload locally.
 | `USE_CLOUD_STORAGE`, `GCS_BUCKET`, `GCP_PROJECT_ID` | Encrypted blobs in Cloud Storage | `false` (local `encrypted\`) |
 | `MAIL_ENABLED`, `SMTP_*` | Gmail SMTP (app password from Secret Manager) | disabled |
 | `DISPLAY_ERRORS` | PHP error display | `1` (set `0` in production) |
+| `AUDIT_HMAC_KEY` | Secret that seals the audit chain (Secret Manager in production) | empty = local development key |
 | `VT_API_KEY` (Flask) | VirusTotal API key | none |
 
 Never commit keys, passwords or `.env` files.
