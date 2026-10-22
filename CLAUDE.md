@@ -115,7 +115,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
 ```
 
-PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (66, `unittest`, VT mocked).
+PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (73, `unittest`, VT mocked).
 Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
 
 ## Run locally (Windows)
@@ -179,6 +179,11 @@ If Cloud SQL was stopped to save credit:
   emails/h per IP, register 8/h per IP, upload 10/10 min per user. State is in the DB (not the session) because
   Cloud Run instances do not share sessions. Client IP = last `X-Forwarded-For` entry behind Cloud Run.
   To unlock a locked-out test account: `DELETE FROM rate_limits;`.
+- **VirusTotal free quota (about 4 requests/min) matters for demos.** A file VT does not know yet needs upload + polling
+  (up to 85 s, polls at 15 s then every 10 s); known files need one hash lookup. When the quota is exhausted the scan
+  returns ERROR (fail closed) and the user sees "VirusTotal error". Before a demo: scan each demo file ONCE a few minutes
+  earlier (so VT knows its hash), and wait about a minute between uploads. Observed on 2026-10-22: three new files in a row,
+  only the first got a result.
 - Keep local backups in `backup/` or `backup-*/` (both are ignored by `.gcloudignore` / `.dockerignore`).
 - On real-world PDFs the RF gives P(malicious) ≈ 0.41–0.43 (close to the 0.5 cut-off). The model is less
   certain outside the dataset distribution. This is a good argument for VT being primary.
