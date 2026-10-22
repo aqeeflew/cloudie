@@ -208,8 +208,15 @@ function row_verdict(array $row): string {
 <script>
 document.querySelectorAll('[data-delete-name]').forEach(function(a){
   a.addEventListener('click',function(e){
-    var name = this.getAttribute('data-delete-name');
-    if(!confirm('Delete "' + name + '"?\n\nThis cannot be undone.')) e.preventDefault();
+    e.preventDefault();
+    var link = this, href = link.getAttribute('href');
+    clConfirm({
+      title: 'Delete this file?',
+      item: link.getAttribute('data-delete-name'),
+      message: 'This permanently removes the encrypted file and its key record. It cannot be undone.',
+      note: 'Next you will be asked for the file\u2019s AES key to confirm.',
+      confirmText: 'Continue to delete'
+    }).then(function(yes){ if (yes) window.location.href = href; });
   });
 });
 

@@ -504,6 +504,37 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
   background:radial-gradient(380px circle at var(--cg-x,50%) var(--cg-y,50%),rgba(39,211,224,.09),transparent 65%)}
 [data-theme="light"] .cg::before{background:radial-gradient(380px circle at var(--cg-x,50%) var(--cg-y,50%),rgba(12,132,166,.08),transparent 65%)}
 .cg:hover::before{opacity:1}
+/* ---------- CONFIRM DIALOG (replaces the browser's confirm() box) ---------- */
+.clc-backdrop{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:16px;
+  background:rgba(4,7,16,.62);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+  opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s linear .18s}
+:root[data-theme="light"] .clc-backdrop{background:rgba(24,34,64,.38)}
+.clc-backdrop.open{opacity:1;visibility:visible;transition:opacity .18s ease}
+.clc-card{width:min(440px,100%);background:linear-gradient(165deg,var(--panel-2),var(--panel));
+  border:1px solid var(--line-2);border-radius:20px;padding:24px 24px 20px;
+  box-shadow:0 28px 90px rgba(0,0,0,.5);transform:translateY(10px) scale(.96);opacity:0;
+  transition:transform .22s cubic-bezier(.16,1,.3,1),opacity .18s ease}
+.clc-backdrop.open .clc-card{transform:none;opacity:1}
+.clc-ico{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;margin-bottom:14px;
+  color:var(--red);background:rgba(255,93,108,.14);border:1px solid rgba(255,93,108,.32)}
+.clc-card[data-tone="warn"] .clc-ico{color:var(--amber);background:rgba(255,194,75,.14);border-color:rgba(255,194,75,.34)}
+.clc-ico svg{width:26px;height:26px}
+.clc-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.28rem;letter-spacing:-.01em;color:var(--txt);margin:0 0 6px}
+.clc-item{display:flex;align-items:center;gap:9px;margin:10px 0 2px;padding:9px 12px;border-radius:12px;
+  background:var(--panel);border:1px solid var(--line);min-width:0}
+.clc-item svg{width:17px;height:17px;flex:none;color:var(--txt-dim)}
+.clc-item span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:'JetBrains Mono',monospace;font-size:.84rem;color:var(--txt)}
+.clc-msg{color:var(--txt-dim);font-size:.92rem;line-height:1.55;margin:.8rem 0 0}
+.clc-note{display:flex;gap:8px;align-items:flex-start;margin:.9rem 0 0;padding:10px 12px;border-radius:12px;
+  background:rgba(255,194,75,.09);border:1px solid rgba(255,194,75,.28);color:var(--txt);font-size:.84rem;line-height:1.45}
+.clc-note svg{width:16px;height:16px;flex:none;margin-top:2px;color:var(--amber)}
+.clc-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.clc-actions .btn{min-width:108px;justify-content:center}
+.clc-card[data-tone="warn"] .clc-go{background:rgba(255,194,75,.16);border-color:rgba(255,194,75,.4);color:var(--amber)}
+@media (max-width:480px){.clc-card{padding:20px 18px 16px}.clc-actions .btn{flex:1}}
+@media (prefers-reduced-motion:reduce){.clc-backdrop,.clc-card{transition:none}.clc-card{transform:none}}
+body.clc-lock{overflow:hidden}
 </style>
 <script>
 (function(){

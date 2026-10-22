@@ -158,7 +158,7 @@ $fcolor = $colorVar[$folder['color']] ?? 'var(--cyan)';
       <input type="hidden" name="csrf" value="<?= $csrf ?>">
       <input type="hidden" name="action" value="delete_folder">
       <button type="submit" class="btn btn-sm btn-danger"
-              onclick="return confirm('Delete folder &quot;<?= e($folder['folder_name']) ?>&quot;?\n\nFiles will NOT be deleted — they move back to your vault.')">
+              data-confirm-folder="<?= e($folder['folder_name']) ?>">
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Delete folder
       </button>
@@ -293,7 +293,30 @@ $fcolor = $colorVar[$folder['color']] ?? 'var(--cyan)';
 // delete confirmation
 document.querySelectorAll('[data-delete-name]').forEach(function(a){
   a.addEventListener('click',function(e){
-    if(!confirm('Delete "'+this.getAttribute('data-delete-name')+'"?\n\nThis cannot be undone.')) e.preventDefault();
+    e.preventDefault();
+    var link = this, href = link.getAttribute('href');
+    clConfirm({
+      title: 'Delete this file?',
+      item: link.getAttribute('data-delete-name'),
+      message: 'This permanently removes the encrypted file and its key record. It cannot be undone.',
+      note: 'Next you will be asked for the file\u2019s AES key to confirm.',
+      confirmText: 'Continue to delete'
+    }).then(function(yes){ if (yes) window.location.href = href; });
+  });
+});
+// delete-folder confirmation
+document.querySelectorAll('[data-confirm-folder]').forEach(function(b){
+  b.addEventListener('click',function(e){
+    e.preventDefault();
+    var form = this.form;
+    clConfirm({
+      title: 'Delete this folder?',
+      item: this.getAttribute('data-confirm-folder'),
+      message: 'The folder is removed. Your files are not deleted.',
+      note: 'Files in this folder move back to your vault.',
+      confirmText: 'Delete folder',
+      tone: 'warn'
+    }).then(function(yes){ if (yes && form) form.submit(); });
   });
 });
 // rename toggle
