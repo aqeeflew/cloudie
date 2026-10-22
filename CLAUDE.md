@@ -45,7 +45,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
   Cloud Run connects through the socket `/cloudsql/cloudie-499914:asia-southeast1:cloudie-db`.
 - **GCS** `cloudie-499914-files`: encrypted blobs when `USE_CLOUD_STORAGE=true`.
 - GCP project `cloudie-499914`, region `asia-southeast1`.
-- Secret Manager: `cloudie-db-pass` → `DB_PASS`, `cloudie-gmail-pass` → `SMTP_PASS`,
+- Secret Manager: `cloudie-db-pass` → `DB_PASS`, `cloudie-gmail-pass` → `SMTP_PASS`, `cloudie-audit-key` → `AUDIT_HMAC_KEY` (PHP; never rotate casually: old entries would no longer verify),
   `cloudie-vt-key` → `VT_API_KEY` (Flask; confirmed attached on 2026-10-20).
 - URLs: `https://cloudie-php-800476519477.asia-southeast1.run.app`,
   `https://cloudie-flask-800476519477.asia-southeast1.run.app`
@@ -91,6 +91,14 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
   - CBC has no built-in integrity. `decrypt.php` now compares the decrypted bytes with the hash recorded at
     upload (SHA-256 from `files.scan_report`, else `files.file_md5`) via `verify_plaintext_integrity()`; a
     mismatch is not served and is logged as `INTEGRITY_FAIL`. Not applied to delete. AES-GCM is future work.
+- **Audit trail** (`includes/audit.php`, page `audit.php`): every `log_action()` call appends a sealed entry to a per-user
+  hash chain (`actions.chain_seq/prev_hash/row_hash`, HMAC-SHA256 keyed by `AUDIT_HMAC_KEY`) plus a sealed head in
+  `audit_heads` (detects deletion of the latest rows). Detects edited, removed, inserted, reordered entries; does NOT stop
+  someone with both DB write access and the secret. Older rows are "earlier" (unsealed). If `audit_append` fails,
+  `log_action` falls back to a plain row, shown as an unsealed entry inside the chain. Migration runs automatically
+  (`db_ensure_audit`). Concurrency: head row is created outside the transaction + `FOR UPDATE` + deadlock retry
+  (a 25-process stress test found a deadlock in the first version; now 80 parallel writes give 80 sealed entries).
+  Demo: edit a row (`UPDATE actions SET details='x' WHERE act_id=...`) and reload `audit.php`: "Tampering detected".
 - **Storage:** Cloud Run is stateless, so blobs go to GCS via `includes/storage.php`. Local XAMPP uses `encrypted/`.
 - **Email:** PHPMailer 6.9.1 (`includes/PHPMailer/src/`) + Gmail SMTP. Best-effort, never blocks.
   - Sends welcome, AES key, OTP, and verification emails.

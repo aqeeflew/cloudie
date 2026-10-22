@@ -587,6 +587,7 @@ hr.rpt-hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
       </a>
       <nav class="nav">
         <a href="dashboard.php" class="<?= $cur==='dashboard.php'?'active':'' ?>"><svg viewBox="0 0 24 24" fill="none"><path d="M3 11l9-7 9 7M5 10v9h14v-9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>My files</a>
+        <a href="audit.php" class="<?= $cur==='audit.php'?'active':'' ?>"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Audit trail</a>
       </nav>
       <div class="nav-label nav-label-row">
         <span>My Folders</span>

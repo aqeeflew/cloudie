@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/audit.php';
 
 function db(bool $fresh = false): PDO {
     static $pdo = null;
@@ -110,6 +111,14 @@ function log_action(int $user_id,
                     ?int $file_id = null,
                     ?int $key_id  = null,
                     ?string $details = null): void {
+    try {
+        // Normal path: a sealed entry in the tamper-evident chain (includes/audit.php)
+        audit_append($user_id, $act_type, $file_id, $key_id, $details);
+        return;
+    } catch (Throwable $e) {
+        error_log('audit_append failed, falling back to a plain row: ' . $e->getMessage());
+    }
+    // Fallback: never lose the event (the verify page will show it as an unsealed entry)
     try {
         $stmt = db()->prepare(
             "INSERT INTO actions (user_id, file_id, key_id, act_type, details)

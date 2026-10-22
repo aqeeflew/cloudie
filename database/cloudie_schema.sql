@@ -111,6 +111,13 @@ CREATE TABLE IF NOT EXISTS actions (
     act_type   VARCHAR(40) NOT NULL,      -- LOGIN, UPLOAD, SCAN, ENCRYPT, DECRYPT, VIEW, DOWNLOAD, DELETE
     details    VARCHAR(255) NULL,
     act_time   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    -- tamper-evident chain (added at runtime by includes/audit.php; NULL on older rows)
+    file_ref   INT      NULL,                -- copy of file_id at logging time (file_id may later become NULL)
+    key_ref    INT      NULL,                -- copy of key_id at logging time
+    chain_seq  INT      NULL,                -- 1, 2, 3 ... per user
+    prev_hash  CHAR(64) NULL,                -- row_hash of the previous entry of this user
+    row_hash   CHAR(64) NULL,                -- HMAC-SHA256 over the entry and prev_hash
+    KEY idx_actions_chain (user_id, act_id),
     CONSTRAINT fk_act_user FOREIGN KEY (user_id)
         REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_act_file FOREIGN KEY (file_id)
@@ -129,6 +136,17 @@ CREATE TABLE IF NOT EXISTS rate_limits (
     k          CHAR(64)     NOT NULL,
     created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_rl (bucket, k, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- AUDIT_HEADS table (sealed head of each user's audit chain, detects removal of the latest entries)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS audit_heads (
+    user_id INT       NOT NULL PRIMARY KEY,
+    seq     INT       NOT NULL DEFAULT 0,
+    head    CHAR(64)  NOT NULL,
+    mac     CHAR(64)  NOT NULL,
+    CONSTRAINT fk_audit_head_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Useful indexes
