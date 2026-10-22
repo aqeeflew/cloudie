@@ -64,7 +64,7 @@ def _vt_label(vt_positives):
 
 
 def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True,
-            ai_risk=None):
+            ai_risk=None, evasion=None):
     """
     Produce the combined Cloudie verdict under the VT-primary policy.
 
@@ -76,6 +76,8 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True,
     extraction_ok : bool         Whether feature extraction succeeded.
     ai_risk : list | None        Strong risk indicators found in the PDF (see risk_indicators).
                                  None = gate not applied (legacy behaviour).
+    evasion : list | None        Ids of STRONG evasion findings (evasion_indicators.py), e.g. hidden
+                                 keywords or an embedded executable. Rule-based, independent of the AI.
 
     Returns
     -------
@@ -123,6 +125,7 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True,
 
         # 2) VT clean but AI flags structural features -> store, tag suspicious,
         #    provided the risk gate passes (specific indicator, or very high score).
+        evasion_hit = bool(evasion)
         if ai_says_mal:
             gate_ok = (ai_risk is None) or bool(ai_risk) or ai_proba >= AI_HIGH_CONFIDENCE
             if gate_ok:
@@ -130,7 +133,16 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True,
                                ai_says_mal, vt_says_mal, disagreement,
                                "AI structural analysis flagged the file while "
                                "VirusTotal did not. Stored but tagged SUSPICIOUS "
-                               "for the user.")
+                               "for the user." + (" Evasion indicators were found as well." if evasion_hit else ""))
+        # 2b) The AI is not convinced (or not asked), but rule-based EVASION findings are:
+        #     hidden keywords, an embedded executable, shell launch, exploit techniques in a script.
+        #     These rarely occur in legitimate PDFs and are exactly what hides a file from keyword-based models.
+        if evasion_hit:
+            return _result(Verdict.SUSPICIOUS, 0.7, ai_says_mal, vt_says_mal, disagreement,
+                           "Evasion indicators were found (%s) although VirusTotal did not flag the file "
+                           "and the AI score is low. Stored but tagged SUSPICIOUS for the user."
+                           % ", ".join(evasion))
+        if ai_says_mal:
             return _result(Verdict.CLEAN, 0.6, ai_says_mal, vt_says_mal, disagreement,
                            "The AI score is %d%% but the file has no specific risk "
                            "indicator (JavaScript, auto-run actions, launch, embedded "

@@ -317,6 +317,51 @@ function _ts(int $t): string {
     </table>
   </div>
 
+  <!-- ══ EVASION & STRUCTURE FINDINGS ══════════════════════════ -->
+  <?php $findings = is_array($report['findings'] ?? null) ? $report['findings'] : [];
+        $evChecked = isset($report['evasion']) && !empty($report['is_pdf']); ?>
+  <?php if ($findings || $evChecked): ?>
+  <div class="rpt-section">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Evasion &amp; structure findings
+    <span class="rpt-badge rpt-badge-cnt"><?= count($findings) ?></span>
+  </div>
+  <p style="font-size:13px;color:var(--txt-dim);margin:0 0 .7rem">
+    Rule-based checks for tricks that hide a PDF from keyword-based detectors (hidden keywords, scripts in compressed
+    streams, appended payloads). They are independent of the AI score. A <strong>strong</strong> finding tags the file as suspicious.
+  </p>
+  <?php if (!$findings): ?>
+    <div class="rpt-empty">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      No evasion tricks detected.
+    </div>
+  <?php else: ?>
+    <ul class="ind-list">
+      <?php foreach ($findings as $f):
+            $sev = (string)($f['severity'] ?? 'low');
+            $col = $sev === 'high' ? 'var(--red)' : ($sev === 'medium' ? 'var(--amber)' : 'var(--txt-faint)'); ?>
+        <li class="ind-item" style="display:block">
+          <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
+            <span style="font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid <?= $col ?>;color:<?= $col ?>"><?= e($sev) ?></span>
+            <span class="ind-name"><?= e((string)($f['title'] ?? '')) ?></span>
+            <?php if (!empty($f['strong'])): ?>
+              <span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:2px 8px;border-radius:99px;background:rgba(255,93,108,.14);color:var(--red)">TAGS THE FILE</span>
+            <?php endif; ?>
+          </div>
+          <div class="ind-desc" style="margin-top:.35rem"><?= e((string)($f['detail'] ?? '')) ?></div>
+          <?php if (!empty($f['evidence']) && is_array($f['evidence'])): ?>
+            <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.45rem">
+              <?php foreach (array_slice($f['evidence'], 0, 6) as $ev): ?>
+                <code style="font-size:.74rem;padding:2px 7px;border-radius:7px;background:var(--panel);border:1px solid var(--line)"><?= e((string)$ev) ?></code>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  <?php endif; ?>
+  <?php endif; ?>
+
   <!-- ══ SUSPICIOUS CAPABILITIES ════════════════════════════════ -->
   <div class="rpt-section">
     <svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>

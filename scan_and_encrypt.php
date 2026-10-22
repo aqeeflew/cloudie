@@ -190,6 +190,11 @@ if ($verdict === 'malicious' || $verdict === 'error') {
 
 // At this point $verdict is 'clean' or 'suspicious' — both get stored.
 $isSuspicious = ($verdict === 'suspicious');
+// why was it tagged? the AI, or the rule-based evasion checks (hidden keywords, payload tricks...)
+$evStrong = array_values(array_filter(is_array($report['findings'] ?? null) ? $report['findings'] : [],
+                                      fn($f) => !empty($f['strong'])));
+$aiFlagged = (($report['ai']['verdict'] ?? '') === 'malicious');
+$evTitles  = implode('; ', array_map(fn($f) => (string)($f['title'] ?? ''), $evStrong));
 
 // ---------------------------------------------------------------
 // 4. Encrypt + persist
@@ -314,7 +319,12 @@ require_once __DIR__ . '/includes/header.php';
         <h2 class="m-0">Stored, but flagged suspicious</h2>
         <p class="text-muted m-0">
           <strong><?= e($origName) ?></strong> <?= $vtAvailable ? 'was cleared by VirusTotal, but' : 'got no result from VirusTotal, and' ?>
-          the AI structural analyzer flagged it. It was encrypted with AES-256
+          <?php if (!$aiFlagged && $evStrong): ?>
+            Cloudie's evasion checks flagged it (<?= e($evTitles) ?>).
+          <?php else: ?>
+            the AI structural analyzer flagged it.
+          <?php endif; ?>
+          It was encrypted with AES-256
           and stored, and is tagged <strong>Suspicious</strong> in your vault.
         </p>
       </div>
@@ -348,9 +358,15 @@ require_once __DIR__ . '/includes/header.php';
       <div class="alert alert-warning" style="text-align:left">
         <strong>Why is this flagged?</strong> <?= $vtAvailable
           ? "VirusTotal's signature engines did not detect a known threat"
-          : 'VirusTotal returned no result for this file' ?>, but Cloudie's AI found structural features
-        (e.g. embedded JavaScript or auto-run actions) often seen in malicious
-        PDFs. Open it with caution.
+          : 'VirusTotal returned no result for this file' ?>, but
+        <?php if (!$aiFlagged && $evStrong): ?>
+          Cloudie's evasion-aware checks found tricks that hide content from keyword-based scanners
+          (<?= e($evTitles) ?>). See the report for the evidence.
+        <?php else: ?>
+          Cloudie's AI found structural features (e.g. embedded JavaScript or auto-run actions) often seen in malicious
+          PDFs.
+        <?php endif; ?>
+        Open it with caution.
       </div>
       <?php endif; ?>
 

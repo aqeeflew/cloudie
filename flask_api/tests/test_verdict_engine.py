@@ -48,6 +48,32 @@ class RiskGate(unittest.TestCase):
         self.assertEqual(verdict(ai_proba=0.69, vt_positives=0, ai_risk=None), "suspicious")
 
 
+class EvasionRule(unittest.TestCase):
+    """Rule-based evasion findings can tag a file suspicious on their own, but never override VirusTotal."""
+
+    def test_strong_evasion_makes_a_low_scoring_file_suspicious(self):
+        r = combine(ai_proba=0.20, vt_positives=0, vt_total=70, ai_risk=["obfuscated_keywords"],
+                    evasion=["obfuscated_keywords"])
+        self.assertEqual(r["verdict"], "suspicious")
+        self.assertIn("obfuscated_keywords", r["rationale"])
+
+    def test_strong_evasion_works_even_when_the_score_is_below_the_gate(self):
+        self.assertEqual(verdict(ai_proba=0.69, vt_positives=0, ai_risk=[], evasion=["embedded_executable"]), "suspicious")
+
+    def test_without_evasion_nothing_changes(self):
+        self.assertEqual(verdict(ai_proba=0.20, vt_positives=0, ai_risk=[], evasion=[]), "clean")
+        self.assertEqual(verdict(ai_proba=0.20, vt_positives=0, ai_risk=[], evasion=None), "clean")
+
+    def test_virustotal_still_decides_first(self):
+        self.assertEqual(verdict(ai_proba=0.1, vt_positives=2, ai_risk=[], evasion=["launch_shell"]), "malicious")
+        self.assertEqual(verdict(ai_proba=0.1, vt_positives=None, ai_risk=[], evasion=["launch_shell"]), "error")
+
+    def test_high_score_with_evasion_is_still_one_suspicious_verdict(self):
+        r = combine(ai_proba=0.95, vt_positives=0, vt_total=70, ai_risk=["JS"], evasion=["obfuscated_keywords"])
+        self.assertEqual(r["verdict"], "suspicious")
+        self.assertIn("Evasion indicators were found as well", r["rationale"])
+
+
 class Helpers(unittest.TestCase):
     def test_risk_indicators_picks_only_strong_features_that_are_present(self):
         feats = {n: 0 for n in STRONG_RISK_FEATURES}

@@ -68,6 +68,12 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
     `launch`, `EmbeddedFile`, `RichMedia`, `XFA`, `JBIG2Decode` — OR score >= 0.85). Otherwise CLEAN, AI verdict
     shown as UNCERTAIN (`verdict_engine.py`: `AI_HIGH_CONFIDENCE`, `STRONG_RISK_FEATURES`). Held-out cost:
     recall 99.69% → 99.38%, FP 0. Reason: tiny PDFs with no metadata block looked like malware to the RF.
+  - **Evasion layer** (`flask_api/evasion_indicators.py`, rule-based, never changes the 32-feature vector): hidden keywords
+    (`/J#61vaScript`), exploit techniques in scripts, embedded executables and shell launch are STRONG findings and tag a
+    VT-clean PDF as SUSPICIOUS even when the AI score is low (`combine(..., evasion=...)`). Other findings are informational.
+    Bounded: 3 s, 1500 streams, 512 KB per stream, 8 MB total. Benchmark (synthetic, with honest limits):
+    `docs/EVASION_BENCHMARK.md`, `ml/evasion_benchmark.py`. Demo PDFs: `python tests/make_demo_pdfs.py <folder>`
+    (clean / visible script / hidden script).
   - The scan report has a "Why this AI score" card (`flask_api/feature_explain.py`, exact tree-path
     contributions + `feature_reference.json` built by `ml/build_feature_reference.py`).
   - Both clean → CLEAN.
@@ -109,7 +115,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
 ```
 
-PHP tests in `tests\php\run.php` (41 checks, no DB), Flask tests in `flask_api\tests\` (32, `unittest`, VT mocked).
+PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (66, `unittest`, VT mocked).
 Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
 
 ## Run locally (Windows)
