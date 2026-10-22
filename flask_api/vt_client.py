@@ -35,8 +35,10 @@ import requests
 
 VT_BASE     = "https://www.virustotal.com/api/v3"
 VT_TIMEOUT  = 20          # per HTTP request
-VT_MAX_POLL = 12          # try up to 12 * 5s = 60s for the analysis to finish
-VT_POLL_GAP = 5
+# Seconds to wait before each poll of an analysis. The free API allows about 4 requests per minute,
+# so polling every 5 s (12 per minute) used up the quota and later polls were rejected with 429.
+# A new file is rarely finished in under 15 s, so: one early check, then every 10 s (7 polls in 85 s).
+VT_POLL_SCHEDULE = (15, 10, 10, 10, 10, 10, 10)
 VT_BUDGET   = 85          # total seconds for one scan (PHP waits 115s, gunicorn 120s)
 
 log = logging.getLogger("cloudie.vt")
@@ -163,13 +165,17 @@ def _upload_and_wait(path: str, name: str, api_key: str,
     analysis_id = r.json()["data"]["id"]
     log.info("VT upload accepted, analysis_id=%s", analysis_id)
 
-    for attempt in range(VT_MAX_POLL):
-        if time.time() + VT_POLL_GAP > deadline:
+    for wait in VT_POLL_SCHEDULE:
+        if time.time() + wait > deadline:
             break
-        time.sleep(VT_POLL_GAP)
+        time.sleep(wait)
         r = requests.get(f"{VT_BASE}/analyses/{analysis_id}",
                          headers=_headers(api_key),
                          timeout=VT_TIMEOUT)
+        if r.status_code == 429:
+            log.warning("VT rate limit (429) while polling; backing off")
+            time.sleep(max(0, min(10, deadline - time.time() - 1)))   # do not hammer a limited API
+            continue
         if r.status_code != 200:
             continue
         body = r.json()
