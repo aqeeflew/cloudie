@@ -36,7 +36,7 @@ from verdict_engine import combine, PRIMARY_DETECTOR, risk_indicators, AI_HIGH_C
 from prediction_log import log_prediction
 import vt_client
 from feature_explain import build_explanation
-import evasion_indicators
+import file_structure
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -278,12 +278,11 @@ def analyze():
 
         # Evasion-aware, rule-based findings (hidden keywords, payload tricks...). Never changes the
         # 32-feature vector; strong findings can tag a PDF as suspicious on their own.
-        if is_pdf:
-            ev = evasion_indicators.analyze(tmp_path)
-        else:
-            ev = {"findings": [], "strong_ids": [], "error": None,
-                  "scanned": {"streams": 0, "inflated_bytes": 0, "truncated": False, "ms": 0}}
+        # Structure checks for every file type (PDF: evasion layer; Office/ZIP: macros, DDE, remote templates,
+        # zip bombs, disguised programs...). The Random Forest stays PDF-only.
+        ev = file_structure.analyze(tmp_path, uploaded.filename)
         ev_strong = ev["strong_ids"]
+        file_type, file_type_label = ev["file_type"], ev["file_type_label"]
 
         # Risk gate input: strong risk indicators present in the PDF (None for non-PDF / no AI);
         # strong evasion findings also count as specific risk indicators.
@@ -377,13 +376,14 @@ def analyze():
             indicators.append("Risk indicators in the PDF: " + ", ".join(ai_risk))
         for f in ev["findings"]:
             if f["strong"]:
-                indicators.append("Evasion indicator: " + f["title"])
+                indicators.append(("Evasion indicator: " if is_pdf else "Structure indicator: ") + f["title"])
         if vt_positives:
             indicators.append(f"VirusTotal: {vt_positives} engine(s) flagged it")
         if result["disagreement"]:
             indicators.append("AI and VirusTotal disagree (logged for review)")
         if not is_pdf:
-            indicators.append("Not a PDF: structural AI analysis skipped (VirusTotal only)")
+            indicators.append("Not a PDF: the AI model is PDF-only, so it was skipped. "
+                              "Judged by VirusTotal plus the structure checks (%s)" % file_type_label)
         elif not extraction_ok:
             indicators.append("PDF could not be fully parsed")
 
@@ -465,6 +465,8 @@ def analyze():
             "file_sha256": file_sha256,
             "file_size": file_size,
             "is_pdf": is_pdf,
+            "file_type": file_type,
+            "file_type_label": file_type_label,
 
             # ---- the 32 extracted structural features (the report's
             #      "Key features" table + "Show all 32 features" list) -------

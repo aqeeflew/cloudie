@@ -139,8 +139,8 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True,
         #     These rarely occur in legitimate PDFs and are exactly what hides a file from keyword-based models.
         if evasion_hit:
             return _result(Verdict.SUSPICIOUS, 0.7, ai_says_mal, vt_says_mal, disagreement,
-                           "Evasion indicators were found (%s) although VirusTotal did not flag the file "
-                           "and the AI score is low. Stored but tagged SUSPICIOUS for the user."
+                           "Structural findings were found (%s) although VirusTotal did not flag the file "
+                           "and the AI score is low or not available. Stored but tagged SUSPICIOUS for the user."
                            % ", ".join(evasion))
         if ai_says_mal:
             return _result(Verdict.CLEAN, 0.6, ai_says_mal, vt_says_mal, disagreement,

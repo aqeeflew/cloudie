@@ -91,7 +91,7 @@ function row_verdict(array $row): string {
   </a>
 </div>
 
-<p class="small mb-3"><strong>Suspicious</strong> = VirusTotal found nothing, but the AI flagged structural features of the file. It is stored and encrypted; open it with caution. Malicious files are blocked and never stored.</p>
+<p class="small mb-3"><strong>Suspicious</strong> = VirusTotal found nothing, but the AI or the structure checks flagged the file. It is stored and encrypted; open it with caution. Malicious files are blocked and never stored.</p>
 
 <!-- summary cards -->
 <div class="summary">
@@ -103,7 +103,7 @@ function row_verdict(array $row): string {
   <div class="scard">
     <div class="scard-ico i-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
     <div class="k"><?= (int)$suspicious ?></div>
-    <div class="l">Suspicious (AI flagged)</div>
+    <div class="l">Suspicious (flagged)</div>
   </div>
   <div class="scard">
     <div class="scard-ico i-violet"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.7"/></svg></div>
@@ -156,7 +156,7 @@ function row_verdict(array $row): string {
         <td class="fcol" data-label="Size"><?= e(fmt_size((int)$row['file_size'])) ?></td>
         <td data-label="Verdict">
           <?php if ($rv === 'suspicious'): ?>
-            <span class="verdict v-susp" title="VirusTotal found nothing, but the AI flagged structural features. Stored; open with caution.">
+            <span class="verdict v-susp" title="VirusTotal found nothing, but the AI or the structure checks flagged it. Stored; open with caution.">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Suspicious
             </span>
           <?php else: ?>
