@@ -74,7 +74,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
     Bounded: 3 s, 1500 streams, 512 KB per stream, 8 MB total. Benchmark (synthetic, with honest limits):
     `docs/EVASION_BENCHMARK.md`, `ml/evasion_benchmark.py`. Demo PDFs: `python tests/make_demo_pdfs.py <folder>`
     (clean / visible script / hidden script).
-  - **Structure layer for other types** (lask_api/file_structure.py, office_structure.py, rchive_structure.py; see docs/STRUCTURE_CHECKS.md):
+  - **Structure layer for other types** (`flask_api/file_structure.py`, `office_structure.py`, `archive_structure.py`; see `docs/STRUCTURE_CHECKS.md`):
     Office OOXML and ZIP files get rule-based checks (macro in a macro-free type, DDE, remote template, zip slip, zip bomb,
     disguised/double-extension programs) and every upload gets a name-vs-content check. Strong findings tag a VT-clean file
     SUSPICIOUS. The RF stays PDF-only. Not measured on real-world benign Office files (no FP rate claimed).
@@ -83,7 +83,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
     contributions + `feature_reference.json` built by `ml/build_feature_reference.py`).
   - Both clean → CLEAN.
   - VT HTTP 409 = file already known; `vt_client.py` resolves it through the hash report.
-  - Non-PDF files skip the RF (magic-byte gate) and are judged by VirusTotal only.
+  - Non-PDF files skip the RF (magic-byte gate) and are judged by VirusTotal plus the structure layer above.
 - The verdict is `clean | suspicious | malicious` in `files.verdict VARCHAR(20)`. The column is added
   by `includes/db.php`. Old notes said VARCHAR(16); the real column is 20.
 - **RF model:** RandomForest, 200 trees, Gini, `class_weight="balanced"`, **32 features**.
