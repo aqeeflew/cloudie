@@ -34,6 +34,9 @@ FRIENDLY = {
     "xref_length": "cross-reference size", "images": "image count", "obj": "objects", "endobj": "object ends",
     "stream": "streams", "endstream": "stream ends", "ObjStm": "object streams", "URI": "links",
     "title_characters": "title length", "Colors": "colour entries",
+    "AA": "auto-run actions (AA)", "OpenAction": "open-on-load actions", "JS": "JavaScript (JS)",
+    "Javascript": "JavaScript", "launch": "launch actions", "EmbeddedFile": "embedded files",
+    "RichMedia": "rich media", "XFA": "XFA forms", "Acroform": "form fields", "isEncrypted": "encryption flag",
 }
 
 
