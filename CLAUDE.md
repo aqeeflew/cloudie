@@ -50,9 +50,10 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - URLs: `https://cloudie-php-800476519477.asia-southeast1.run.app`,
   `https://cloudie-flask-800476519477.asia-southeast1.run.app`
   (the `...-2q6nug2xha-as.a.run.app` URLs also work).
-- **Live status (2026-10-21):** deployed from `main` after PR #12
-  (php `cloudie-php-00035-stt`, flask `cloudie-flask-00009-7fx`). The earlier HTTP 503 was
-  **billing disabled** (Cloud SQL `SUSPENDED`, reason `BILLING_ISSUE`); billing is active again.
+- **Live status (2026-10-26):** deployed from `main` after PR #24 (php `cloudie-php-00046-n6s`, flask `cloudie-flask-00014-c7z`).
+  **Min instances = 1** on both services for the 2026-11-03 demo (avoids cold starts, small extra cost): set back to 0 after the
+  competition with `gcloud run services update <svc> --region asia-southeast1 --min-instances 0`.
+  The earlier HTTP 503 was **billing disabled** (Cloud SQL `SUSPENDED`, reason `BILLING_ISSUE`); billing is active again.
 - **Flask is private** (Cloud Run IAM): only the service account
   `800476519477-compute@developer.gserviceaccount.com` has `roles/run.invoker`; `allUsers` was removed.
   PHP has `SCANNER_AUTH=iam` and sends a Google ID token (`includes/scanner.php`). Calling Flask directly
