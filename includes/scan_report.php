@@ -222,6 +222,27 @@ function _ts(int $t): string {
   <?php if (!empty($expl['gate']['note'])): ?>
     <p style="font-size:13px;margin:.7rem 0 0;color:var(--txt)"><strong>Risk gate:</strong> <?= e((string)$expl['gate']['note']) ?></p>
   <?php endif; ?>
+  <?php $fam = is_array($expl['familiarity'] ?? null) ? $expl['familiarity'] : null;
+        if ($fam && !empty($fam['available'])):
+          $fb  = (string)($fam['band'] ?? 'familiar');
+          $fc  = $fb === 'familiar' ? 'var(--green)' : ($fb === 'unusual' ? 'var(--cyan)' : 'var(--amber)'); // about the model's confidence, not about danger
+          $fl  = $fb === 'familiar' ? 'Familiar' : ($fb === 'unusual' ? 'Somewhat unusual' : 'Unfamiliar'); ?>
+    <div style="margin-top:.9rem;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel)">
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center">
+        <strong style="font-size:13px">How well does the AI know this kind of PDF?</strong>
+        <span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:99px;border:1px solid <?= $fc ?>;color:<?= $fc ?>"><?= e($fl) ?></span>
+      </div>
+      <p style="font-size:13px;margin:.45rem 0 0;color:var(--txt)"><?= e((string)($fam['message'] ?? '')) ?></p>
+      <?php if (!empty($fam['unusual_features'])): ?>
+        <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem">
+          <?php foreach (array_slice($fam['unusual_features'], 0, 4) as $uf): ?>
+            <code style="font-size:.74rem;padding:2px 7px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line)"><?= e((string)($uf['meaning'] ?? $uf['feature'] ?? '')) ?>: <?= e(_fx($uf['value'] ?? null)) ?> (typical <?= e(_fx($uf['typical'] ?? null)) ?>)</code>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+      <p style="font-size:11.5px;color:var(--txt-faint);margin:.5rem 0 0">Distance to the training PDFs is larger than for <?= e((string)round((float)($fam['percentile'] ?? 0))) ?>% of the training PDFs themselves. Information only: it does not change the verdict.</p>
+    </div>
+  <?php endif; ?>
   <?php foreach (($expl['caveats'] ?? []) as $cv): ?>
     <div style="font-size:13px;margin-top:.7rem;padding:12px 16px;border-radius:12px;background:rgba(255,194,75,.1);border:1px solid rgba(255,194,75,.3);color:var(--amber)"><?= e((string)$cv) ?></div>
   <?php endforeach; ?>

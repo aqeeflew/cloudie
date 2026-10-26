@@ -93,6 +93,19 @@ class ScanApi(unittest.TestCase):
         self.assertEqual(j["verdict"], "malicious")
         self.assertFalse(j["is_clean"])
 
+    def test_pdf_scan_reports_familiarity_without_changing_the_verdict(self):
+        j = self.scan(helpers.PDF_PLAIN + b"\n" * 5, "a.pdf", vt_report())
+        fam = j["ai"]["familiarity"]
+        self.assertIn(fam["band"], ("familiar", "unusual", "unfamiliar"))
+        self.assertEqual(j["explanation"]["familiarity"], fam)
+        self.assertEqual(j["verdict"], "clean")                       # unchanged by familiarity
+        js = self.scan(helpers.PDF_JS, "js.pdf", vt_report())
+        self.assertEqual(js["verdict"], "suspicious")
+
+    def test_non_pdf_has_no_familiarity(self):
+        j = self.scan(helpers.PNG_BYTES, "a.png", vt_report())
+        self.assertIsNone(j["ai"]["familiarity"])
+
     def test_a_single_vt_engine_is_suspicious_not_blocked(self):
         j = self.scan(helpers.PDF_PLAIN, "a.pdf", vt_report(malicious=1))
         self.assertEqual(j["verdict"], "suspicious")

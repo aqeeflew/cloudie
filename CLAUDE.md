@@ -81,6 +81,10 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
     disguised/double-extension programs) and every upload gets a name-vs-content check. Strong findings tag a VT-clean file
     SUSPICIOUS. The RF stays PDF-only. Not measured on real-world benign Office files (no FP rate claimed).
     Demo files: `python tests/make_demo_files.py <folder>`.
+  - **AI familiarity** (flask_api/ai_familiarity.py, reference ai_familiarity.npz built by ml/build_ai_familiarity.py; see docs/AI_FAMILIARITY.md):
+    distance of a PDF's 32 features to the nearest training PDFs, compared with how far training PDFs are from each other.
+    Bands familiar / unusual / unfamiliar, shown in the report. Information only, never changes the verdict. All 10 project PDFs and the
+    3 demo PDFs are "unfamiliar" (real PDFs are larger and have many images; training `images` is always <= 0): evidence that VT must stay primary.
   - The scan report has a "Why this AI score" card (`flask_api/feature_explain.py`, exact tree-path
     contributions + `feature_reference.json` built by `ml/build_feature_reference.py`).
   - Both clean → CLEAN.
