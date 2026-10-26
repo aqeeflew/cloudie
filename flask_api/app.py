@@ -38,6 +38,7 @@ from prediction_log import log_prediction
 import vt_client
 from feature_explain import build_explanation
 import file_structure
+import ai_familiarity
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -279,6 +280,13 @@ def analyze():
 
         # Evasion-aware, rule-based findings (hidden keywords, payload tricks...). Never changes the
         # 32-feature vector; strong findings can tag a PDF as suspicious on their own.
+        # How familiar is this PDF to the model? (information only: never changes the verdict)
+        familiarity = None
+        if is_pdf and ai_proba is not None:
+            familiarity = ai_familiarity.assess(ext["features"])
+            if explanation is not None and familiarity is not None:
+                explanation["familiarity"] = familiarity
+
         # Structure checks for every file type (PDF: evasion layer; Office/ZIP: macros, DDE, remote templates,
         # zip bombs, disguised programs...). The Random Forest stays PDF-only.
         ev = file_structure.analyze(tmp_path, uploaded.filename)
@@ -422,6 +430,7 @@ def analyze():
             "probability_clean": None if ai_proba is None else round(1 - ai_proba, 4),
             "engine": "Random Forest",
             "n_trees": getattr(MODEL, "n_estimators", None),
+            "familiarity": familiarity,
         }
 
         # VirusTotal block. vt_scan() only returns a combined positive count and
