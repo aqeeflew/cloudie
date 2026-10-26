@@ -116,6 +116,9 @@ body{
     radial-gradient(1100px 600px at 88% -8%, var(--glow-1), transparent 60%),
     radial-gradient(900px 520px at -6% 8%, var(--glow-2), transparent 55%),
     var(--ink);
+  /* one steady backdrop: without these the glows repeat every screen height (html,body are 100% tall),
+     which showed up as a colour seam at the end of every full-screen section */
+  background-repeat:no-repeat; background-attachment:fixed; background-color:var(--ink);
   color:var(--txt); -webkit-font-smoothing:antialiased;
   min-height:100vh;
   transition:background .3s ease,color .3s ease;

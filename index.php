@@ -529,13 +529,16 @@ require_once __DIR__ . '/includes/header.php';
   /* ---------- HERO BACKGROUND ---------- */
   /* overflow: clip (not just hidden) so the decorative layers can never make the hero scrollable */
   .hero.lp { position: relative; overflow: hidden; overflow: clip; isolation: isolate; }
-  .lp-aurora { position: absolute; inset: -15% -10%; z-index: -2; pointer-events: none;
+  /* The aurora fades out before the hero's bottom edge (the hero clips it), so the hero blends into the next
+     section instead of ending in a visible line. */
+  .lp-aurora { position: absolute; inset: -15% -10% 0 -10%; z-index: -2; pointer-events: none;
     background:
       radial-gradient(40% 38% at 18% 28%, rgba(25,227,255,.24), transparent 70%),
       radial-gradient(34% 32% at 82% 18%, rgba(155,123,255,.24), transparent 70%),
-      radial-gradient(32% 30% at 62% 86%, rgba(69,168,255,.18), transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 35%, transparent 78%);
-            mask-image: radial-gradient(ellipse at 50% 50%, #000 35%, transparent 78%);
+      radial-gradient(32% 30% at 62% 68%, rgba(69,168,255,.18), transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 35%, transparent 78%), linear-gradient(#000 0, #000 58%, transparent 88%);
+            mask-image: radial-gradient(ellipse at 50% 50%, #000 35%, transparent 78%), linear-gradient(#000 0, #000 58%, transparent 88%);
+    -webkit-mask-composite: source-in; mask-composite: intersect;
     animation: lpDrift 20s ease-in-out infinite alternate; }
   [data-theme="light"] .lp-aurora { opacity: .55; }
   @keyframes lpDrift { from { transform: translate3d(-2%,0,0) scale(1); } to { transform: translate3d(2%,3%,0) scale(1.08); } }
