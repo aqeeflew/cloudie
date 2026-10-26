@@ -32,7 +32,8 @@ import requests
 from flask import Flask, request, jsonify
 
 from feature_extractor import extract_features, FEATURE_NAMES
-from verdict_engine import combine, PRIMARY_DETECTOR, risk_indicators, AI_HIGH_CONFIDENCE
+from verdict_engine import (combine, PRIMARY_DETECTOR, risk_indicators, AI_HIGH_CONFIDENCE,
+                            VT_MALICIOUS_MIN_HITS as MIN_BLOCK_HITS)
 from prediction_log import log_prediction
 import vt_client
 from feature_explain import build_explanation
@@ -378,7 +379,9 @@ def analyze():
             if f["strong"]:
                 indicators.append(("Evasion indicator: " if is_pdf else "Structure indicator: ") + f["title"])
         if vt_positives:
-            indicators.append(f"VirusTotal: {vt_positives} engine(s) flagged it")
+            indicators.append(f"VirusTotal: {vt_positives} engine(s) flagged it"
+                              + ("" if vt_positives >= MIN_BLOCK_HITS else
+                                 f" (weak hit: blocking needs {MIN_BLOCK_HITS})"))
         if result["disagreement"]:
             indicators.append("AI and VirusTotal disagree (logged for review)")
         if not is_pdf:
@@ -431,7 +434,8 @@ def analyze():
             "available": vt_available,
         }
         if vt_available:
-            vt_block["verdict"] = "malicious" if vt_positives else "clean"
+            vt_block["verdict"] = ("malicious" if vt_positives >= MIN_BLOCK_HITS
+                                   else "suspicious" if vt_positives else "clean")
             vt_block["malicious"] = int(vt_positives)
             vt_block["suspicious"] = 0
             vt_block["harmless"] = max(0, int(vt_total) - int(vt_positives))

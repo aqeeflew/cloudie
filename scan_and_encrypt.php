@@ -195,6 +195,9 @@ $evStrong = array_values(array_filter(is_array($report['findings'] ?? null) ? $r
                                       fn($f) => !empty($f['strong'])));
 $aiFlagged = (($report['ai']['verdict'] ?? '') === 'malicious');
 $evTitles  = implode('; ', array_map(fn($f) => (string)($f['title'] ?? ''), $evStrong));
+// a single VirusTotal engine (below the blocking threshold) is a weak hit: stored and tagged, not blocked
+$vtHits = (int)($report['virustotal']['malicious'] ?? 0) + (int)($report['virustotal']['suspicious'] ?? 0);
+$vtWeak = ($vtHits > 0 && !$aiFlagged && !$evStrong);
 
 // ---------------------------------------------------------------
 // 4. Encrypt + persist
@@ -318,8 +321,10 @@ require_once __DIR__ . '/includes/header.php';
         </span>
         <h2 class="m-0">Stored, but flagged suspicious</h2>
         <p class="text-muted m-0">
-          <strong><?= e($origName) ?></strong> <?= $vtAvailable ? 'was cleared by VirusTotal, but' : 'got no result from VirusTotal, and' ?>
-          <?php if (!$aiFlagged && $evStrong): ?>
+          <strong><?= e($origName) ?></strong> <?= $vtWeak ? 'was flagged by only' : ($vtAvailable ? 'was cleared by VirusTotal, but' : 'got no result from VirusTotal, and') ?>
+          <?php if ($vtWeak): ?>
+            <?= (int)$vtHits ?> VirusTotal engine, which is below the blocking threshold, so it was not blocked.
+          <?php elseif (!$aiFlagged && $evStrong): ?>
             Cloudie's structure checks flagged it (<?= e($evTitles) ?>).
           <?php else: ?>
             the AI structural analyzer flagged it.
@@ -346,7 +351,7 @@ require_once __DIR__ . '/includes/header.php';
       <div class="pipeline">
         <div class="step done"><span class="sdot"></span>Scanned</div>
         <?php if ($isSuspicious): ?>
-          <div class="step warn"><span class="sdot"></span>Suspicious (<?= (!$aiFlagged && $evStrong) ? 'structure' : 'AI' ?>)</div>
+          <div class="step warn"><span class="sdot"></span>Suspicious (<?= $vtWeak ? 'VirusTotal: 1 engine' : ((!$aiFlagged && $evStrong) ? 'structure' : 'AI') ?>)</div>
         <?php else: ?>
           <div class="step done"><span class="sdot"></span>Clean · <?= e($vtChip) ?><?= $aiChip !== '' ? ' · ' . e($aiChip) : '' ?></div>
         <?php endif; ?>
@@ -356,10 +361,15 @@ require_once __DIR__ . '/includes/header.php';
 
       <?php if ($isSuspicious): ?>
       <div class="alert alert-warning" style="text-align:left">
-        <strong>Why is this flagged?</strong> <?= $vtAvailable
+        <strong>Why is this flagged?</strong> <?php if ($vtWeak): ?>
+          Only <?= (int)$vtHits ?> of the VirusTotal engines flagged this file. A single engine is often a false alarm, so it was
+          kept and tagged instead of blocked (blocking needs at least 2 engines). Check the VirusTotal link in the report.
+        <?php else: ?><?= $vtAvailable
           ? "VirusTotal's signature engines did not detect a known threat"
           : 'VirusTotal returned no result for this file' ?>, but
-        <?php if (!$aiFlagged && $evStrong): ?>
+        <?php endif; ?>
+        <?php if ($vtWeak): ?>
+        <?php elseif (!$aiFlagged && $evStrong): ?>
           Cloudie's structure checks found signs that signature scanners do not look for
           (<?= e($evTitles) ?>). See the report for the evidence.
         <?php else: ?>

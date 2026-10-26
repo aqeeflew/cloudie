@@ -62,7 +62,8 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 
 - **VirusTotal is PRIMARY, Random Forest is SECONDARY** (`verdict_engine.py`, `PRIMARY_DETECTOR = "VT"`).
   - **VT no result** (no key, 429, timeout, unfinished analysis) → ERROR, blocked (fail closed).
-  - VT malicious → MALICIOUS, blocked.
+  - VT malicious (**>= 2 engines**, `VT_MALICIOUS_MIN_HITS = 2`) → MALICIOUS, blocked. Exactly 1 engine = weak hit → SUSPICIOUS
+    (stored and tagged, report says "only 1 engine"), because a lone engine is the classic false positive. Changed 2026-10-26.
   - VT clean + AI malicious → SUSPICIOUS, stored but tagged, **only if the risk gate passes**:
     RF score >= 0.5 AND (a strong risk indicator is present — `JS`, `Javascript`, `OpenAction`, `AA`,
     `launch`, `EmbeddedFile`, `RichMedia`, `XFA`, `JBIG2Decode` — OR score >= 0.85). Otherwise CLEAN, AI verdict

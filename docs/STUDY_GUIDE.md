@@ -374,7 +374,7 @@ Model's own test (metrics JSON): stratified 80/20, n = 3,626, accuracy 99.862%, 
 
 ### 4.3 `verdict_engine.py` decision table
 
-Constants: `PRIMARY_DETECTOR="VT"`, `AI_MALICIOUS_THRESHOLD=0.50`, `VT_MALICIOUS_MIN_HITS=1` (`:30-32`). `vt_positives = malicious + suspicious` engines (`app.py:226`), so **one engine is enough to block**.
+Constants: `PRIMARY_DETECTOR="VT"`, `AI_MALICIOUS_THRESHOLD=0.50`, `VT_MALICIOUS_MIN_HITS=2` (changed 2026-10-26; was 1). `vt_positives = malicious + suspicious` engines, so **two engines are needed to block**; exactly one gives SUSPICIOUS.
 
 | AI (P ≥ 0.5?) | VT | Verdict | Stored? | Code |
 |---|---|---|---|---|
