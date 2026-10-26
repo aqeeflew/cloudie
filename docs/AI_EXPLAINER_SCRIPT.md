@@ -21,15 +21,18 @@ file contain JavaScript, and is there an auto-run action?', and gives a vote. Th
 probability that the file is malicious."
 
 **3. Why we trust it only so far (25 s)**
-"It was trained on a public dataset of 18,126 PDFs, half malicious and half clean, and on a held-out quarter of that
-data it reaches about 99.9%. But that is one dataset. On real-world PDFs its score sits closer to 50%, which is why
-VirusTotal stays our primary detector and the AI is a second opinion, not the judge."
+"It was trained once, offline, on a public dataset of 18,126 PDFs, half malicious and half clean, and on a held-out
+quarter of that data it reaches about 99.9%. After that the model is fixed: it does not learn from VirusTotal or from
+users' files while running, so nobody can poison it. But it is one dataset, so VirusTotal stays our primary detector
+and the AI is a second opinion, not the judge."
 
 **4. How we keep it honest (30 s)**
 "First, a score above 50% is not enough to tag a file. It also needs a specific risk indicator, such as JavaScript or
 an auto-run action, or a very high score of 85% or more. We added this gate because tiny harmless PDFs without a
 metadata block were being mistaken for malware. Second, the model explains itself: the report lists which features
-pushed the score up or down, calculated exactly from the path through the trees. Nothing is a black box."
+pushed the score up or down, calculated exactly from the path through the trees. Third, it tells you when it is out of
+its depth: we measure how close each PDF is to the training data, and on every real document we tried the answer is
+'unlike what I learned from', so the score is shown as a weak signal."
 
 ## 3-minute version: add these
 
@@ -46,6 +49,19 @@ for example by writing `/J#61vaScript` instead of `/JavaScript`, the count is ze
 why we added a separate rule-based layer: it decodes those hidden names and reads inside compressed streams. The model
 and the rules cover each other."
 
+**Does it learn from VirusTotal?** "No, not while running. The model is trained once, offline, and then fixed. Results
+from VirusTotal are combined with the AI score to make a verdict, but they are not fed back into the model. We chose that
+on purpose: a model that learns from uploads can be poisoned by an attacker who uploads crafted files. VirusTotal's
+knowledge reached the model only indirectly, because the public dataset was built from sources such as Contagio and
+VirusTotal. Learning from VirusTotal labels, with human review and a frozen test set, is on our roadmap."
+
+**How it knows it is out of its depth.** "Each of the 32 features is turned into a rank among the training PDFs. We take
+the average distance to the five closest training PDFs and compare it with how far the training PDFs are from each
+other. On a held-out 25% of the data this behaves as designed: 9.5% fall beyond the 90th percentile and 0.9% beyond the
+99th. All thirteen real or demo PDFs we tried, our own thesis and posters plus three generated demo files, fall beyond
+the 99th percentile. Real documents are larger and carry many images, while in the training data the image feature
+is always zero or below. That is the evidence for why VirusTotal is primary."
+
 **What the numbers mean.** "On the standard split the model made 0 false alarms and missed 6 malicious files out of
 about 3,600 test files. On a harder split by file size, where the largest PDFs are held out, accuracy is 99.46% and
 recall drops to 96%. We report both, because the harder number is the honest one."
@@ -55,7 +71,9 @@ recall drops to 96%. We report both, because the harder number is the honest one
 1. Open the report of a PDF with a script. Point to the **AI card**: "score 91%, verdict malicious".
 2. Scroll to **Why this AI score**: "these are the features that moved it: JavaScript present, auto-run action present."
 3. Point to the **gate note**: "tagged because the score is at least 50% and it has risk indicators."
-4. Open a clean PDF: "score near 50% but not tagged: the gate says no risk indicator, so it is treated as a weak
+4. Point to the **AI familiarity** box under the table: "this tells us how well the AI knows this kind of PDF; here it
+   says unfamiliar, so the score counts as a weak signal." Name one of the listed features (for example image count).
+5. Open a clean PDF: "score near 50% but not tagged: the gate says no risk indicator, so it is treated as a weak
    signal." (Check the real values during the rehearsal.)
 
 ## Questions you may get, with short answers
@@ -65,7 +83,9 @@ recall drops to 96%. We report both, because the harder number is the honest one
 | Why not trust the 99.9%? | It is accuracy on a held-out part of one public dataset. On other PDFs the model is less certain, so it never decides alone. |
 | Why a Random Forest and not deep learning? | Small tabular data, fast, and we can explain every score exactly. A neural network would be harder to justify to a user. |
 | Can an attacker fool it? | Yes, a model that counts keywords can be evaded. That is why the rule layer exists and why VirusTotal is primary. We test our own evasions in `docs/EVASION_BENCHMARK.md` and say what fails. |
-| Does it learn from users' files? | Not yet. We keep the model fixed so nobody can poison it. Learning from VirusTotal labels, with human review, is on the roadmap. |
+| Does it learn from users' files or from VirusTotal? | No. It is trained once, offline, then fixed. Results from VirusTotal are used in the verdict, not fed back into the model, so nobody can poison it. Learning from VirusTotal labels, with human review, is on the roadmap. |
+| So is the AI useless on real files? | It is a supporting signal. Our own check shows real PDFs are unlike its training data, and it says so. VirusTotal and the structure checks carry the weight; broader real-world training data is the first AI item on the roadmap. |
+| Does the familiarity score change the verdict? | No. It is information for the reader. It says how much weight the AI score deserves; the verdict still comes from VirusTotal first. |
 | What happens to non-PDF files? | The model is PDF-only. Office files and ZIPs go through structure rules and VirusTotal. We say so on the report page. |
 | What is the false-positive rate on real files? | Not measured yet on a real-world set. On the dataset it was 0 on the standard split. |
 
@@ -74,4 +94,6 @@ recall drops to 96%. We report both, because the harder number is the honest one
 * "99.9% accurate" without "on a held-out part of a public dataset".
 * "The AI detects all malware" or "zero false positives" in general.
 * "It reads the document" (it does not read the content).
+* "The AI learns from VirusTotal" or "it gets smarter with every file". It is fixed after training.
+* "Unfamiliar means malicious". It only means unlike the training data.
 * Anything about the AI on Office or ZIP files: those use rules, not the model.
