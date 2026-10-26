@@ -4,10 +4,14 @@ make_demo_pdfs.py - writes harmless PDFs for the live demo (standard library onl
     python C:\\xampp\\htdocs\\cloudie\\tests\\make_demo_pdfs.py C:\\Users\\<you>\\Desktop\\cloudie-demo
 
 Files written
-  1_clean.pdf                  plain one-page PDF                        -> expected: CLEAN
-  2_visible_script.pdf         clear-text /OpenAction + /JavaScript      -> expected: SUSPICIOUS (AI + risk keywords)
-  3_hidden_script.pdf          the same script with hex-escaped names    -> expected: SUSPICIOUS (evasion layer,
-                               (/J#61vaScr#69pt ...), which the AI cannot see     "Hidden keywords" finding)
+  1_clean.pdf                  plain one-page PDF                        -> CLEAN (AI shows "uncertain", no risk keyword)
+  2_visible_script.pdf         clear-text /OpenAction + /JavaScript      -> AI + risk keywords; the final verdict depends on VirusTotal
+  3_hidden_script.pdf          the same script with hex-escaped names    -> evasion layer finds the hidden keywords;
+                               (/J#61vaScr#69pt ...), which the AI cannot see     the final verdict depends on VirusTotal
+
+Live results on 2026-10-22: file 2 was flagged by 1 VirusTotal engine (now SUSPICIOUS: blocking needs 2 engines),
+file 3 by 12 engines (MALICIOUS, blocked). VirusTotal engines react to these test scripts differently over time, so
+check the result of every file a day before the demo and write down what you see (docs/DEMO_RUNBOOK.md).
 
 The only script is app.alert('Cloudie demo'): it shows a message box and does nothing else.
 With VirusTotal configured the results above assume VirusTotal does not flag these tiny files; try them once
