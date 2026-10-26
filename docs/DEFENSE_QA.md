@@ -138,7 +138,7 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `app.py:197-203`; STUDY_GUIDE W5.
 
 ### D6. What counts as "malicious" from VT?
-**Answer:** `vt_positives` is malicious plus suspicious engines, and one engine is enough (`VT_MALICIOUS_MIN_HITS = 1`), so the live rule is strict and favours safety over false positives. The three-way VT classification in the thesis text exists only in the unused client; the thesis should describe the one-hit rule.
+**Answer:** `vt_positives` is malicious plus suspicious engines, and blocking needs at least two engines (`VT_MALICIOUS_MIN_HITS = 2`); a single engine is a weak hit and gives SUSPICIOUS (stored, tagged), because one engine out of ~70 is the usual false positive. Since 2026-10-26; before that one engine was enough. The three-way VT classification in the thesis text exists only in the unused client; the thesis should describe the two-engine rule.
 **BM:** Satu enjin (malicious/suspicious) pun cukup untuk blok; ketat, utamakan keselamatan.
 **Proof:** `app.py:226`, `verdict_engine.py:32,47-49`; Thesis 3.3.3 (mismatch row 7).
 

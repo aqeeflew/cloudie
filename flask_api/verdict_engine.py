@@ -16,7 +16,8 @@ Rules in words:
   * VT no result (any AI)   -> ERROR, blocked (fail closed; VT is primary).
   * Both clean              -> CLEAN, stored normally.
   * AI malicious, VT clean  -> SUSPICIOUS, stored but tagged.
-  * VT malicious (any AI)   -> MALICIOUS, blocked (VT is primary authority).
+  * VT malicious (>= 2 engines, any AI) -> MALICIOUS, blocked (VT is primary authority).
+  * VT weak hit (exactly 1 engine)      -> SUSPICIOUS, stored but tagged.
 
 The two engines measure different things (VT = signatures, AI = structure),
 so disagreement is EXPECTED and is logged for Chapter 4. Flip PRIMARY_DETECTOR
@@ -30,7 +31,7 @@ from enum import Enum
 # ---------------------------------------------------------------------------
 PRIMARY_DETECTOR = "VT"          # "VT" (current policy) or "AI" (old default)
 AI_MALICIOUS_THRESHOLD = 0.50    # RF predict_proba cutoff for "malicious"
-VT_MALICIOUS_MIN_HITS = 1        # VT engines flagging it to count as malicious
+VT_MALICIOUS_MIN_HITS = 2        # VT engines needed to block (a single engine = weak hit -> SUSPICIOUS)
 
 # Risk gate for the AI "suspicious" tag. A Random Forest score >= 0.5 alone is not
 # enough: the file must also carry a specific risk indicator, or the score must be
@@ -120,6 +121,15 @@ def combine(ai_proba, vt_positives, vt_total=None, extraction_ok=True,
             return _result(
                 Verdict.MALICIOUS, 0.95, ai_says_mal, vt_says_mal, disagreement,
                 "VirusTotal (primary) flagged the file. Upload blocked.")
+
+        # 1b) A WEAK hit: fewer engines than VT_MALICIOUS_MIN_HITS (normally exactly one of ~70) flagged it.
+        #     A lone engine is the classic false positive, so the file is not blocked; it is stored and
+        #     tagged SUSPICIOUS and the report names the engine count.
+        if vt_positives and vt_positives < VT_MALICIOUS_MIN_HITS:
+            return _result(
+                Verdict.SUSPICIOUS, 0.6, ai_says_mal, vt_says_mal, disagreement,
+                "Only %d VirusTotal engine flagged the file (blocking needs at least %d), so it is not blocked. "
+                "Stored but tagged SUSPICIOUS for the user." % (vt_positives, VT_MALICIOUS_MIN_HITS))
 
         # From here on, VirusTotal answered and did not flag the file.
 

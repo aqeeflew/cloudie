@@ -93,6 +93,14 @@ class ScanApi(unittest.TestCase):
         self.assertEqual(j["verdict"], "malicious")
         self.assertFalse(j["is_clean"])
 
+    def test_a_single_vt_engine_is_suspicious_not_blocked(self):
+        j = self.scan(helpers.PDF_PLAIN, "a.pdf", vt_report(malicious=1))
+        self.assertEqual(j["verdict"], "suspicious")
+        self.assertFalse(j["is_clean"])
+        self.assertEqual(j["virustotal"]["verdict"], "suspicious")
+        self.assertTrue(any("weak hit" in i for i in j["indicators"]))
+        self.assertEqual(self.scan(helpers.PDF_PLAIN, "a.pdf", vt_report(malicious=2))["verdict"], "malicious")
+
     def test_vt_no_result_is_error_not_clean(self):
         for kind in (TimeoutError("slow"), requests.HTTPError("429 rate limit")):
             j = self.scan(helpers.PDF_PLAIN, "a.pdf", vt_error=kind)

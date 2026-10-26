@@ -16,7 +16,20 @@ def verdict(**kw):
 class VtPrimary(unittest.TestCase):
     def test_vt_hit_blocks_regardless_of_ai(self):
         for p in (0.01, 0.5, 0.99):
-            self.assertEqual(verdict(ai_proba=p, vt_positives=1, ai_risk=[]), "malicious")
+            self.assertEqual(verdict(ai_proba=p, vt_positives=2, ai_risk=[]), "malicious")
+
+    def test_a_single_engine_is_a_weak_hit_not_a_block(self):
+        for p in (0.01, 0.5, 0.99):
+            r = combine(ai_proba=p, vt_positives=1, vt_total=70, ai_risk=[])
+            self.assertEqual(r["verdict"], "suspicious")
+            self.assertIn("1 VirusTotal engine", r["rationale"])
+        self.assertEqual(verdict(ai_proba=None, vt_positives=1, ai_risk=None), "suspicious")
+
+    def test_the_block_threshold_is_exactly_two_engines(self):
+        import verdict_engine
+        self.assertEqual(verdict_engine.VT_MALICIOUS_MIN_HITS, 2)
+        self.assertEqual(verdict(ai_proba=0.1, vt_positives=0, ai_risk=[]), "clean")
+        self.assertEqual(verdict(ai_proba=0.1, vt_positives=2, ai_risk=[]), "malicious")
 
     def test_vt_no_result_is_error_fail_closed(self):
         for p in (0.01, 0.99, None):
