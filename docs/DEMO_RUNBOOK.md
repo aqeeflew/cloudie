@@ -65,6 +65,8 @@ column during the rehearsal.
 | `3_remote_template.docx` | template loaded from a remote address | SUSPICIOUS, "Document loads a template from a remote address" | TO VERIFY |
 | `4_zip_slip.zip` | entry named `../../...` | SUSPICIOUS, "Entry names escape the extraction folder" | TO VERIFY |
 | `5_double_extension.zip` | `invoice.pdf.exe` (a text file) | SUSPICIOUS, "Program disguised with a document extension" | TO VERIFY |
+| `6_csv_formula.csv` | a cell with `=cmd|...` (never open it in Excel) | SUSPICIOUS, "Spreadsheet cell that starts a program" | TO VERIFY |
+| `7_png_with_zip.png` | 1x1 PNG with a text-only ZIP after it | SUSPICIOUS, "Hidden file after the end of the image" | TO VERIFY |
 | EICAR test file | standard antivirus test string | MALICIOUS (many engines), blocked, never stored | confirmed 2026-10-20 |
 
 The **best demo files are the structure ones** (`2_macro_in_docx.docx`, `4_zip_slip.zip`): they have no malicious

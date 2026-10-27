@@ -9,8 +9,11 @@ Files written                                          expected in Cloudie (when
   3_remote_template.docx     template fetched from a URL   -> SUSPICIOUS  "Document loads a template from a remote address"
   4_zip_slip.zip             entry named ../../...         -> SUSPICIOUS  "Entry names escape the extraction folder"
   5_double_extension.zip     invoice.pdf.exe inside        -> SUSPICIOUS  "Program disguised with a document extension"
+  6_csv_formula.csv          a cell that calls a command   -> SUSPICIOUS  "Spreadsheet cell that starts a program"
+  7_png_with_zip.png         a ZIP after the image's end   -> SUSPICIOUS  "Hidden file after the end of the image"
 
-Everything is harmless: the "macro project" is text, the template address uses the reserved .invalid domain
+Everything is harmless: the CSV command only echoes text (do NOT open that file in Excel, it is for the scanner), the PNG is a
+1x1 picture with a tiny text-only ZIP after it, the "macro project" is text, the template address uses the reserved .invalid domain
 (it never resolves), the zip-slip entry is a text note, and the "exe" is a text file. These files are built
 only to trigger Cloudie's structure checks; there is no malicious code in them. VirusTotal should not flag them,
 which is the point of the demo: structure finds what a signature scan cannot. Upload each file once a few
@@ -46,6 +49,17 @@ def build(entries) -> bytes:
     return buf.getvalue()
 
 
+def png_with_zip() -> bytes:
+    import struct
+    import zlib
+
+    def chunk(t, d):
+        return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d) & 0xffffffff)
+    png = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+           + chunk(b"IDAT", zlib.compress(b"\x00\x27\xd3\xe0")) + chunk(b"IEND", b""))
+    return png + build([("note.txt", "Cloudie demo: a text file hidden after the end of the image")])
+
+
 def docx(extra_ct="", extra=()):
     return build([("[Content_Types].xml", CT % extra_ct), ("_rels/.rels", ROOT_RELS), ("word/document.xml", DOC)] + list(extra))
 
@@ -59,6 +73,8 @@ FILES = {
                                                 ("word/settings.xml", "<w:settings xmlns:w='http://schemas.openxmlformats.org/wordprocessingml/2006/main'/>")]),
     "4_zip_slip.zip": lambda: build([("readme.txt", "Cloudie demo"), ("../../cloudie-demo-note.txt", "harmless text")]),
     "5_double_extension.zip": lambda: build([("invoice.pdf.exe", "Cloudie demo: this is a text file, not a program")]),
+    "6_csv_formula.csv": lambda: b"name,amount\nAnna,10\n=cmd|'/c echo Cloudie demo'!A1,5\n",
+    "7_png_with_zip.png": png_with_zip,
 }
 
 

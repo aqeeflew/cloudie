@@ -12,7 +12,10 @@ Open XML files (`.docx .xlsx .pptx`) and ZIP archives, and every upload gets an 
 | PDF | evasion layer (unchanged) | Random Forest, 32 features |
 | Office OOXML (`[Content_Types].xml` + `word/ xl/ ppt/`) | `office_structure.py` + zip checks (strict) | no |
 | ZIP | `archive_structure.py` | no |
-| Anything else (PNG, JPEG, RAR, OLE, RTF, text) | only "name vs content" (`file_structure.py`) | no |
+| CSV | spreadsheet formula injection (`content_structure.py`) | no |
+| PNG, JPEG | data hidden after the image end, scripts inside (`content_structure.py`) | no |
+| Anything else (RAR, OLE, RTF, plain text) | only "name vs content" (`file_structure.py`) | no |
+| Every upload | the uploaded file NAME: double extension, right-to-left override, trailing dots/spaces | no |
 
 The Random Forest is trained on PDFs only, so it is never used for the other types. For them the verdict is
 VirusTotal plus these rule-based findings. VirusTotal stays PRIMARY and fail-closed: structure findings can
@@ -37,8 +40,12 @@ STRONG = tags a VT-clean file SUSPICIOUS (stored, tagged, report shows the evide
 | `rtlo_name` | yes | right-to-left override character in an entry name |
 | `disguised_executable` | yes | entry starts like a program (MZ/PE, ELF) but is not named like one |
 | `type_mismatch_executable` | yes | the upload is a program but named `.pdf`, `.png`, `.docx`... |
+| `csv_dde_formula` | yes | a .csv cell that calls a command interpreter through DDE (`=cmd|'/c ...'!A1`, also `=1+cmd|...`, quoted, or starting with + - @) |
+| `image_hidden_payload` | yes | bytes after the PNG `IEND` / JPEG end marker hold a ZIP, RAR, PDF, Office file, program or script |
+| `image_script_payload` | yes | PHP code or a `<script>` tag inside an image (web shell in a picture) |
+| `filename_double_extension`, `filename_rtlo` | yes | the uploaded name looks like `invoice.pdf.exe`, or hides its extension with a right-to-left override |
 | `polyglot_executable_archive` | yes | file is a program and a valid ZIP |
-| `office_macro`, `very_hidden_sheet`, `activex_controls`, `unc_reference`, `executable_in_archive`, `encrypted_entries`, `duplicate_entries`, `type_mismatch`, `malformed_archive`, `nested_archive`, `embedded_objects`, `ooxml_type_mismatch` | no | informational |
+| `csv_exfil_formula`, `image_trailing_data`, `image_malformed`, `filename_executable_extension`, `filename_trailing_chars`, `filename_control_chars`, `office_macro`, `very_hidden_sheet`, `activex_controls`, `unc_reference`, `executable_in_archive`, `encrypted_entries`, `duplicate_entries`, `type_mismatch`, `malformed_archive`, `nested_archive`, `embedded_objects`, `ooxml_type_mismatch` | no | informational |
 
 ## Safety of the analyzers
 
@@ -53,8 +60,13 @@ set instead of raising.
 * **Macro source is compressed** (MS-OVBA inside an OLE container) and there is no OLE parser here, so
   `macro_autoexec` and the risky-call list are best effort: they find names stored literally and can miss others.
   The decisive signal is the macro project in a macro-free file type, which does not depend on that.
-* **Legacy Office (.doc .xls .ppt), RTF, images and RAR** are only type-checked (name vs content). No macro scan
+* **Legacy Office (.doc .xls .ppt), RTF and RAR** are only type-checked (name vs content). No macro scan
   for OLE yet; that is the next step.
+* **CSV checks apply to .csv only**: a .txt may legitimately contain `= cmd | ...` lines, and only spreadsheets open
+  CSV files as formulas. The image checks look at the end of the file and for script text; they do not decode pixels,
+  EXIF or ICC profiles, and some cameras and editors legitimately append data (reported as medium, not strong).
+* **File-name checks** see the name the uploader supplied. The web app only accepts a fixed list of extensions, so the
+  program-extension checks matter most when the scanner is called directly or the list grows.
 * **False-positive rate is not measured.** The unit tests contain clean documents, hyperlinks, images, a large
   honest archive and the project's own Office/zip files (none flagged), but there is no real-world benign Office
   set yet, so no rate is claimed. `executable_in_archive` is deliberately non-strong because installers exist.
@@ -67,12 +79,13 @@ set instead of raising.
 python C:\xampp\htdocs\cloudie\tests\make_demo_files.py C:\Users\<you>\Desktop\cloudie-demo
 ```
 
-Writes five harmless files (normal docx, macro-in-docx, remote template, zip slip, double extension). Expected:
-CLEAN for the first, SUSPICIOUS with a named finding for the other four, provided VirusTotal does not flag
+Writes seven harmless files (normal docx, macro-in-docx, remote template, zip slip, double extension, CSV formula,
+PNG with a ZIP after it). Expected: CLEAN for the first, SUSPICIOUS with a named finding for the other six, provided VirusTotal does not flag
 them. Upload each once a few minutes before the demo (VirusTotal quota).
 
 ## Tests
 
-`flask_api\tests\test_file_structure.py` (48 tests: each finding, clean files, bomb timing, robustness) and five
-API-level tests in `test_scan_api.py`. Mutation-checked: disabling traversal, disguised-program, external-relationship,
+`flask_api\tests\test_file_structure.py` (48 tests: each finding, clean files, bomb timing, robustness),
+`test_content_structure.py` (26 tests: CSV, images, file names, a random-tail false-positive check) and API-level tests
+in `test_scan_api.py`. Mutation-checked: disabling traversal, disguised-program, external-relationship,
 DDE and mismatch checks each makes tests fail.

@@ -48,8 +48,23 @@ trailer
 %%EOF
 """
 
-# PNG signature + padding: not a PDF
-PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+def _png_chunk(ctype: bytes, data: bytes) -> bytes:
+    import struct
+    import zlib
+    return struct.pack(">I", len(data)) + ctype + data + struct.pack(">I", zlib.crc32(ctype + data) & 0xffffffff)
+
+
+def _make_png() -> bytes:
+    """A real, valid 1x1 PNG (signature + IHDR + IDAT + IEND): not a PDF, and nothing hidden in it."""
+    import struct
+    import zlib
+    return (b"\x89PNG\r\n\x1a\n"
+            + _png_chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+            + _png_chunk(b"IDAT", zlib.compress(b"\x00\xff\x00\x00"))
+            + _png_chunk(b"IEND", b""))
+
+
+PNG_BYTES = _make_png()
 
 
 def write_temp(data: bytes, suffix: str = ".pdf") -> str:

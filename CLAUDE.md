@@ -78,7 +78,8 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
     (clean / visible script / hidden script).
   - **Structure layer for other types** (`flask_api/file_structure.py`, `office_structure.py`, `archive_structure.py`; see `docs/STRUCTURE_CHECKS.md`):
     Office OOXML and ZIP files get rule-based checks (macro in a macro-free type, DDE, remote template, zip slip, zip bomb,
-    disguised/double-extension programs) and every upload gets a name-vs-content check. Strong findings tag a VT-clean file
+    disguised/double-extension programs), CSV formula injection, data hidden after PNG/JPEG images and tricks in the uploaded file
+    NAME (`content_structure.py`); every upload gets a name-vs-content check. Strong findings tag a VT-clean file
     SUSPICIOUS. The RF stays PDF-only. Not measured on real-world benign Office files (no FP rate claimed).
     Demo files: `python tests/make_demo_files.py <folder>`.
   - **AI familiarity** (flask_api/ai_familiarity.py, reference ai_familiarity.npz built by ml/build_ai_familiarity.py; see docs/AI_FAMILIARITY.md):
@@ -126,7 +127,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
 ```
 
-PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (142, `unittest`, VT mocked).
+PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (174, `unittest`, VT mocked).
 Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
 
 ## Run locally (Windows)
