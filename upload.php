@@ -10,7 +10,8 @@ require_once __DIR__ . '/includes/header.php';
     <div class="cl-card">
       <h3 class="mb-3">Upload a file</h3>
       <p class="text-muted">
-        VirusTotal checks the file first, then Cloudie's AI analyzer (PDF files only).
+        VirusTotal checks the file first, then Cloudie's structure checks (every file type) and its
+        AI analyzer (PDF files only).
         Malicious files are blocked. Clean and suspicious files are encrypted with
         AES-256-CBC on the server and stored.
       </p>
@@ -57,7 +58,7 @@ require_once __DIR__ . '/includes/header.php';
       </li>
       <li data-step="scan">
         <span class="ss-ico"></span>
-        <div><div class="ss-t">Malware scan</div><div class="ss-s">VirusTotal + AI analysis &middot; usually 5&ndash;60&nbsp;s</div></div>
+        <div><div class="ss-t">Malware scan</div><div class="ss-s">VirusTotal + structure checks + AI (PDF) &middot; usually 5&ndash;60&nbsp;s</div></div>
       </li>
       <li data-step="encrypt">
         <span class="ss-ico"></span>

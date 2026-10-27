@@ -16,7 +16,7 @@ Say it in your own words; these are the facts and the order. Every number here m
 > Antivirus tools are good at known threats, but a new or slightly modified file has no signature yet, and
 > documents can attack through features like macros and hidden scripts. Cloudie is secure cloud storage built around
 > that gap. Every upload is checked in order: first what the file really is, from its bytes and not its name; then
-> VirusTotal, our primary detector; then a structure layer that reads how the file is built, for PDF, Office and
+> VirusTotal, our primary detector; then a structure layer that reads how the file is built, for PDF, Office, CSV, image and
 > ZIP files, plus a Random Forest model for PDFs that explains its score. If VirusTotal cannot answer, the upload is
 > refused. Two engines block a file, one engine only warns. Only then is the file encrypted with a random AES-256
 > key, and only a hash of that key is stored. Every action goes into a tamper-evident chain, so an edited history
