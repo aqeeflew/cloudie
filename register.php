@@ -197,7 +197,14 @@ require_once __DIR__ . '/includes/header.php';
           </div>
         </div>
 
-        <p style="font-size:12px;color:var(--txt-faint);margin:.5rem 0 1rem">Password: 8 to 72 characters, not a common one.</p>
+        <!-- password strength: a guide in the browser; the server (includes/validate.php) still decides -->
+        <div class="pw-meter" id="pwMeter" data-level="0" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="pw-meter-text">
+          <span id="pwLabel" aria-live="polite">Password: 8 to 72 characters, not a common one.</span>
+          <span id="pwMatch" aria-live="polite"></span>
+        </div>
         <button type="submit" class="btn btn-cloudie w-100 auth-submit">Create account</button>
         <p style="font-size:12px;color:var(--txt-faint);margin:.9rem 0 0;line-height:1.5">
           Privacy: files are encrypted before they are stored. To scan a file, Cloudie checks its hash with VirusTotal first;
@@ -211,5 +218,73 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </div>
 
+<style>
+  .pw-meter{ display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin:.7rem 0 .35rem; }
+  .pw-meter span{ height:5px; border-radius:99px; background:var(--line); transition:background .2s ease; }
+  .pw-meter[data-level="1"] span:nth-child(-n+1){ background:var(--red); }
+  .pw-meter[data-level="2"] span:nth-child(-n+2){ background:var(--amber); }
+  .pw-meter[data-level="3"] span:nth-child(-n+3){ background:var(--cyan); }
+  .pw-meter[data-level="4"] span{ background:var(--green); }
+  .pw-meter-text{ display:flex; justify-content:space-between; gap:.6rem; flex-wrap:wrap;
+    font-size:12px; color:var(--txt-faint); margin:0 0 1rem; min-height:1.2em; }
+  .pw-meter-text .lvl-1{ color:var(--red); }   .pw-meter-text .lvl-2{ color:var(--amber); }
+  .pw-meter-text .lvl-3{ color:var(--cyan); }  .pw-meter-text .lvl-4{ color:var(--green); }
+  .pw-meter-text .ok{ color:var(--green); }    .pw-meter-text .bad{ color:var(--red); }
+</style>
+<script>
+/* Password strength guide. Mirrors the server rules in includes/validate.php (length 8-72 bytes, not a common
+   password, not one repeated character, not the username or email), then rates length and character variety.
+   The server remains the authority: this only helps the user pick a good password before submitting. */
+(function () {
+  var COMMON = <?= json_encode(COMMON_PASSWORDS) ?>;
+  var MIN = <?= (int)PASSWORD_MIN ?>, MAX = <?= (int)PASSWORD_MAX ?>;
+  var pw = document.getElementById('pw'), pw2 = document.getElementById('pw2');
+  var user = document.getElementById('regUser'), mail = document.getElementById('regEmail');
+  var meter = document.getElementById('pwMeter'), label = document.getElementById('pwLabel'),
+      match = document.getElementById('pwMatch');
+  if (!pw || !meter || !label) return;
+  var DEFAULT = label.textContent;
+  var NAMES = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+
+  function bytes(s) { try { return new TextEncoder().encode(s).length; } catch (e) { return s.length; } }
+
+  function rate(p) {
+    var low = p.toLowerCase(), u = (user.value || '').trim().toLowerCase(), m = (mail.value || '').trim().toLowerCase();
+    if (bytes(p) < MIN) return [1, 'Weak: use at least ' + MIN + ' characters'];
+    if (bytes(p) > MAX) return [1, 'Too long: at most ' + MAX + ' characters'];
+    if (COMMON.indexOf(low) !== -1) return [1, 'Weak: this is a very common password'];
+    if (/^(.)\1+$/.test(p)) return [1, 'Weak: one character repeated'];
+    if (u && low === u) return [1, 'Weak: same as your username'];
+    if (m && (low === m || low === m.split('@')[0])) return [1, 'Weak: same as your email'];
+    var kinds = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter(function (r) { return r.test(p); }).length;
+    var score = 1;                                   // passes the rules
+    if (p.length >= 12) score++;
+    if (p.length >= 16) score++;
+    if (kinds >= 3) score++;
+    if (kinds === 4) score++;
+    var level = score <= 2 ? 2 : (score === 3 ? 3 : 4);
+    var tip = level < 4 ? (p.length < 12 ? ' (longer is stronger)' : ' (mix letters, numbers and symbols)') : '';
+    return [level, NAMES[level] + tip];
+  }
+
+  function update() {
+    var p = pw.value;
+    if (!p) { meter.dataset.level = '0'; label.textContent = DEFAULT; label.className = ''; }
+    else {
+      var r = rate(p);
+      meter.dataset.level = String(r[0]);
+      label.textContent = r[1];
+      label.className = 'lvl-' + r[0];
+    }
+    if (pw2 && match) {
+      if (!pw2.value) { match.textContent = ''; match.className = ''; }
+      else if (pw2.value === p) { match.textContent = 'Passwords match'; match.className = 'ok'; }
+      else { match.textContent = 'Passwords do not match'; match.className = 'bad'; }
+    }
+  }
+  [pw, pw2, user, mail].forEach(function (el) { if (el) el.addEventListener('input', update); });
+  update();
+})();
+</script>
 <?php require_once __DIR__ . '/includes/auth_ui.php'; ?>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
