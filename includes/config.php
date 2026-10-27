@@ -79,7 +79,7 @@ define('AES_KEY_LEN', 32);     // 32 bytes -> 256 bit
 define('AES_IV_LEN',  16);
 
 // ---- Limits ----
-define('MAX_UPLOAD_BYTES', 50 * 1024 * 1024);     // 50 MB
+define('MAX_UPLOAD_BYTES', 25 * 1024 * 1024);     // 25 MB: the scanner's limit (VirusTotal free tier stops at 32 MB)
 define('STORAGE_QUOTA_BYTES',                      // per-user vault quota (sidebar meter)
        (int) env_or('STORAGE_QUOTA_BYTES', (string)(1024 * 1024 * 1024)));  // 1 GB
 define('ALLOWED_EXT', ['pdf','doc','docx','xls','xlsx','ppt','pptx',

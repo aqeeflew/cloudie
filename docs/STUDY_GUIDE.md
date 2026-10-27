@@ -208,7 +208,7 @@ sequenceDiagram
   participant M as mailer.php
 
   B->>S: POST file + csrf (multipart)
-  S->>S: csrf, size <= 50 MB, extension allow-list
+  S->>S: csrf, size <= 25 MB, extension allow-list
   S->>S: move_uploaded_file to uploads/up_*.ext (cleartext on disk)
   S->>SC: scan_file_with_ai(path, name)
   SC->>F: cURL POST /scan (60 s timeout)
@@ -238,7 +238,7 @@ sequenceDiagram
 Step by step with references:
 
 1. **Form** — `upload.php:17-38` (POST + `csrf`); JS overlay `:100-175`. The page text at `:13-14` says "only files verified as clean are encrypted" — not exactly true, *suspicious* files are stored too.
-2. **Validation** — `scan_and_encrypt.php:32-36` POST + CSRF; `:37-40` upload error; `:43-46` size in `(0, 50 MB]` (`config.php:74`); `:47-52` `basename`, lowercase extension in `ALLOWED_EXT` (14 types, `config.php:77-78`). The check is by **extension only** (no MIME/magic check).
+2. **Validation** — `scan_and_encrypt.php:32-36` POST + CSRF; `:37-40` upload error; `:43-46` size in `(0, 25 MB]` (was 50 MB until 2026-10-27) (`config.php:74`); `:47-52` `basename`, lowercase extension in `ALLOWED_EXT` (14 types, `config.php:77-78`). The check is by **extension only** (no MIME/magic check).
 3. **Temp file** — `:54-58` `UPLOAD_DIR . uniqid('up_', true) . '.' . $ext` (cleartext, inside the web root `uploads/`).
 4. **Scan call** — `:63` → `scanner.php:13-52`: cURL multipart, timeout 60 s, connect 10 s; unreachable → `ok=false` (`:36-39`); invalid JSON or HTTP ≥ 400 → `ok=false`. On `ok=false`: `:64-68` delete temp, flash "Malware scan failed", back to upload.
 5. **Flask `/scan`** (`app.py:254-440`):
@@ -442,7 +442,7 @@ Why benign real-world PDFs sit around 0.3-0.4 instead of ~0.05: they are **out o
 ### 5.3 Input handling and output escaping
 
 - SQL: PDO prepared statements everywhere with `ATTR_EMULATE_PREPARES=false` (`db.php:13-17`). **Gotcha:** with emulation off, a named placeholder cannot be reused (`:l` twice) → HTTP 500; so `login.php` uses positional `?` twice (`:175-182`). The one string-built SQL piece is `INTERVAL (int)OTP_TTL_MINUTES` (`login.php:41`), cast to int, safe.
-- Upload: extension allow-list (14 types), size ≤ 50 MB, `basename()` of name, stored under a random name (`enc_<uniqid>.bin`), so the user filename is never a path. No magic-byte/MIME check.
+- Upload: extension allow-list (14 types), size ≤ 25 MB, `basename()` of name, stored under a random name (`enc_<uniqid>.bin`), so the user filename is never a path. No magic-byte/MIME check.
 - Output: `e()` = `htmlspecialchars(ENT_QUOTES|ENT_SUBSTITUTE, UTF-8)` (`auth.php:47`) used on filenames, errors, report fields. Download: fixed MIME map, `nosniff`, `Content-Disposition` with `addslashes`. HTML/SVG/JS are not in the allow-list, so inline view cannot execute stored script.
 
 ### 5.4 Cloud
@@ -471,7 +471,7 @@ Severity is my judgement for a *defense*: **High** = contradicts a headline clai
 | W10 | Low-Medium | **Cleartext temp file inside the web root** (`uploads/up_<uniqid>.ext`, ≈ up to 60 s, no `.htaccess` deny). Name is time-based, not secret. | `scan_and_encrypt.php:54`; `config.php:64` |
 | W11 | Medium | **No ciphertext integrity** (CBC) and **`file_md5` never re-checked** on decrypt. | `aes.php:28`; `decrypt.php:61-71` |
 | W12 | Low | `display_errors` defaults to **on** (`DISPLAY_ERRORS` env, default `'1'`); production relies on the deploy command setting `0`. | `config.php:111-112` |
-| W13 | Low | **Size mismatch**: PHP allows 50 MB, Flask `MAX_CONTENT_LENGTH` is 25 MB, VT free tier 32 MB. A 30 MB file fails with a generic "scan failed". | `config.php:74` vs `app.py:52`, `vt_client.py:140` |
+| W13 | Low (fixed 2026-10-27: both 25 MB) | **Size mismatch**: PHP allows 50 MB, Flask `MAX_CONTENT_LENGTH` is 25 MB, VT free tier 32 MB. A 30 MB file fails with a generic "scan failed". | `config.php:74` vs `app.py:52`, `vt_client.py:140` |
 | W14 | Low | Whole file loaded in memory several times (plaintext + ciphertext); `memory_limit = 256M` vs 50 MB uploads. | `aes.php:25-30,73-81`; root `Dockerfile` |
 | W15 | Low | Registration reveals whether a username/email exists (login does not). | `register.php:76-77` |
 | W16 | Low | **UI bug**: `view_report.php:74` marks every `is_clean != 1` file as *rejected*, so a stored suspicious file shows "File rejected". Also `upload.php:13-14` says only clean files are stored. | `view_report.php:74`; `upload.php:13` |
