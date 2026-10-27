@@ -32,7 +32,8 @@ an auto-run action, or a very high score of 85% or more. We added this gate beca
 metadata block were being mistaken for malware. Second, the model explains itself: the report lists which features
 pushed the score up or down, calculated exactly from the path through the trees. Third, it tells you when it is out of
 its depth: we measure how close each PDF is to the training data, and on every real document we tried the answer is
-'unlike what I learned from', so the score is shown as a weak signal."
+'unlike what I learned from', and the report names why, for example a metadata size that never went below 180 in
+training. So the score is shown as a weak signal."
 
 ## 3-minute version: add these
 
@@ -62,6 +63,15 @@ other. On a held-out 25% of the data this behaves as designed: 9.5% fall beyond 
 the 99th percentile. Real documents are larger and carry many images, while in the training data the image feature
 is always zero or below. That is the evidence for why VirusTotal is primary."
 
+**The cause we found.** "When we asked why the model is unsure on real documents, we traced it to one feature, the
+metadata size, which is the model's most important one. In the training data it is never zero: at least 180, and it grows
+one byte for each character of the title, so it looks like the document-information block. Our extractor measures
+a different thing, the XMP packet, and returns zero when there is none, which is true for most PDFs. We tested the effect:
+with a zero there, 15% of benign training PDFs would be flagged, against none as they are. Using the information-block
+size instead, our real documents would score 0.04 to 0.09 instead of 0.27 to 0.41. We documented it and did not hide it.
+It is not fixed yet: changing a model input needs real benign and malicious test files, so the fix is a retrain with real
+data and a matching extractor after the competition. This is also why VirusTotal is primary."
+
 **What the numbers mean.** "On the standard split the model made 0 false alarms and missed 6 malicious files out of
 about 3,600 test files. On a harder split by file size, where the largest PDFs are held out, accuracy is 99.46% and
 recall drops to 96%. We report both, because the harder number is the honest one."
@@ -73,7 +83,9 @@ recall drops to 96%. We report both, because the harder number is the honest one
 3. Point to the **gate note**: "tagged because the score is at least 50% and it has risk indicators."
 4. Point to the **AI familiarity** box under the table: "this tells us how well the AI knows this kind of PDF; here it
    says unfamiliar, so the score counts as a weak signal." Name one of the listed features (for example image count).
-5. Open a clean PDF: "score near 50% but not tagged: the gate says no risk indicator, so it is treated as a weak
+5. Point at the line **"metadata block (XMP) size: 0, never below 180 in training"**: "this is the measured mismatch;
+   most real PDFs have no XMP block, so the extractor says zero, a value the model never saw."
+6. Open a clean PDF: "score near 50% but not tagged: the gate says no risk indicator, so it is treated as a weak
    signal." (Check the real values during the rehearsal.)
 
 ## Questions you may get, with short answers
@@ -83,6 +95,8 @@ recall drops to 96%. We report both, because the harder number is the honest one
 | Why not trust the 99.9%? | It is accuracy on a held-out part of one public dataset. On other PDFs the model is less certain, so it never decides alone. |
 | Why a Random Forest and not deep learning? | Small tabular data, fast, and we can explain every score exactly. A neural network would be harder to justify to a user. |
 | Can an attacker fool it? | Yes, a model that counts keywords can be evaded. That is why the rule layer exists and why VirusTotal is primary. We test our own evasions in `docs/EVASION_BENCHMARK.md` and say what fails. |
+| Why is the AI unsure on real documents? | One feature, the metadata size, is measured differently in production from in training. Training never has zero; most real PDFs get zero. We measured it (15% of benign training PDFs would be flagged with a zero), documented it, and the fix is a retrain after the competition. |
+| Why not fix it before the demo? | We cannot verify a model change without real benign and real malicious test files, and a silent drop in detection would be worse than an honest limitation. VirusTotal and the structure checks do not depend on this feature. |
 | Does it learn from users' files or from VirusTotal? | No. It is trained once, offline, then fixed. Results from VirusTotal are used in the verdict, not fed back into the model, so nobody can poison it. Learning from VirusTotal labels, with human review, is on the roadmap. |
 | So is the AI useless on real files? | It is a supporting signal. Our own check shows real PDFs are unlike its training data, and it says so. VirusTotal and the structure checks carry the weight; broader real-world training data is the first AI item on the roadmap. |
 | Does the familiarity score change the verdict? | No. It is information for the reader. It says how much weight the AI score deserves; the verdict still comes from VirusTotal first. |
@@ -95,5 +109,6 @@ recall drops to 96%. We report both, because the harder number is the honest one
 * "The AI detects all malware" or "zero false positives" in general.
 * "It reads the document" (it does not read the content).
 * "The AI learns from VirusTotal" or "it gets smarter with every file". It is fixed after training.
+* "We fixed the metadata problem". It is measured and documented; the fix is planned, not done.
 * "Unfamiliar means malicious". It only means unlike the training data.
 * Anything about the AI on Office or ZIP files: those use rules, not the model.
