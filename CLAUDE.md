@@ -118,6 +118,10 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
   (a 25-process stress test found a deadlock in the first version; now 80 parallel writes give 80 sealed entries).
   Demo: edit a row (`UPDATE actions SET details='x' WHERE act_id=...`) and reload `audit.php`: "Tampering detected".
 - **Storage:** Cloud Run is stateless, so blobs go to GCS via `includes/storage.php`. Local XAMPP uses `encrypted/`.
+- **Sign-up validation** (`includes/validate.php`, used by `register.php`, tested in `tests/php/run.php`): username 3-32 chars (letters, numbers, `. _ -`),
+  email <= 120, optional phone 7-20, password 8-72 BYTES (bcrypt cuts at 72), no common/one-character/same-as-username-or-email passwords.
+  Known and left as is: if the verification email cannot be sent the account is auto-verified (fail-open, protects the demo; limit it to dev mode later),
+  verification token has no expiry and is stored in clear, link host comes from the Host header.
 - **Email:** PHPMailer 6.9.1 (`includes/PHPMailer/src/`) + Gmail SMTP. Best-effort, never blocks.
   - Sends welcome, AES key, OTP, and verification emails.
 
@@ -127,7 +131,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
 ```
 
-PHP tests in `tests\php\run.php` (59 checks, no DB), Flask tests in `flask_api\tests\` (174, `unittest`, VT mocked).
+PHP tests in `tests\php\run.php` (79 checks, no DB), Flask tests in `flask_api\tests\` (174, `unittest`, VT mocked).
 Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
 
 ## Run locally (Windows)

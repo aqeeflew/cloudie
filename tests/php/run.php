@@ -15,6 +15,7 @@ require_once $ROOT . '/includes/aes.php';
 require_once $ROOT . '/includes/upload_check.php';
 require_once $ROOT . '/includes/ratelimit.php';   // db.php is loaded but no connection is opened
 require_once $ROOT . '/includes/audit.php';
+require_once $ROOT . '/includes/validate.php';
 
 $passed = 0;
 $failed = 0;
@@ -196,6 +197,39 @@ check('a user with only earlier entries and no head is fine', $r['ok'] && $r['se
 check('an empty log with no head is fine', audit_verify_rows(9, [], null)['ok']);
 check('wiping every sealed entry is detected', !audit_verify_rows(7, [], $head)['ok']);
 check('labels exist for the event codes', audit_label('LOGIN') === 'Signed in' && audit_label('XYZ') === 'XYZ');
+
+// ---------------------------------------------------------------------------
+echo "\nSign-up validation\n";
+check('good username accepted', validate_username('aqeef.azhar-01') === null);
+check('username too short', validate_username('ab') !== null);
+check('username too long', validate_username(str_repeat('a', 33)) !== null);
+check('username boundary 3 and 32 accepted', validate_username('abc') === null && validate_username(str_repeat('a', 32)) === null);
+check('username with spaces, symbols or markup rejected',
+      validate_username('a b c') !== null && validate_username('<b>hi</b>') !== null && validate_username("bob\nx") !== null
+      && validate_username('adm!n') !== null);
+check('username must start with a letter or number', validate_username('.hidden') !== null && validate_username('-bob') !== null);
+check('unicode lookalike / emoji username rejected', validate_username("\u{0430}dmin") !== null && validate_username("bob\u{1F600}") !== null);
+
+check('good email accepted', validate_email('user@example.com') === null);
+check('bad email rejected', validate_email('not-an-email') !== null && validate_email('a@b') !== null);
+check('email longer than 120 rejected', validate_email(str_repeat('a', 115) . '@x.com') !== null);
+
+check('phone is optional', validate_phone('') === null);
+check('normal phone formats accepted', validate_phone('012-3456789') === null && validate_phone('+60 12 345 6789') === null);
+check('letters or too long in phone rejected', validate_phone('call me') !== null && validate_phone(str_repeat('1', 21)) !== null);
+check('very short phone rejected', validate_phone('12345') !== null);
+
+check('good password accepted', validate_password('Tr1cky-Horse-Battery', 'aqeef', 'a@b.com') === null);
+check('password under 8 rejected', validate_password('abc123') !== null);
+check('password over 72 bytes rejected (bcrypt would cut it)', validate_password(str_repeat('x1', 37)) !== null
+      && validate_password(str_repeat('ab', 36)) === null);
+check('common passwords rejected, any case', validate_password('Password123') !== null && validate_password('QWERTY123') !== null);
+check('one repeated character rejected', validate_password('aaaaaaaaaa') !== null);
+check('password equal to username or email rejected',
+      validate_password('aqeefazhar', 'aqeefazhar', 'x@y.com') !== null
+      && validate_password('someone@example.com', 'bob', 'someone@example.com') !== null
+      && validate_password('someone99', 'bob', 'someone99@example.com') !== null          // the part before the @
+      && validate_password('someone99!x', 'bob', 'someone99@example.com') === null);
 
 // ---------------------------------------------------------------------------
 echo "Syntax check (php -l) of every PHP file\n";

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/mailer.php';
 require_once __DIR__ . '/includes/ratelimit.php';
+require_once __DIR__ . '/includes/validate.php';
 
 db_ensure_auth();
 
@@ -26,10 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($username === '' || $email === '' || $pass === '') {
             $err = 'Username, email and password are required.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $err = 'Please enter a valid email address.';
-        } elseif (strlen($pass) < 8) {
-            $err = 'Password must be at least 8 characters.';
+        } elseif (($m = validate_username($username)) !== null) {
+            $err = $m;
+        } elseif (($m = validate_email($email)) !== null) {
+            $err = $m;
+        } elseif (($m = validate_phone($phone)) !== null) {
+            $err = $m;
+        } elseif (($m = validate_password($pass, $username, $email)) !== null) {
+            $err = $m;
         } elseif ($pass !== $confirm) {
             $err = 'Passwords do not match.';
         } else {
@@ -101,13 +106,13 @@ require_once __DIR__ . '/includes/header.php';
         <div class="auth-badge">Create your account</div>
         <h2 class="auth-aside-title">Join<br>Cloudie.</h2>
         <p class="auth-aside-sub">
-          Files are scanned (VirusTotal first, then an AI analyzer for PDFs) and
+          Files are scanned (VirusTotal first, then structure checks, plus an AI analyzer for PDFs) and
           encrypted with AES-256. You receive the key; only its hash is stored.
         </p>
         <ul class="auth-points">
           <li>
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            VirusTotal + Random Forest scan
+            VirusTotal + structure checks (+ AI for PDFs)
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 0 1 12 0v2M5 10h14v10H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
@@ -132,7 +137,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="alert alert-danger"><?= e($err) ?></div>
       <?php endif; ?>
 
-      <form method="post" autocomplete="off">
+      <form method="post">
         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
 
         <div class="field">
@@ -140,6 +145,7 @@ require_once __DIR__ . '/includes/header.php';
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.6"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <input type="text" name="username" id="regUser" class="form-control" required
+                   minlength="<?= USERNAME_MIN ?>" maxlength="<?= USERNAME_MAX ?>" autocomplete="username"
                    value="<?= e($_POST['username'] ?? '') ?>" placeholder="Pick a username">
           </div>
         </div>
@@ -149,6 +155,7 @@ require_once __DIR__ . '/includes/header.php';
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
             <input type="email" name="email" id="regEmail" class="form-control" required
+                   maxlength="<?= EMAIL_MAX ?>" autocomplete="email"
                    value="<?= e($_POST['email'] ?? '') ?>" placeholder="you@example.com">
           </div>
         </div>
@@ -157,7 +164,8 @@ require_once __DIR__ . '/includes/header.php';
           <label for="regPhone">Phone <span style="color:var(--txt-faint);font-weight:400">(optional)</span></label>
           <div class="input-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M6 4h3l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            <input type="text" name="phone" id="regPhone" class="form-control"
+            <input type="tel" name="phone" id="regPhone" class="form-control"
+                   maxlength="20" autocomplete="tel"
                    value="<?= e($_POST['phone'] ?? '') ?>" placeholder="012-3456789">
           </div>
         </div>
@@ -168,7 +176,8 @@ require_once __DIR__ . '/includes/header.php';
             <div class="input-icon">
               <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
               <input type="password" name="password" id="pw" class="form-control"
-                     minlength="8" required placeholder="Min. 8 characters">
+                     minlength="<?= PASSWORD_MIN ?>" maxlength="<?= PASSWORD_MAX ?>" autocomplete="new-password"
+                     required placeholder="8+ characters">
               <button type="button" class="pw-toggle" data-target="pw" aria-label="Show password">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
               </button>
@@ -179,7 +188,8 @@ require_once __DIR__ . '/includes/header.php';
             <div class="input-icon">
               <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
               <input type="password" name="confirm" id="pw2" class="form-control"
-                     minlength="8" required placeholder="Repeat password">
+                     minlength="<?= PASSWORD_MIN ?>" maxlength="<?= PASSWORD_MAX ?>" autocomplete="new-password"
+                     required placeholder="Repeat">
               <button type="button" class="pw-toggle" data-target="pw2" aria-label="Show password">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
               </button>
@@ -188,6 +198,10 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <button type="submit" class="btn btn-cloudie w-100 auth-submit">Create account</button>
+        <p style="font-size:12px;color:var(--txt-faint);margin:.9rem 0 0;line-height:1.5">
+          Privacy: files are encrypted before they are stored. To scan a file, Cloudie checks its hash with VirusTotal first;
+          a file VirusTotal has never seen is uploaded to VirusTotal for analysis. Avoid scanning highly sensitive files.
+        </p>
       </form>
 
       <p class="auth-alt">Already have an account? <a href="login.php">Log in</a></p>
