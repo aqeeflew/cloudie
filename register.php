@@ -177,7 +177,7 @@ require_once __DIR__ . '/includes/header.php';
               <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
               <input type="password" name="password" id="pw" class="form-control"
                      minlength="<?= PASSWORD_MIN ?>" maxlength="<?= PASSWORD_MAX ?>" autocomplete="new-password"
-                     required placeholder="8+ characters">
+                     required>
               <button type="button" class="pw-toggle" data-target="pw" aria-label="Show password">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
               </button>
@@ -189,7 +189,7 @@ require_once __DIR__ . '/includes/header.php';
               <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
               <input type="password" name="confirm" id="pw2" class="form-control"
                      minlength="<?= PASSWORD_MIN ?>" maxlength="<?= PASSWORD_MAX ?>" autocomplete="new-password"
-                     required placeholder="Repeat">
+                     required>
               <button type="button" class="pw-toggle" data-target="pw2" aria-label="Show password">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
               </button>
@@ -197,6 +197,7 @@ require_once __DIR__ . '/includes/header.php';
           </div>
         </div>
 
+        <p style="font-size:12px;color:var(--txt-faint);margin:.5rem 0 1rem">Password: 8 to 72 characters, not a common one.</p>
         <button type="submit" class="btn btn-cloudie w-100 auth-submit">Create account</button>
         <p style="font-size:12px;color:var(--txt-faint);margin:.9rem 0 0;line-height:1.5">
           Privacy: files are encrypted before they are stored. To scan a file, Cloudie checks its hash with VirusTotal first;
