@@ -123,6 +123,9 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
   email <= 120, optional phone 7-20, password 8-72 BYTES (bcrypt cuts at 72), no common/one-character/same-as-username-or-email passwords.
   Known and left as is: if the verification email cannot be sent the account is auto-verified (fail-open, protects the demo; limit it to dev mode later),
   verification token has no expiry and is stored in clear, link host comes from the Host header.
+- **Frameworks** (`docs/FRAMEWORK_MAPPING.md`, landing section "Mapped to recognised frameworks"): controls are MAPPED to
+  MITRE ATT&CK, NIST CSF 2.0, ISO/IEC 27001:2022 Annex A, OWASP and NIST SP 800-63B. Never say "compliant" or "certified".
+  Admitted gaps: email OTP is not an 800-63B authenticator, no CSP, no ISMS (CSF Govern / ISO clauses 4-10 out of scope).
 - **Email:** PHPMailer 6.9.1 (`includes/PHPMailer/src/`) + Gmail SMTP. Best-effort, never blocks.
   - Sends welcome, AES key, OTP, and verification emails.
 

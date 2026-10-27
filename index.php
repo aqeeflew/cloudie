@@ -242,6 +242,70 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </section>
 
+<!-- ============ FRAMEWORKS ============ -->
+<section class="cl-section cl-screen lp">
+  <div class="w-100 container-fluid px-3">
+    <div class="lp-head reveal">
+      <span class="lp-eyebrow">Standards</span>
+      <h2 class="lp-title">Mapped to recognised frameworks</h2>
+      <p class="lp-subtle mt-2" style="font-size:.97rem">Each control is mapped to the code that implements it. Mapped, not certified.</p>
+    </div>
+    <div class="row g-4 g-lg-5 mt-1">
+      <div class="col-md-6 col-lg-3 reveal" data-fx="zoom" style="--d:0ms">
+        <div class="lp-card lp-feature h-100">
+          <h6 class="lp-stack-key">MITRE ATT&amp;CK</h6>
+          <p class="lp-feature-text mb-3">The structure checks detect named attack techniques.</p>
+          <div class="lp-tech-badges">
+            <span class="lp-tbadge lp-tbadge-cyan">T1027 Obfuscation</span>
+            <span class="lp-tbadge lp-tbadge-violet">T1221 Template injection</span>
+            <span class="lp-tbadge lp-tbadge-amber">T1559.002 DDE</span>
+            <span class="lp-tbadge lp-tbadge-cyan">T1036 Masquerading</span>
+            <span class="lp-tbadge lp-tbadge-violet">T1059.005 Macros</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 reveal" data-fx="zoom" style="--d:90ms">
+        <div class="lp-card lp-feature h-100">
+          <h6 class="lp-stack-key">NIST CSF 2.0</h6>
+          <p class="lp-feature-text mb-3">Controls across the framework's functions.</p>
+          <div class="lp-tech-badges">
+            <span class="lp-tbadge lp-tbadge-cyan">Identify: threat model</span>
+            <span class="lp-tbadge lp-tbadge-violet">Protect: AES-256, OTP</span>
+            <span class="lp-tbadge lp-tbadge-amber">Detect: every upload scanned</span>
+            <span class="lp-tbadge lp-tbadge-cyan">Respond: block or tag</span>
+            <span class="lp-tbadge lp-tbadge-violet">Recover: daily backups</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 reveal" data-fx="zoom" style="--d:180ms">
+        <div class="lp-card lp-feature h-100">
+          <h6 class="lp-stack-key">ISO/IEC 27001:2022</h6>
+          <p class="lp-feature-text mb-3">Technical controls from Annex A.</p>
+          <div class="lp-tech-badges">
+            <span class="lp-tbadge lp-tbadge-cyan">8.7 Malware protection</span>
+            <span class="lp-tbadge lp-tbadge-violet">8.24 Cryptography</span>
+            <span class="lp-tbadge lp-tbadge-amber">8.5 Secure authentication</span>
+            <span class="lp-tbadge lp-tbadge-cyan">8.15 Logging</span>
+            <span class="lp-tbadge lp-tbadge-violet">8.13 Backup</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3 reveal" data-fx="zoom" style="--d:270ms">
+        <div class="lp-card lp-feature h-100">
+          <h6 class="lp-stack-key">OWASP &amp; NIST SP 800-63B</h6>
+          <p class="lp-feature-text mb-3">Web application and password guidance.</p>
+          <div class="lp-tech-badges">
+            <span class="lp-tbadge lp-tbadge-cyan">File Upload Cheat Sheet</span>
+            <span class="lp-tbadge lp-tbadge-violet">A03 Injection</span>
+            <span class="lp-tbadge lp-tbadge-amber">A07 Authentication</span>
+            <span class="lp-tbadge lp-tbadge-cyan">800-63B password rules</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ TECH STACK ============ -->
 <section class="cl-section cl-screen lp">
   <div class="w-100 container-fluid px-3">
