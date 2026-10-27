@@ -236,7 +236,7 @@ function _ts(int $t): string {
       <?php if (!empty($fam['unusual_features'])): ?>
         <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem">
           <?php foreach (array_slice($fam['unusual_features'], 0, 4) as $uf): ?>
-            <code style="font-size:.74rem;padding:2px 7px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line)"><?= e((string)($uf['meaning'] ?? $uf['feature'] ?? '')) ?>: <?= e(_fx($uf['value'] ?? null)) ?> (typical <?= e(_fx($uf['typical'] ?? null)) ?>)</code>
+            <code style="font-size:.74rem;padding:2px 7px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line)"><?= e((string)($uf['meaning'] ?? $uf['feature'] ?? '')) ?>: <?= e(_fx($uf['value'] ?? null)) ?> (<?= (($uf['direction'] ?? '') === 'below') ? 'never below ' . e(_fx($uf['lowest'] ?? null)) . ' in training' : 'typical ' . e(_fx($uf['typical'] ?? null)) ?>)</code>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>

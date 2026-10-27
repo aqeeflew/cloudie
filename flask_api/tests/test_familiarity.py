@@ -55,6 +55,30 @@ class Reference(unittest.TestCase):
         size = next(u for u in r["unusual_features"] if u["feature"] == "pdf_size")
         self.assertEqual(size["why"], "in the top 1% of the training data")
 
+    def test_a_value_below_everything_in_training_is_reported_as_below(self):
+        v = vector_from(self.ref, 50)
+        v["metadata_size"] = 0                      # training never goes below 180
+        r = F.assess(v, self.ref)
+        meta = next(u for u in r["unusual_features"] if u["feature"] == "metadata_size")
+        self.assertEqual(meta["direction"], "below")
+        self.assertEqual(meta["why"], "below everything in the training data")
+        self.assertEqual(meta["value"], 0)
+        self.assertGreaterEqual(meta["lowest"], 180)
+        self.assertIn("XMP", meta["meaning"])
+
+    def test_zero_is_not_unusual_for_a_feature_that_is_often_zero(self):
+        v = vector_from(self.ref, 50)
+        for name in ("JS", "Javascript", "OpenAction", "launch", "EmbeddedFile"):
+            v[name] = 0                             # most training PDFs have none of these
+        r = F.assess(v, self.ref)
+        self.assertEqual(r["unusual_features"], [])
+
+    def test_above_range_items_say_above_and_a_typical_value_is_not_listed(self):
+        v = vector_from(self.ref, 50)
+        v["pdf_size"] = 5e6
+        r = F.assess(v, self.ref)
+        self.assertEqual({u["direction"] for u in r["unusual_features"]}, {"above"})
+
     def test_the_distance_grows_as_a_file_moves_away_from_the_training_data(self):
         base = vector_from(self.ref, 50)
         dists = []

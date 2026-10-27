@@ -30,7 +30,7 @@ RANK_LOW, RANK_HIGH = -0.25, 1.25          # how far outside [0, 1] an out-of-ra
 REF_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai_familiarity.npz")
 
 FRIENDLY = {
-    "pdf_size": "file size (KB)", "metadata_size": "metadata block size", "pages": "pages",
+    "pdf_size": "file size (KB)", "metadata_size": "metadata block (XMP) size", "pages": "pages",
     "xref_length": "cross-reference size", "images": "image count", "obj": "objects", "endobj": "object ends",
     "stream": "streams", "endstream": "stream ends", "ObjStm": "object streams", "URI": "links",
     "title_characters": "title length", "Colors": "colour entries",
@@ -104,17 +104,23 @@ def assess(features, ref=None):
 
         unusual = []
         for j, n in enumerate(ref.names):
-            lo, med, hi, mx = ref.q[j][1], ref.q[j][50], ref.q[j][99], ref.q[j][100]
+            mn, med, hi, mx = ref.q[j][0], ref.q[j][50], ref.q[j][99], ref.q[j][100]
             val = raw[0, j]
             if val > hi and val > mx:
-                unusual.append((val / max(hi, 1.0), n, val, med, hi, "above everything in the training data"))
+                unusual.append((val / max(hi, 1.0), n, val, med, hi, mn, "above",
+                                "above everything in the training data"))
             elif val > hi:
-                unusual.append((val / max(hi, 1.0) * 0.5, n, val, med, hi, "in the top 1% of the training data"))
+                unusual.append((val / max(hi, 1.0) * 0.5, n, val, med, hi, mn, "above",
+                                "in the top 1% of the training data"))
+            elif val < mn:
+                # lower than any training PDF (for example metadata_size = 0 when training never goes below 180)
+                unusual.append((10.0 * (mn - val) / max(abs(mn), 1.0), n, val, med, hi, mn, "below",
+                                "below everything in the training data"))
         unusual.sort(reverse=True)
         top = [{"feature": n, "meaning": FRIENDLY.get(n, n), "value": round(float(val), 2),
-                "typical": round(float(med), 2), "p99": round(float(hi), 2), "why": why}
-               for _, n, val, med, hi, why in unusual[:4]]
-        # a count the training data never varies (for example images) is reported by name when it is novel
+                "typical": round(float(med), 2), "p99": round(float(hi), 2), "lowest": round(float(mn), 2),
+                "direction": direction, "why": why}
+               for _, n, val, med, hi, mn, direction, why in unusual[:4]]
         return {
             "available": True, "band": band, "percentile": round(min(pct, 100.0), 1),
             "distance": round(dist, 3), "p90": round(float(ref.p90), 3), "p99": round(float(ref.p99), 3),
