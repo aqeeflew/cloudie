@@ -1,0 +1,65 @@
+/* Cloudie competition posters: A1 portrait (594 x 841 mm). 1 CSS px = 1/96 in. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+@page { size: 594mm 841mm; margin: 0; }
+:root {
+  --bg: #0b1020; --bg2: #0e1530; --card: #121a30; --card2: #172241; --line: #25304d;
+  --text: #e8ecf6; --soft: #c7d0e8; --muted: #8f9bbb;
+  --cyan: #27d3e0; --blue: #4f8dff; --violet: #9b7bff; --amber: #ffc24b; --red: #ff6b7d; --green: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); }
+body {
+  width: 594mm; height: 841mm; overflow: hidden; position: relative;
+  font-family: 'DM Sans', Arial, sans-serif; color: var(--text); font-size: 25px; line-height: 1.4;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  background:
+    radial-gradient(1200px 900px at 10% 0%, rgba(39,211,224,.16), transparent 60%),
+    radial-gradient(1100px 900px at 100% 18%, rgba(155,123,255,.16), transparent 60%),
+    radial-gradient(1400px 1000px at 50% 100%, rgba(79,141,255,.12), transparent 60%),
+    var(--bg);
+}
+/* faint grid, like the landing page */
+body::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 64px 64px; }
+.page { position: relative; height: 100%; padding: 54px 80px 44px; display: flex; flex-direction: column; gap: 26px; }
+
+/* header */
+.top { display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 26px; }
+.mark { width: 100px; height: 100px; border-radius: 30px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--blue), var(--cyan)); box-shadow: 0 0 60px rgba(39,211,224,.35); }
+.mark svg { width: 66px; height: 66px; }
+.wordmark { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 84px; letter-spacing: -2px; line-height: 1; }
+.wordmark span { color: var(--cyan); }
+.logos { background: #fff; border-radius: 22px; padding: 14px 26px; display: flex; align-items: center; }
+.logos img { height: 100px; display: block; }
+.title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 90px; line-height: 1.02; letter-spacing: -2.5px; }
+.title em { font-style: normal; background: linear-gradient(90deg, var(--cyan), var(--blue) 55%, var(--violet));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.byline { margin-top: 22px; font-size: 26px; color: var(--muted); letter-spacing: .3px; }
+.byline b { color: var(--soft); font-weight: 700; }
+
+/* building blocks */
+.eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 22px; letter-spacing: 5px; text-transform: uppercase; color: var(--cyan); font-weight: 700; }
+.h { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 42px; line-height: 1.1; margin-top: 6px; letter-spacing: -.5px; }
+.card { background: linear-gradient(180deg, rgba(23,34,65,.92), rgba(18,26,48,.92)); border: 2px solid var(--line); border-radius: 28px; padding: 30px 36px; }
+.row { display: grid; gap: 34px; }
+.muted { color: var(--muted); }
+.soft { color: var(--soft); }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.chip { display: inline-block; font-weight: 700; font-size: 20px; padding: 6px 16px; border-radius: 999px; letter-spacing: .5px; }
+.c-cyan { color: var(--cyan); background: rgba(39,211,224,.12); border: 1.5px solid rgba(39,211,224,.4); }
+.c-violet { color: #b9a4ff; background: rgba(155,123,255,.12); border: 1.5px solid rgba(155,123,255,.4); }
+.c-amber { color: var(--amber); background: rgba(255,194,75,.12); border: 1.5px solid rgba(255,194,75,.4); }
+.c-red { color: var(--red); background: rgba(255,107,125,.12); border: 1.5px solid rgba(255,107,125,.45); }
+.c-green { color: var(--green); background: rgba(52,211,153,.12); border: 1.5px solid rgba(52,211,153,.4); }
+table { width: 100%; border-collapse: collapse; }
+td, th { text-align: left; vertical-align: top; padding: 11px 10px; border-bottom: 1.5px solid var(--line); }
+th { font-family: 'JetBrains Mono', monospace; font-size: 19px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+tr:last-child td { border-bottom: 0; }
+.foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; font-size: 21px; color: var(--muted); }
+
+/* measure helper: open with ?measure to print section heights (used by render checks) */
