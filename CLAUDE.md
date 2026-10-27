@@ -131,7 +131,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
 ```
 
-PHP tests in `tests\php\run.php` (79 checks, no DB), Flask tests in `flask_api\tests\` (174, `unittest`, VT mocked).
+PHP tests in `tests\php\run.php` (81 checks, no DB), Flask tests in `flask_api\tests\` (175, `unittest`, VT mocked).
 Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
 
 ## Run locally (Windows)

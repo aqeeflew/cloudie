@@ -197,6 +197,14 @@ class ScanApi(unittest.TestCase):
         j = self.scan(helpers.PNG_BYTES, "a.png", vt_error=TimeoutError("x"))
         self.assertEqual(j["verdict"], "error")
 
+    def test_a_25_mb_file_is_accepted_and_a_bigger_one_is_refused(self):
+        # PHP accepts files up to 25 MB; the scanner must take a full 25 MB file inside its multipart body
+        j = self.scan(b"\x01" * (25 * 1024 * 1024), "big.bin", vt_report())
+        self.assertIn(j["verdict"], ("clean", "suspicious"))
+        r = self.client.post("/scan", data={"file": (io.BytesIO(b"\x01" * (27 * 1024 * 1024)), "huge.bin")},
+                             content_type="multipart/form-data")
+        self.assertEqual(r.status_code, 413)
+
     def test_missing_file_field_is_a_400(self):
         r = self.client.post("/scan", data={}, content_type="multipart/form-data")
         self.assertEqual(r.status_code, 400)

@@ -63,7 +63,9 @@ logging.basicConfig(
 logger = logging.getLogger("cloudie.app")
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES
+# The limit applies to the whole request body, so allow room for the multipart wrapping around a 25 MB file
+# (PHP accepts files up to 25 MB: includes/config.php MAX_UPLOAD_BYTES).
+app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES + 1024 * 1024
 
 # ---------------------------------------------------------------------------
 # Load model + metrics once at startup

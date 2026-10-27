@@ -232,6 +232,14 @@ check('password equal to username or email rejected',
       && validate_password('someone99!x', 'bob', 'someone99@example.com') === null);
 
 // ---------------------------------------------------------------------------
+echo "\nUpload size limit agrees with the scanner\n";
+$appPy = (string)@file_get_contents($ROOT . '/flask_api/app.py');
+preg_match('/^MAX_UPLOAD_BYTES\s*=\s*(\d+)\s*\*\s*1024\s*\*\s*1024/m', $appPy, $mm);
+check('PHP MAX_UPLOAD_BYTES (' . (MAX_UPLOAD_BYTES >> 20) . ' MB) equals the Flask scanner limit ('
+      . ($mm[1] ?? '?') . ' MB)', isset($mm[1]) && MAX_UPLOAD_BYTES === (int)$mm[1] * 1024 * 1024);
+check('limit stays under the VirusTotal free-tier 32 MB', MAX_UPLOAD_BYTES <= 32 * 1024 * 1024);
+
+// ---------------------------------------------------------------------------
 echo "Syntax check (php -l) of every PHP file\n";
 $skip = ['/vendor/', '/PHPMailer/', '/backup', '/tests/', '/.git/'];
 $it   = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($ROOT, FilesystemIterator::SKIP_DOTS));

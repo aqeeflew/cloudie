@@ -16,6 +16,7 @@
 
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/mailer.php';
+require_once __DIR__ . '/includes/validate.php';
 
 require_login();
 db_ensure_auth();
@@ -46,10 +47,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $phone    = trim($_POST['phone']    ?? '');
             $pass     = $_POST['current_password'] ?? '';
 
-            if ($username === '' || strlen($username) < 3 || strlen($username) > 64) {
-                $errDetails = 'Username must be 3–64 characters.';
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errDetails = 'Please enter a valid email address.';
+            // Same rules as sign-up (includes/validate.php). A username is only checked when it CHANGES, so accounts
+            // created before the rules existed can still save their other details.
+            $usernameChanged = $dbUser && $username !== (string)$dbUser['username'];
+            if ($username === '') {
+                $errDetails = 'Username is required.';
+            } elseif ($usernameChanged && ($m = validate_username($username)) !== null) {
+                $errDetails = $m;
+            } elseif (($m = validate_email($email)) !== null) {
+                $errDetails = $m;
+            } elseif (($m = validate_phone($phone)) !== null) {
+                $errDetails = $m;
             } elseif (!$dbUser || !password_verify($pass, $dbUser['password_hash'])) {
                 $errDetails = 'Your current password is incorrect.';
             } else {
@@ -112,8 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!$dbUser || !password_verify($cur, $dbUser['password_hash'])) {
                 $errPass = 'Your current password is incorrect.';
-            } elseif (strlen($new) < 8) {
-                $errPass = 'New password must be at least 8 characters.';
+            } elseif (($m = validate_password($new, (string)$dbUser['username'], (string)$dbUser['email'])) !== null) {
+                $errPass = $m;                       // same rules as sign-up: 8-72 bytes, not common, not username/email
             } elseif ($new !== $confirm) {
                 $errPass = 'New passwords do not match.';
             } elseif ($new === $cur) {
@@ -287,7 +295,8 @@ require_once __DIR__ . '/includes/header.php';
         <label for="pwNew">New password</label>
         <div class="pw-wrap">
           <input type="password" name="new_password" id="pwNew" class="form-control"
-                 minlength="8" required autocomplete="new-password" placeholder="Min. 8 characters">
+                 minlength="<?= PASSWORD_MIN ?>" maxlength="<?= PASSWORD_MAX ?>" required autocomplete="new-password"
+                 placeholder="8 to 72 characters">
           <button type="button" class="pw-toggle" data-target="pwNew" aria-label="Show password">
             <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
           </button>
@@ -374,10 +383,27 @@ require_once __DIR__ . '/includes/header.php';
     if (/[^A-Za-z0-9]/.test(v)) s++;
     return s;
   }
+  // the same hard rules as the server (includes/validate.php); the server still decides
+  var COMMON = <?= json_encode(COMMON_PASSWORDS) ?>;
+  var ACCOUNT_USER  = <?= json_encode(strtolower((string)$user['username'])) ?>;
+  var ACCOUNT_EMAIL = <?= json_encode(strtolower((string)$user['email'])) ?>;
+  function byteLen(v){ try { return new TextEncoder().encode(v).length; } catch (e) { return v.length; } }
+  function ruleProblem(v){
+    var low = v.toLowerCase();
+    if (byteLen(v) > <?= (int)PASSWORD_MAX ?>) return 'Too long — at most <?= (int)PASSWORD_MAX ?> characters.';
+    if (COMMON.indexOf(low) !== -1) return 'Weak — this is a very common password.';
+    if (/^(.)\1+$/.test(v)) return 'Weak — one character repeated.';
+    if (low === ACCOUNT_USER) return 'Weak — same as your username.';
+    if (low === ACCOUNT_EMAIL || low === ACCOUNT_EMAIL.split('@')[0]) return 'Weak — same as your email.';
+    return null;
+  }
   function refreshStrength(){
-    var v = pwNew.value, s = strengthScore(v);
+    var v = pwNew.value, s = strengthScore(v), problem = v ? ruleProblem(v) : null;
     if (!v){
       bar.style.width = '0'; note.textContent = ''; note.className = 'pw-note';
+    } else if (problem && byteLen(v) >= 8){
+      bar.style.width = '20%'; bar.style.background = 'var(--red)';
+      note.textContent = problem; note.className = 'pw-note bad';
     } else if (v.length < 8){
       bar.style.width = '20%'; bar.style.background = 'var(--red)';
       note.textContent = 'Too short — minimum 8 characters.'; note.className = 'pw-note bad';

@@ -4,7 +4,7 @@ Companion to `docs\STUDY_GUIDE.md`. Each item has: a short honest English answer
 `file:line` = project path (`flask_api\app.py:197` is written `app.py:197`). `Thesis x.y` = section in `FYP_THESIS_formatted`.
 Rule for every answer: say what the code does, admit the limit, then say what you would improve.
 
-Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 18,126 rows (9,063 per class) · 99.86% (pickle's own 80/20 test, n = 3,626) · 99.87% (re-run, stratified 75/25) · 99.46% / recall 96.14% (size hold-out, n = 4,643) · AES-256-CBC · 50 MB upload limit · OTP 6 digits / 10 min / 5 attempts.**
+Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 18,126 rows (9,063 per class) · 99.86% (pickle's own 80/20 test, n = 3,626) · 99.87% (re-run, stratified 75/25) · 99.46% / recall 96.14% (size hold-out, n = 4,643) · AES-256-CBC · 25 MB upload limit (PHP and scanner agree since 2026-10-27) · OTP 6 digits / 10 min / 5 attempts.**
 
 ---
 
@@ -21,7 +21,7 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `scanner.php`, `flask_api\Dockerfile`; Thesis 3.2.2, 4.2.
 
 ### A3. Walk me through what happens when I upload a file.
-**Answer:** PHP checks CSRF, size (≤ 50 MB) and extension, saves a temporary copy, and posts it to Flask. Flask extracts 32 features, gets the Random Forest probability, asks VirusTotal, and `combine()` returns clean, suspicious, malicious or error. Malicious and error are discarded; clean and suspicious are encrypted in memory with a fresh AES-256 key and IV, uploaded to storage, the cleartext temp file is deleted, and the key is shown once.
+**Answer:** PHP checks CSRF, size (≤ 25 MB, the scanner limit) and extension, saves a temporary copy, and posts it to Flask. Flask extracts 32 features, gets the Random Forest probability, asks VirusTotal, and `combine()` returns clean, suspicious, malicious or error. Malicious and error are discarded; clean and suspicious are encrypted in memory with a fresh AES-256 key and IV, uploaded to storage, the cleartext temp file is deleted, and the key is shown once.
 **BM:** Semak → scan (Flask) → verdict → kalau tak malicious, enkrip & simpan → padam fail asal → tunjuk key sekali.
 **Proof:** `scan_and_encrypt.php:32-254`, STUDY_GUIDE 3.3 (sequence diagram); Thesis 3.3.5, 4.3.7.
 
