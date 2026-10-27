@@ -23,10 +23,11 @@ require_once __DIR__ . '/includes/header.php';
           Storage
         </h1>
         <p class="lead mt-4 lp-subtle reveal" style="--d:120ms">
-          Cloudie checks every upload with VirusTotal first, then with a Random Forest
-          analyzer trained on thousands of PDF samples, and encrypts the file on the
-          server with AES-256-CBC before it is stored. Only a SHA-256 hash of your key
-          is kept, so you need your key to read the file back.
+          Cloudie checks every upload with VirusTotal first, then reads <strong>how the file is built</strong>:
+          rule-based structure checks for PDF, Office, ZIP, CSV and image files, plus a Random Forest
+          analyzer for PDFs that also says when a file is unlike anything it was trained on. The file is then
+          encrypted on the server with AES-256-CBC. Only a SHA-256 hash of your key is kept, so you need your
+          key to read the file back.
         </p>
         <div class="mt-4 d-flex flex-wrap gap-3 reveal" style="--d:180ms">
           <?php if (current_user()): ?>
@@ -48,6 +49,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <div class="lp-trust reveal" style="--d:220ms" aria-label="What protects your files">
           <span><i></i>VirusTotal &middot; 70+ engines</span>
+          <span><i></i>Structure checks &middot; no signature needed</span>
           <span><i></i>Random Forest &middot; 32 features</span>
           <span><i></i>AES-256-CBC</span>
           <span><i></i>2-step login</span>
@@ -74,7 +76,7 @@ require_once __DIR__ . '/includes/header.php';
             <ol class="lp-demo-steps" id="demoSteps">
               <li><span class="si"></span><span>Upload</span><span class="st">&nbsp;</span></li>
               <li><span class="si"></span><span>VirusTotal <em>(primary)</em></span><span class="st">&nbsp;</span></li>
-              <li><span class="si"></span><span>AI analysis <em>(PDF)</em></span><span class="st">&nbsp;</span></li>
+              <li><span class="si"></span><span>Structure checks <em>(+ AI for PDF)</em></span><span class="st">&nbsp;</span></li>
               <li><span class="si"></span><span>Encrypt on the server</span><span class="st">&nbsp;</span></li>
               <li><span class="si"></span><span>Store</span><span class="st">&nbsp;</span></li>
             </ol>
@@ -158,8 +160,8 @@ require_once __DIR__ . '/includes/header.php';
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
           </div>
-          <h5 class="lp-feature-title mt-3">AI malware detection</h5>
-          <p class="lp-feature-text mb-0">A Random Forest classifier trained on the CIC-Evasive-PDFMal2022 dataset extracts 32 structural features from each PDF as a supporting signal alongside VirusTotal, before storage.</p>
+          <h5 class="lp-feature-title mt-3">VirusTotal first</h5>
+          <p class="lp-feature-text mb-0">VirusTotal's 70+ signature-based engines give the primary verdict. Two or more engines block a file, a single engine only warns, and if VirusTotal gives no answer the upload is refused (fail closed).</p>
         </div>
       </div>
       <div class="col-md-4 reveal" data-fx="zoom" style="--d:90ms">
@@ -170,8 +172,8 @@ require_once __DIR__ . '/includes/header.php';
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
           </div>
-          <h5 class="lp-feature-title mt-3">VirusTotal first</h5>
-          <p class="lp-feature-text mb-0">VirusTotal's 70+ signature-based engines give the primary verdict and can block a file. The AI result is a supporting signal: if VirusTotal is clean but the AI flags a PDF, the file is stored and tagged Suspicious.</p>
+          <h5 class="lp-feature-title mt-3">Structure checks + explainable AI</h5>
+          <p class="lp-feature-text mb-0">Signatures know the past; structure reads the file. Rule-based checks catch what has no signature yet: a macro inside a .docx, hidden PDF scripts, zip slip, programs disguised as documents, data hidden in images, CSV formula injection. For PDFs a Random Forest (32 features) adds an explained score and says when a file is unlike its training data. A finding stores the file tagged Suspicious, with the reason.</p>
         </div>
       </div>
       <div class="col-md-4 reveal" data-fx="zoom" style="--d:180ms">
@@ -315,7 +317,7 @@ require_once __DIR__ . '/includes/header.php';
         <p class="lp-role">BSc (Hons) Netcentric Computing &mdash; Universiti Teknologi MARA (UiTM)</p>
         <p class="lp-feature-text mb-0">
           Cloudie is my Final Year Project (CSP650), built to explore how malware
-          detection (VirusTotal plus an AI analyzer) and AES encryption can work together in a
+          detection (VirusTotal plus structure checks and an AI analyzer) and AES encryption can work together in a
           single, usable cloud-storage workflow. Supervised by
           <strong>Dr. Fakariah Hani Binti Mohd Ali</strong>.
         </p>
@@ -809,9 +811,11 @@ require_once __DIR__ . '/includes/header.php';
         steps = Array.prototype.slice.call(document.querySelectorAll('#demoSteps li'));
     var scenarios = [
       { name: 'invoice_q3.pdf',   meta: 'PDF · 214 KB', chip: ['CLEAN', 'clean'],
-        res: [['ok', 'received'], ['ok', '0 / 70 engines'], ['ok', 'score 18%'], ['ok', 'AES-256-CBC'], ['ok', 'stored']] },
+        res: [['ok', 'received'], ['ok', '0 / 70 engines'], ['ok', 'no findings'], ['ok', 'AES-256-CBC'], ['ok', 'stored']] },
       { name: 'order_form.pdf',   meta: 'PDF · 96 KB',  chip: ['SUSPICIOUS', 'warn'],
-        res: [['ok', 'received'], ['ok', '0 / 70 engines'], ['warn', 'JavaScript + auto-run'], ['ok', 'AES-256-CBC'], ['warn', 'stored, tagged']] },
+        res: [['ok', 'received'], ['ok', '0 / 70 engines'], ['warn', 'hidden JavaScript'], ['ok', 'AES-256-CBC'], ['warn', 'stored, tagged']] },
+      { name: 'report.docx',      meta: 'Word · 48 KB', chip: ['SUSPICIOUS', 'warn'],
+        res: [['ok', 'received'], ['ok', '0 / 70 engines'], ['warn', 'macro in a .docx'], ['ok', 'AES-256-CBC'], ['warn', 'stored, tagged']] },
       { name: 'setup_update.zip', meta: 'ZIP · 2.4 MB', chip: ['BLOCKED', 'bad'],
         res: [['ok', 'received'], ['fail', '14 / 70 engines'], ['skip', 'not run'], ['skip', 'not run'], ['skip', 'not stored']] }
     ];
