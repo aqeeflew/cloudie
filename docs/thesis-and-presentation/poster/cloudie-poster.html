@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cloudie Poster</title>
+<link rel="stylesheet" href="poster.css">
+<style>
+  .hdr { display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: start; }
+  .hook { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; align-items: stretch; }
+  .quote { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 52px; line-height: 1.08; letter-spacing: -1px; }
+  .quote span { color: var(--cyan); }
+  .quote small { display: block; font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: 25px; color: var(--soft); margin-top: 16px; letter-spacing: 0; line-height: 1.45; }
+  .probs { display: grid; gap: 12px; align-content: space-between; }
+  .prob { display: grid; grid-template-columns: 74px 1fr; gap: 20px; align-items: center; background: rgba(255,107,125,.06); border: 2px solid rgba(255,107,125,.28); border-radius: 22px; padding: 14px 24px; }
+  .prob .n { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 40px; color: var(--red); }
+  .prob b { display: block; font-size: 25px; }
+  .prob span { font-size: 21px; color: var(--soft); }
+
+  /* pipeline */
+  .pipe { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 20px; position: relative; }
+  .pipe::before { content: ""; position: absolute; left: 7%; right: 7%; top: 52px; height: 4px; background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--amber), var(--green)); border-radius: 4px; opacity: .8; }
+  .step { text-align: center; padding: 0 12px; position: relative; }
+  .node { width: 104px; height: 104px; margin: 0 auto 14px; border-radius: 34px; display: grid; place-items: center; background: var(--card2); border: 3px solid var(--line); position: relative; z-index: 1; }
+  .node svg { width: 58px; height: 58px; }
+  .step b { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 29px; }
+  .step span { display: block; font-size: 21px; color: var(--soft); margin-top: 4px; line-height: 1.3; }
+  .step .tag { margin-top: 8px; }
+
+  /* structure table */
+  .fam td:first-child { font-weight: 700; width: 15%; }
+  .fam td { font-size: 23px; }
+  .fam td:nth-child(2) { color: var(--soft); }
+  .fam td:last-child { width: 30%; }
+  .fam .mono { font-size: 20px; color: var(--amber); }
+
+  /* verdict */
+  .vd td { font-size: 23px; padding: 13px 10px; }
+  .vd td:last-child { text-align: right; white-space: nowrap; }
+
+  /* AI card */
+  .bars { display: grid; gap: 10px; margin-top: 12px; }
+  .bar { display: grid; grid-template-columns: 220px 1fr 80px; gap: 16px; align-items: center; font-size: 21px; }
+  .bar .t { height: 20px; border-radius: 10px; background: #0b1226; overflow: hidden; }
+  .bar .t i { display: block; height: 100%; border-radius: 10px; }
+  .band { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 18px; border-radius: 16px; overflow: hidden; border: 2px solid var(--line); }
+  .band div { padding: 12px 10px; text-align: center; font-size: 20px; font-weight: 700; }
+
+  /* stats */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .stat { background: rgba(255,255,255,.03); border: 2px solid var(--line); border-radius: 22px; padding: 20px 22px; }
+  .stat .v { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 56px; line-height: 1; letter-spacing: -1px;
+    background: linear-gradient(90deg, var(--cyan), var(--blue)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat .l { font-size: 21px; color: var(--soft); margin-top: 8px; line-height: 1.3; }
+
+  /* protection */
+  .prot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+  .p { background: rgba(255,255,255,.03); border: 2px solid var(--line); border-radius: 20px; padding: 14px 20px; }
+  .p b { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 27px; color: var(--cyan); }
+  .p span { font-size: 21px; color: var(--soft); line-height: 1.35; display: block; margin-top: 4px; }
+
+  .fw { display: grid; gap: 12px; margin-top: 20px; }
+  .fw div { display: grid; grid-template-columns: 230px 1fr; gap: 16px; align-items: baseline; font-size: 21px; }
+  .fw b { font-family: 'Space Grotesk', sans-serif; font-size: 25px; }
+
+  .cta { display: grid; grid-template-columns: auto 1fr auto; gap: 40px; align-items: center;
+    background: linear-gradient(90deg, rgba(39,211,224,.14), rgba(155,123,255,.14)); border: 2px solid rgba(39,211,224,.45); border-radius: 34px; padding: 26px 40px; }
+  .qr { background: #fff; border-radius: 20px; padding: 10px; }
+  .qr img { width: 170px; height: 170px; display: block; }
+  .shot { width: 400px; border-radius: 18px; border: 2px solid var(--line); display: block; }
+  .sdg { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- header -->
+  <header class="hdr">
+    <div>
+      <div class="brand">
+        <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.3 4.35 4.35 0 0 0 7 18z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10.2l2.6 1.1v1.9c0 1.6-1.1 2.9-2.6 3.5-1.5-.6-2.6-1.9-2.6-3.5v-1.9L12 10.2z" fill="#fff"/></svg></div>
+        <div class="wordmark">Cloud<span>ie</span></div>
+        <span class="chip c-cyan" style="margin-left:14px;font-size:22px">CSP650 · CYBERSECURITY</span>
+      </div>
+      <h1 class="title" style="margin-top:22px">Secure cloud storage that<br><em>reads how a file is built</em></h1>
+    </div>
+    <div class="logos"><img src="assets/logo-uitm-mdti.png" alt="UiTM and MDTI logos"></div>
+  </header>
+  <p class="byline" style="margin-top:-14px"><b>MUHAMMAD AQEEF BIN AZHAR</b> &nbsp;|&nbsp; Supervisor: <b>DR. FAKARIAH HANI BINTI MOHD ALI</b> &nbsp;|&nbsp; BSc (Hons) Netcentric Computing, UiTM Shah Alam</p>
+
+  <!-- hook -->
+  <section class="hook">
+    <div class="card" style="display:flex;flex-direction:column;justify-content:center">
+      <p class="eyebrow">The idea</p>
+      <p class="quote" style="margin-top:14px">Signatures know the past.<br><span>Structure reads the file.</span>
+        <small>Antivirus signatures only catch files someone has already seen. Cloudie also checks <b>how a file is put together</b>, so a disguised file is caught even when no engine has a signature for it yet. Every file is then encrypted before it is stored.</small></p>
+    </div>
+    <div class="probs">
+      <p class="eyebrow" style="color:var(--red)">The problem</p>
+      <div class="prob"><div class="n">01</div><div><b>New malware has no signature yet</b><span>Signature scanners miss files nobody has reported.</span></div></div>
+      <div class="prob"><div class="n">02</div><div><b>Attackers disguise files</b><span>A macro inside a .docx, <span class="mono">invoice.pdf.exe</span>, a ZIP hidden in a picture.</span></div></div>
+      <div class="prob"><div class="n">03</div><div><b>Stored files can leak</b><span>Files kept unencrypted are exposed if storage is breached.</span></div></div>
+    </div>
+  </section>
+
+  <!-- pipeline -->
+  <section class="card">
+    <p class="eyebrow">How it works</p>
+    <h2 class="h">Every upload is scanned, judged and encrypted before it is stored</h2>
+    <div class="pipe">
+      <div class="step"><div class="node" style="border-color:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="#27d3e0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div><b>Upload</b><span>Type allow-list, 25 MB limit, rate limit</span></div>
+      <div class="step"><div class="node" style="border-color:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="#4f8dff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg></div><b>VirusTotal</b><span>70+ engines, primary verdict</span><span class="chip c-red tag">FAIL CLOSED</span></div>
+      <div class="step"><div class="node" style="border-color:var(--violet)"><svg viewBox="0 0 24 24" fill="none" stroke="#9b7bff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><b>Structure checks</b><span>PDF, Office, ZIP, CSV, images, file name</span><span class="chip c-violet tag">NO SIGNATURE</span></div>
+      <div class="step"><div class="node" style="border-color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="#ffc24b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 10h4v4h-4z"/></svg></div><b>AI for PDFs</b><span>Random Forest, 32 features, explained</span><span class="chip c-amber tag">EXPLAINABLE</span></div>
+      <div class="step"><div class="node" style="border-color:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="#27d3e0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div><b>AES-256</b><span>New key + IV per file, key goes to you</span></div>
+      <div class="step"><div class="node" style="border-color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.3 4.35 4.35 0 0 0 7 18z"/></svg></div><b>Cloud storage</b><span>Ciphertext only, on Google Cloud</span></div>
+    </div>
+  </section>
+
+  <!-- structure + verdict -->
+  <section class="row" style="grid-template-columns:1.55fr 1fr">
+    <div class="card">
+      <p class="eyebrow">Innovation · structure layer</p>
+      <h2 class="h">What the file is built from, by file family</h2>
+      <table class="fam" style="margin-top:16px">
+        <tr><th>Family</th><th>What the rules catch</th><th>MITRE ATT&amp;CK</th></tr>
+        <tr><td>PDF</td><td>Hidden keywords (<span class="mono">/J#61vaScript</span>), exploit code in scripts, embedded programs</td><td class="mono">T1027 · T1059.007</td></tr>
+        <tr><td>Office</td><td>Macro inside a macro-free .docx, DDE, remote template</td><td class="mono">T1059.005 · T1221 · T1559.002</td></tr>
+        <tr><td>ZIP</td><td>Zip slip (<span class="mono">../</span>), zip bomb, programs disguised as documents</td><td class="mono">T1036.007 · CWE-22</td></tr>
+        <tr><td>CSV</td><td>Cells that run commands (<span class="mono">=cmd|…</span>) or leak data</td><td class="mono">T1559.002 · CWE-1236</td></tr>
+        <tr><td>Images</td><td>A ZIP, program or script hidden after the picture ends</td><td class="mono">T1027.003</td></tr>
+        <tr><td>Every file</td><td>Real type vs. its name, double extension, right-to-left trick</td><td class="mono">T1036.008 · T1036.002</td></tr>
+      </table>
+      <p class="muted" style="font-size:21px;margin-top:14px">Bytes are only read, never run or extracted, with a 3-second budget per file.</p>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Verdict engine</p>
+      <h2 class="h">VirusTotal decides first</h2>
+      <table class="vd" style="margin-top:16px">
+        <tr><td>2 or more engines flag it</td><td><span class="chip c-red">BLOCKED</span></td></tr>
+        <tr><td>No answer from VirusTotal</td><td><span class="chip c-red">BLOCKED</span></td></tr>
+        <tr><td>Only 1 engine (classic false positive)</td><td><span class="chip c-amber">SUSPICIOUS</span></td></tr>
+        <tr><td>Clean, but a strong structure finding</td><td><span class="chip c-amber">SUSPICIOUS</span></td></tr>
+        <tr><td>Clean, but AI flags a risky PDF</td><td><span class="chip c-amber">SUSPICIOUS</span></td></tr>
+        <tr><td>Everything clean</td><td><span class="chip c-green">CLEAN</span></td></tr>
+      </table>
+      <p class="muted" style="font-size:21px;margin-top:14px">Suspicious files are stored encrypted and tagged, with the reason shown in the scan report.</p>
+    </div>
+  </section>
+
+  <!-- AI + protection -->
+  <section class="row" style="grid-template-columns:1fr 1.1fr">
+    <div class="card">
+      <p class="eyebrow">Explainable AI</p>
+      <h2 class="h">The report says <em style="font-style:normal;color:var(--amber)">why</em>, and when it is unsure</h2>
+      <p class="soft" style="font-size:22px;margin-top:6px"><b>Why this AI score:</b> each feature's exact contribution from the trees.</p>
+      <div class="bars">
+        <div class="bar"><span>JavaScript</span><div class="t"><i style="width:82%;background:var(--red)"></i></div><span class="mono" style="color:var(--red)">+0.21</span></div>
+        <div class="bar"><span>OpenAction</span><div class="t"><i style="width:60%;background:var(--red)"></i></div><span class="mono" style="color:var(--red)">+0.15</span></div>
+        <div class="bar"><span>Metadata size</span><div class="t"><i style="width:34%;background:var(--green)"></i></div><span class="mono" style="color:var(--green)">−0.08</span></div>
+      </div>
+      <p class="soft" style="font-size:22px;margin-top:14px"><b>Familiarity check:</b> how close is this PDF to the PDFs it was trained on?</p>
+      <div class="band"><div style="background:rgba(52,211,153,.16);color:var(--green)">FAMILIAR</div><div style="background:rgba(255,194,75,.16);color:var(--amber)">UNUSUAL</div><div style="background:rgba(255,107,125,.16);color:var(--red)">UNFAMILIAR</div></div>
+      <p class="muted" style="font-size:19px;margin-top:10px">Bars show an example layout, not a measured file.</p>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Protecting what is stored</p>
+      <h2 class="h">Only the owner holds the key</h2>
+      <div class="prot">
+        <div class="p"><b>Key not stored</b><span>Only a SHA-256 hash of each file's key is kept</span></div>
+        <div class="p"><b>Integrity check</b><span>Decrypted bytes must match the hash taken at upload</span></div>
+        <div class="p"><b>Sealed audit log</b><span>HMAC hash chain: edits and deletions show up</span></div>
+        <div class="p"><b>2-step login</b><span>Password + one-time code, rate limited</span></div>
+        <div class="p"><b>Private scanner</b><span>Only the web service may call it (Cloud IAM)</span></div>
+        <div class="p"><b>QR key</b><span>Key delivered by email and QR, generated on our server</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- evidence + standards -->
+  <section class="row" style="grid-template-columns:1.25fr 1fr">
+    <div class="card">
+      <p class="eyebrow">Evidence · measured, not assumed</p>
+      <div class="stats" style="margin-top:18px;grid-template-columns:repeat(4,1fr)">
+        <div class="stat"><div class="v">99.87%</div><div class="l">Hold-out accuracy, 0 false positives</div></div>
+        <div class="stat"><div class="v">99.46%</div><div class="l">Harder test: trained on small PDFs, tested on the largest</div></div>
+        <div class="stat"><div class="v">18,126</div><div class="l">PDFs in CIC-Evasive-PDFMal2022</div></div>
+        <div class="stat"><div class="v">256</div><div class="l">Automated tests (81 PHP + 175 Flask)</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Standards · mapped, not certified</p>
+      <div class="fw" style="margin-top:14px">
+        <div><b style="color:var(--amber)">MITRE ATT&amp;CK</b><span class="soft">12 techniques the checks detect</span></div>
+        <div><b style="color:var(--cyan)">NIST CSF 2.0</b><span class="soft">Identify · Protect · Detect · Respond · Recover</span></div>
+        <div><b style="color:#b9a4ff">ISO/IEC 27001</b><span class="soft">Annex A 8.5, 8.7, 8.13, 8.15, 8.24</span></div>
+        <div><b style="color:var(--green)">OWASP</b><span class="soft">File Upload Cheat Sheet, Top 10</span></div>
+        <div><b style="color:var(--blue)">NIST 800-63B</b><span class="soft">Password and login rules</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- call to action -->
+  <section class="cta">
+    <div style="text-align:center"><div class="qr"><img src="assets/qr-live.svg" alt="QR code to the live Cloudie site"></div><p class="mono" style="font-size:19px;margin-top:8px;color:var(--cyan)">Live app</p></div>
+    <div>
+      <p class="eyebrow">Live now · try it yourself</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:44px;line-height:1.1;margin-top:6px">Scan, sign up, upload a file.</p>
+      <p class="soft" style="font-size:23px;margin-top:10px">Runs on Google Cloud Run, Cloud SQL and Cloud Storage. For individuals, SMEs, schools, NGOs and government offices.</p>
+      <div class="sdg"><span class="chip c-cyan">UN SDG 9 · Industry, Innovation &amp; Infrastructure</span><span class="chip c-violet">UN SDG 16 · Strong Institutions</span></div>
+    </div>
+    <div style="text-align:center"><div class="qr"><img src="assets/qr-repo.svg" alt="QR code to the source code"></div><p class="mono muted" style="font-size:19px;margin-top:8px">Source code</p></div>
+  </section>
+
+</div>
+<script>
+if (location.search.indexOf('measure') >= 0) {
+  window.addEventListener('load', function () { setTimeout(function () {
+    var pg = document.querySelector('.page'), r = [];
+    for (var i = 0; i < pg.children.length; i++) { var c = pg.children[i], k = [].slice.call(c.querySelectorAll(':scope > .card, :scope > .probs')).map(function (e) { return Math.round(e.scrollHeight); }); r.push(Math.round(c.getBoundingClientRect().height) + (k.length ? ' ' + k.join('/') : '')); }
+    var pre = document.createElement('pre'); pre.id = 'measure';
+    pre.textContent = 'MEASURE ' + JSON.stringify({ sections: r, contentBottom: Math.round(pg.lastElementChild.getBoundingClientRect().bottom), page: Math.round(document.body.getBoundingClientRect().height) });
+    document.body.appendChild(pre);
+  }, 1500); });
+}
+</script>
+</body>
+</html>
