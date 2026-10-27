@@ -86,8 +86,8 @@ We did **not** change the extractor before the competition:
 2. Retrain on the training data **plus** real benign PDFs, with the extractor written to match, and validate on a
    frozen hold-out, a size-based hold-out, and the real set. Promote only if nothing gets worse.
 3. Replace `images` too: in training it is always 0 or -1, so it carries no signal (see `docs/AI_FAMILIARITY.md`).
-4. Small, safe improvement to the familiarity card: also report features **below** the training range (here,
-   `metadata_size` = 0 against a minimum of 180). Today only values above the range are listed.
+4. (Done 2026-10-27) The familiarity card now also reports features **below** the training range (here,
+   `metadata_size` = 0 against a minimum of 180), so the report tells the reader about this mismatch directly.
 
 ## How to say it to the judges
 
