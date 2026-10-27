@@ -106,6 +106,23 @@ class ScanApi(unittest.TestCase):
         j = self.scan(helpers.PNG_BYTES, "a.png", vt_report())
         self.assertIsNone(j["ai"]["familiarity"])
 
+    def test_csv_injection_is_suspicious_when_vt_is_clean(self):
+        j = self.scan(b"name,amount\nAnna,10\n=cmd|' /c calc'!A1,5\n", "report.csv", vt_report())
+        self.assertEqual(j["verdict"], "suspicious")
+        self.assertIn("csv_dde_formula", j["evasion"]["strong"])
+        self.assertEqual(self.scan(b"name,amount\nAnna,10\n", "ok.csv", vt_report())["verdict"], "clean")
+
+    def test_an_image_with_a_hidden_archive_is_suspicious_when_vt_is_clean(self):
+        j = self.scan(helpers.PNG_BYTES + self._zip([("note.txt", b"x")]), "photo.png", vt_report())
+        self.assertEqual(j["verdict"], "suspicious")
+        self.assertIn("image_hidden_payload", j["evasion"]["strong"])
+        self.assertEqual(self.scan(helpers.PNG_BYTES, "plain.png", vt_report())["verdict"], "clean")
+
+    def test_a_double_extension_in_the_uploaded_name_is_suspicious_when_vt_is_clean(self):
+        j = self.scan(helpers.PDF_PLAIN + b"\n" * 5, "invoice.pdf.exe", vt_report())
+        self.assertEqual(j["verdict"], "suspicious")
+        self.assertIn("filename_double_extension", j["evasion"]["strong"])
+
     def test_a_single_vt_engine_is_suspicious_not_blocked(self):
         j = self.scan(helpers.PDF_PLAIN, "a.pdf", vt_report(malicious=1))
         self.assertEqual(j["verdict"], "suspicious")

@@ -20,6 +20,7 @@ import evasion_indicators
 from structure_common import Collector, Budget, is_pe, printable
 import archive_structure
 import office_structure
+import content_structure
 
 LABELS = {
     "pdf": "PDF document", "ooxml": "Office document (OOXML)", "zip": "ZIP archive",
@@ -120,17 +121,30 @@ def _analyze(path: str, filename: str, budget: Budget) -> dict:
 
     if ftype == "pdf":
         r = evasion_indicators.analyze(path)
+        c = Collector()
+        c.items = {f["id"]: f for f in r["findings"]}
         if ext and ext != "pdf":
-            c = Collector()
-            c.items = {f["id"]: f for f in r["findings"]}
             _check_extension(ftype, ext, c)
-            r = c.result(r["scanned"], r["error"])
+        content_structure.analyze_filename(filename, c)
+        r = c.result(r["scanned"], r["error"])
         r.update(file_type="pdf", file_type_label=LABELS["pdf"])
         return r
 
     out = Collector()
     _check_extension(ftype, ext, out)
+    content_structure.analyze_filename(filename, out)
     scanned, error = {}, None
+
+    if ftype == "text" and ext == "csv":
+        try:
+            scanned.update(content_structure.analyze_csv(path, out, budget))
+        except Exception as exc:  # noqa: BLE001
+            error = "%s: %s" % (type(exc).__name__, exc)
+    if ftype in ("png", "jpg"):
+        try:
+            scanned.update(content_structure.analyze_image(path, ftype, out, budget))
+        except Exception as exc:  # noqa: BLE001
+            error = "%s: %s" % (type(exc).__name__, exc)
 
     # a program that is also a valid zip (polyglot) hides its payload from archive-aware scanners
     if ftype in ("pe", "elf"):
