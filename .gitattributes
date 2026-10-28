@@ -1,0 +1,2 @@
+# PDFs are binary: never convert line endings (keeps ml/benign_set hashes valid)
+*.pdf binary
