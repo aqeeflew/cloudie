@@ -1,4 +1,4 @@
-# Cloudie demo runbook (competition 2026-11-03)
+# Cloudie demo runbook (competition 2026-11-25 and 26, postponed from 2026-11-03)
 
 One page to follow before and during the demo. Results marked **TO VERIFY** have not been confirmed on the live
 site yet: do a full rehearsal and write the real result in the table in section 3.
@@ -16,7 +16,7 @@ Three things to show, in this order: (1) a clean file goes through, (2) a file V
 
 ## 2. Preparation
 
-### Three days before (30 Oct, code freeze)
+### Three days before (22 Nov, code freeze)
 - [ ] `powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1` passes.
 - [ ] Billing is active, Cloud SQL is `RUNNABLE`:
   `gcloud sql instances describe cloudie-db --format="value(state,settings.activationPolicy)"`
