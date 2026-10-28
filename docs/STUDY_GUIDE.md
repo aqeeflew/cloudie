@@ -4,6 +4,10 @@ Prepared 2026-10-12 from a read-only pass over `C:\xampp\htdocs\cloudie\` (code 
 Every `file:line` below was read in the current tree. Where a claim is **measured** (I ran it) or **read from code only**, it says so.
 Nothing was deployed, edited or committed. No secrets are printed.
 
+> **Read this first (2026-10-28):** the flows below describe the code of 2026-10-12, and many weaknesses found then
+> are now fixed. Section 5.5 starts with the current status of each one. For the judges, `docs/DEFENSE_QA.md`,
+> `docs/THREAT_MODEL.md` and `CLAUDE.md` are up to date.
+
 > Convention: `app.py:271` = `flask_api\app.py` line 271. PHP files without a folder are in the project root.
 
 ---
@@ -128,7 +132,7 @@ flowchart TD
 | `app.py` | Flask app: `/health`, `/scan` = `/analyze`; model load; `ai_predict()`; its **own** `vt_scan()`; builds the JSON | `feature_extractor`, `verdict_engine`, `prediction_log`, `malware_rf.pkl`, VirusTotal HTTP |
 | `feature_extractor.py` | Builds the 32-feature dict/vector from raw PDF bytes (regex + `bytes.count`) | stdlib only |
 | `verdict_engine.py` | `combine()`: VT-primary decision table, AI confidence | none |
-| `vt_client.py` | A richer VT client (hash lookup + polling). **Not imported by anything** (dead code) | `requests` |
+| `vt_client.py` | VT client (hash lookup, upload, polling, 409). Not imported on 2026-10-12; **used by `app.py` `vt_scan()` since the W1 fix** | `requests` |
 | `prediction_log.py` | Appends one CSV row per scan | stdlib |
 | `malware_rf.pkl` / `malware_rf.metrics.json` | Model bundle `{"model","features"}` and its own 80/20 metrics | — |
 | `validate_model.py` | Re-trains the same config on two hold-out designs and reports metrics | `Final.csv`, sklearn |
@@ -275,7 +279,7 @@ Step by step with references:
 7. Log the action (`:75-76`). View/download: headers with MIME from a fixed map (`:325-343`), `Content-Disposition` inline/attachment, `X-Content-Type-Options: nosniff`, `echo $plain` (`:78-89`). The plaintext is never written to disk.
 8. Delete: `storage_delete_encrypted()` then `DELETE FROM files WHERE file_id=?`; `file_keys` goes by `ON DELETE CASCADE`; `actions.file_id` becomes `NULL` (`:92-96`, schema). **Deleting needs the key too.**
 
-> What the key check does and does not prove: it proves the user holds the right key. It does **not** verify the ciphertext was untouched, and `file_md5` is never recomputed after decryption (W11).
+> What the key check does and does not prove: it proves the user holds the right key. It does **not** verify the ciphertext was untouched, and on 2026-10-12 `file_md5` was never recomputed after decryption (W11; since fixed: `verify_plaintext_integrity()` checks the decrypted bytes before serving them).
 
 ### 3.5 Dashboard, folders, profile, reports
 
@@ -428,7 +432,7 @@ Why benign real-world PDFs sit around 0.3-0.4 instead of ~0.05: they are **out o
 - **Stored**: ciphertext in GCS/`encrypted/`; in `file_keys`: `key_hash = sha256(key)` (64 hex) and `iv_b64`. **Never stored**: the raw key. The IV is not secret.
 - **Why `sha256(key)`**: it lets the server check "is this the right key?" without holding the key. The key is 256 bits of CSPRNG output, so a plain fast hash is not brute-forceable (unlike a password; no salt/slow hash needed). If the DB leaks, the attacker gets hashes of random 256-bit values: no path to the key, no path to the plaintext.
 - **What the server does see**: the key transiently, in memory, at upload and whenever a user supplies it to decrypt. It is also emailed in clear (`mailer.php:73-103`) and, in the QR fallback, embedded in a URL to a third party (W2). So "nobody, including the server, can decrypt" is true **at rest**, not for a malicious operator who modifies the code.
-- **CBC limits**: CBC gives confidentiality only. No authentication tag, so a tampered ciphertext either fails padding or decrypts to garbage, and a padding-oracle-style attack is possible if error behaviour leaks (here it returns a generic message). Mitigation actually in code: the SHA-256 key check proves key possession, not ciphertext integrity. **`file_md5` is saved at upload (`scan_and_encrypt.php:76,209`) but never recomputed after decrypt**, so there is no end-to-end integrity check in the running app (the thesis Table 4.5 comparison was a manual test). **AES-GCM** (AEAD: encryption + authentication tag) is the right fix and is future work: needs a new column for the tag/nonce and re-encryption of old blobs.
+- **CBC limits**: CBC gives confidentiality only. No authentication tag, so a tampered ciphertext either fails padding or decrypts to garbage, and a padding-oracle-style attack is possible if error behaviour leaks (here it returns a generic message). Mitigation actually in code: the SHA-256 key check proves key possession, not ciphertext integrity. On 2026-10-12 `file_md5` was saved at upload but never recomputed after decrypt; **now** `decrypt.php` compares the decrypted bytes with the SHA-256 recorded at upload (else `file_md5`) and refuses a mismatch (`INTEGRITY_FAIL`). That detects tampering but is not authenticated encryption. **AES-GCM** (AEAD: encryption + authentication tag) is the right fix and is future work: needs a new column for the tag/nonce and re-encryption of old blobs.
 
 ### 5.2 Authentication
 
@@ -453,7 +457,32 @@ Why benign real-world PDFs sit around 0.3-0.4 instead of ~0.05: they are **out o
 - **Ignore files**: `.gcloudignore`/`.dockerignore` exclude `flask_api/`, `docs/`, `ml/`, `database/`, `.venv`, `vendor/`, `encrypted/`, `uploads/`, `keys/`, `CLAUDE.md` from the PHP image; `flask_api` excludes `Final.csv`, `figures/`, `validate_model.py`, `validation_*`. They only work because they start with a dot (fixed 2026-10-12).
 - **Flask container**: gunicorn, 1 worker × 8 threads, timeout 120 s (`flask_api/Dockerfile`) — enough for a 60-s VT cycle.
 
-### 5.5 Weaknesses and risks (honest list; not fixed)
+### 5.5 Weaknesses and risks (honest list of 2026-10-12, with current status)
+
+**Status on 2026-10-28** (re-checked in the code; the table below is the original 2026-10-12 list, kept as it was):
+
+| # | Now |
+|---|---|
+| W1 | **Fixed.** `app.py` `vt_scan()` uses `vt_client.scan_file`: SHA-256 lookup first, upload only if unknown, polling (15 s, then every 10 s, 85 s budget), HTTP 409 resolved through the hash report. No result or an unfinished analysis gives ERROR and the upload is blocked (fail closed). |
+| W2 | **Fixed.** `includes/qr.php` has no online fallback; without `composer install` the key is shown as text only. |
+| W3 | **Fixed.** If the OTP email fails while mail is on, login fails closed and the code is never shown (`login.php`). The code is shown only when mail is switched off (local XAMPP). |
+| W4 | Open (known, kept to protect the demo; limit it to dev mode later). |
+| W5 | Open by design; said out loud as a limit (not end-to-end encrypted, unknown files go to VirusTotal). |
+| W6 | **Fixed.** PDF magic-byte gate: non-PDF files skip the Random Forest and go through VirusTotal plus the structure layer (`docs/STRUCTURE_CHECKS.md`). |
+| W7 | **Fixed.** Flask is private (Cloud Run IAM, only the compute service account may invoke it; PHP sends a Google ID token, `includes/scanner.php`). |
+| W8 | **Fixed.** `includes/ratelimit.php` (DB-backed): 5 failed logins/15 min per account and 20 per IP, 10 wrong OTP codes/h, 5 OTP emails/h, register 8/h per IP, upload 10/10 min. |
+| W9 | **Mostly fixed.** Cookie `Secure; HttpOnly; SameSite=Lax`, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy; logout is POST + CSRF. **CSP is still missing.** |
+| W10 | **Partly fixed.** `uploads/` has a deny-all `.htaccess`; the folder is still under the web root. |
+| W11 | **Partly fixed.** `decrypt.php` compares the decrypted bytes with the SHA-256 recorded at upload (`verify_plaintext_integrity()`, else `file_md5`); a mismatch is not served and is logged as `INTEGRITY_FAIL`. CBC still has no MAC; AES-GCM is future work. |
+| W12 | Open (production sets `DISPLAY_ERRORS=0`). |
+| W13 | Fixed (both 25 MB). |
+| W14 | Open (uploads are now at most 25 MB). |
+| W15 | Partly: the message is now "That username or email is already taken", which still says that one of them exists. |
+| W16 | **Fixed.** Every stored row is clean or suspicious; blocked uploads never reach `view_report.php`. |
+| W17 | Open (`requirements.txt` still uses `>=`). |
+| W18 | Open; the persistent evidence is `files.scan_report` and the sealed audit trail (`actions`, `docs/AUDIT_REPORT.md`). |
+| W19 | **Mostly fixed.** One stale comment remains: "VirusTotal second opinion" above `vt_scan()` in `app.py`. |
+| W20 | Open; two old IPs are still in Cloud SQL Authorized Networks (CLAUDE.md TODO 3). |
 
 Severity is my judgement for a *defense*: **High** = contradicts a headline claim or is a real exploit path; **Medium** = real but bounded; **Low** = hygiene.
 
@@ -511,15 +540,15 @@ Thesis file: `docs\thesis-and-presentation\FYP_THESIS_formatted.docx` (checked C
 | 19 | 3.3.5 Fig 3.7 | "Check file type … supported by the system" then AI scan | Extension allow-list only (`scan_and_encrypt.php:48-52`); every allowed type goes to the PDF model | Describe real behaviour or add a PDF-only gate in code |
 | 20 | 3.3.1, 4.3.7 vs 5.3 | 3.3.1: "feature set of different file types"; 4.3.7: "users select a PDF file"; 5.3: model limited to PDFs | App accepts 14 extensions and runs RF on all of them (W6) | Say: VT covers all types; RF is meaningful for PDFs only; consider the PDF gate |
 | 21 | 4.4.7 (1776) | Scan log CSV with "file hash, file type, AI verdict, VT result, timestamp" | CSV fields are `timestamp, filename, ai_proba, ai_label, vt_positives, vt_total, verdict, confidence, disagreement, primary_detector, extraction_ok/error` (`prediction_log.py:21-34`); no hash/type; file is on ephemeral container disk | Correct the field list; cite `actions` rows / `files.scan_report` as the durable evidence |
-| 22 | 4.4.4 Table 4.4, 4.4.6 Table 4.5 | AES timings; hash match before/after | No benchmark or integrity script in the repo; app never re-checks `file_md5` after decrypt | Keep the script/screenshots used; say "measured manually" |
+| 22 | 4.4.4 Table 4.4, 4.4.6 Table 4.5 | AES timings; hash match before/after | No benchmark or integrity script in the repo; since the W11 fix the app re-checks the plaintext hash after decrypt | Keep the script/screenshots used; say "measured manually" |
 | 23 | 4.5 (1778) | "no harmful content … can penetrate the storage system" | Not guaranteed: VT-miss + RF-miss passes; W1/W6 | Soften to "reduces the risk" |
 | 24 | 4.3.4 | Figure caption "Figure 4.4 Dashboard interface" under Two-step verification | Caption error | Fix caption (also duplicate "Figure 4.9" and two "4.3.7" headings) |
 
 **CLAUDE.md vs code (internal notes to correct):**
 
-- "VT HTTP 409 = file already known, non-critical": **no 409 handling exists**; any non-200/201 returns "VT unavailable" (`app.py:204-206`).
-- "`vt_client.py` … `verdict_engine.py` combines them": `vt_client.py` is not imported anywhere; the live VT code is `app.py:186-234`.
-- "CBC … mitigated by hash checks": only the key hash is checked, not ciphertext/plaintext integrity (W11).
+- "VT HTTP 409 = file already known, non-critical": on 2026-10-12 no 409 handling existed. **Now true:** `vt_client.py` resolves 409 through the hash report.
+- "`vt_client.py` … `verdict_engine.py` combines them": on 2026-10-12 `vt_client.py` was not imported. **Now true:** `app.py` `vt_scan()` uses it.
+- "CBC … mitigated by hash checks": on 2026-10-12 only the key hash was checked. **Now** the plaintext hash is checked after decrypt too (W11); CBC itself still has no MAC.
 - `PROJECT_RECOVERY.md` says the `app.py` docstring was fixed; the module docstring is, but inline comments still say AI-primary (W19).
 - Everything else I checked agreed: 32 features, 200 trees/Gini/balanced, VT-primary table, VARCHAR(20), GCS/socket, bcrypt, positional placeholders, ignore-file names.
 
