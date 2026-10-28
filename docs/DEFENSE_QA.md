@@ -70,9 +70,9 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `feature_extractor.py:27-60,135-143,165`, `app.py:111-119`; STUDY_GUIDE 4.1.
 
 ### B6. What does the AI do with a non-PDF file?
-**Answer:** Today it still runs: the Flask API saves any upload as a temporary `.pdf` and extracts features, so a PNG scored 0.84 in my test and would come out "suspicious" if VirusTotal passes it. That is a real gap: the model is only meaningful for PDFs, as the thesis limitations say. The fix is a PDF gate (check `%PDF-` magic) so other types rely on VirusTotal only.
-**BM:** Sekarang AI jalan atas semua jenis fail, PNG pun kena 0.84; patut ada gate PDF sahaja.
-**Proof:** `app.py:265-277`, `config.php:77-78`; Thesis 5.3; STUDY_GUIDE W6.
+**Answer:** Nothing: the Flask API checks the `%PDF-` magic bytes first, and a file that is not a PDF skips the model. It is judged by VirusTotal plus the structure layer (Office macros/DDE/remote templates, zip slip and zip bombs, CSV formulas, data hidden after images, tricks in the file name). In my 12 Oct audit a PNG still scored 0.84; the gate fixed that.
+**BM:** Ada gate PDF: fail bukan PDF tak dinilai AI, cuma VirusTotal + semakan struktur.
+**Proof:** `app.py` (PDF magic-byte gate), `file_structure.py`, `office_structure.py`, `archive_structure.py`; `docs/STRUCTURE_CHECKS.md`; STUDY_GUIDE W6 (fixed).
 
 ---
 
@@ -118,14 +118,14 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `verdict_engine.py:4-23,30,91-106`; Thesis 4.2, 4.5.
 
 ### D2. What happens if VirusTotal is down or the key is missing?
-**Answer:** `vt_scan()` returns "no result" and the verdict falls back to the AI: AI below 0.5 gives *clean* (stored), AI at or above 0.5 gives *suspicious* (stored, tagged), and only if both fail is the file blocked as *error*. So an outage degrades to AI-only protection rather than stopping uploads; I should say that plainly. A stricter policy would block when VT is configured but unreachable.
-**BM:** VT tiada → guna AI sahaja (clean/suspicious); hanya bila dua-dua gagal baru blok.
-**Proof:** `app.py:193-195,229-234`, `verdict_engine.py:80-83,99-125`.
+**Answer:** The upload is refused (fail closed). No VirusTotal result, whether from a missing key, quota (HTTP 429), a timeout or an analysis that did not finish, gives the verdict ERROR and nothing is stored. VirusTotal is the primary detector, so I chose safety over availability: a refused upload is cheaper than a stored infection. The cost is that an exhausted free quota blocks uploads, which is why demo files are scanned once beforehand.
+**BM:** VT tiada jawapan → muat naik ditolak (fail closed); keselamatan lebih penting daripada ketersediaan.
+**Proof:** `verdict_engine.py` (step 0, FAIL CLOSED), `vt_client.py`; Flask tests (VT mocked).
 
 ### D3. Is the VirusTotal check reliable as implemented?
-**Answer:** I found a weakness: after uploading, `app.py` reads the analysis once without polling, and a new analysis is normally still queued, which could read as zero detections. A richer client with hash lookup and polling (`vt_client.py`) exists but is not wired in. I have not proven the failure live, so I would verify with the EICAR test file and then switch the call to the polling client.
-**BM:** Kod baca keputusan VT sekali tanpa poll — boleh nampak "clean" palsu; klien yang betul ada tapi tak disambung.
-**Proof:** `app.py:197-228`, `vt_client.py:137-178` (unused); STUDY_GUIDE W1.
+**Answer:** Yes, within the free-tier limits. `vt_client.scan_file` looks up the SHA-256 first (a known file costs one request), uploads only unknown files, then polls the analysis (15 s, then every 10 s, 85 s budget). HTTP 409 (file already known) is resolved through the hash report. An analysis that is still queued counts as no result and the upload is blocked, so it can never read as "clean". My 12 Oct audit found the old single read without polling; that was fixed.
+**BM:** Sekarang semak hash dulu, upload kalau belum dikenali, poll sampai 85 s; analisis belum siap = ditolak, bukan "clean".
+**Proof:** `vt_client.py`, `app.py` `vt_scan()`; STUDY_GUIDE W1 (fixed).
 
 ### D4. VirusTotal has a free-tier limit. Can this scale?
 **Answer:** The free API allows about 4 requests per minute and 500 per day, 32 MB per file, so it supports a prototype, not production. Production would need a paid key, hash-first lookups (which cost no upload), caching of verdicts by SHA-256 and a queue. I describe this as a deployment limitation.
@@ -157,14 +157,14 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `aes.php:100-102`, `decrypt.php:61`.
 
 ### E3. Why CBC and not GCM?
-**Answer:** CBC with a random IV gives confidentiality and was a scope decision for this prototype, but it has no authentication tag, so tampering is not detected. GCM (authenticated encryption) is the better choice and is future work: it needs a stored nonce/tag and re-encryption of existing blobs. Until then, integrity relies on storage access controls, and I should add a hash check of the decrypted output.
+**Answer:** CBC with a random IV gives confidentiality and was a scope decision for this prototype, but it has no authentication tag, so tampering is not detected. GCM (authenticated encryption) is the better choice and is future work: it needs a stored nonce/tag and re-encryption of existing blobs. Until then, `decrypt.php` checks the decrypted bytes against the hash taken at upload and refuses to serve a mismatch (E4).
 **BM:** CBC cukup untuk kerahsiaan tapi tiada tag integriti; GCM lebih baik dan jadi kerja akan datang.
 **Proof:** `aes.php:28`, `config.php:69`; Thesis 5.3-5.4.
 
 ### E4. How do you check integrity then?
-**Answer:** Honestly, only partly. The key hash proves the user holds the right key, and `file_md5` is stored at upload, but the app does not recompute it after decrypting; the thesis hash comparison (Table 4.5) was a manual test. Adding `md5/sha256(decrypted) == file_md5` to `decrypt.php`, or moving to GCM, would close this.
-**BM:** Sebenarnya separuh sahaja: hash key disemak, md5 fail disimpan tapi tak dibandingkan semula masa decrypt.
-**Proof:** `decrypt.php:61-71`, `scan_and_encrypt.php:76,209`; Thesis 4.4.6.
+**Answer:** Two checks. The key hash proves the user holds the right key. After decrypting, `verify_plaintext_integrity()` compares the SHA-256 of the result with the hash recorded at upload (from the scan report, else `file_md5`); a mismatch is not served and is logged as `INTEGRITY_FAIL`. The limit: this detects tampering after decryption, it is not authenticated encryption, and it is not applied on delete. AES-GCM is the proper fix.
+**BM:** Hash key disemak, dan lepas decrypt hash fail dibanding dengan hash masa upload; tak sama = tak diberi.
+**Proof:** `includes/aes.php` (`verify_plaintext_integrity`), `decrypt.php`; PHP tests.
 
 ### E5. Can the admin decrypt user files?
 **Answer:** Not from the database and bucket alone: they hold ciphertext, IVs and key hashes. But the operator controls the code, the key passes through server memory at upload and decrypt, and it is emailed in plain text, so it is not zero-knowledge. A zero-knowledge design would encrypt in the browser. I should phrase the claim as "keys are not stored at rest".
@@ -177,7 +177,7 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `scan_and_encrypt.php:311-313`, `decrypt.php:56-96`; Thesis 4.2/5.1 (mismatch row 1).
 
 ### E7. Is the plaintext ever written to disk?
-**Answer:** Briefly, yes: the uploaded cleartext sits in `uploads/` while it is scanned and encrypted, then `unlink()` removes it (also on every error path). Decryption for view/download is done in memory and streamed, never written. A hardening step is a private temp directory outside the web root.
+**Answer:** Briefly, yes: the uploaded cleartext sits in `uploads/` while it is scanned and encrypted, then `unlink()` removes it (also on every error path). Decryption for view/download is done in memory and streamed, never written. `uploads/` has a deny-all `.htaccess`, so the temp file cannot be fetched over HTTP; a temp directory outside the web root would be cleaner.
 **BM:** Masa scan ada fail asal sekejap dalam uploads/, lepas enkripsi dipadam; decrypt dalam memori sahaja.
 **Proof:** `scan_and_encrypt.php:54,65,92,186,195`, `decrypt.php:68-89`; STUDY_GUIDE W10.
 
@@ -186,14 +186,14 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 ## F. Security
 
 ### F1. How are passwords and the second factor handled?
-**Answer:** Passwords are hashed with bcrypt and checked with `password_verify`. After a correct password, a 6-digit code from `random_int` is stored as a bcrypt hash with a 10-minute expiry, limited to 5 attempts and a 60-second resend gap, and emailed; the session is created only after the code verifies, with `session_regenerate_id`. Email must be verified first.
+**Answer:** Passwords are hashed with bcrypt and checked with `password_verify`. After a correct password, a 6-digit code from `random_int` is stored as a bcrypt hash with a 10-minute expiry, limited to 5 attempts and a 60-second resend gap, and emailed (on top, `includes/ratelimit.php` allows 10 wrong codes and 5 code emails per hour per account); the session is created only after the code verifies, with `session_regenerate_id`. Email must be verified first.
 **BM:** Bcrypt untuk password; OTP 6 digit di-hash, tamat 10 min, 5 cubaan; sesi dibuat lepas OTP sah.
 **Proof:** `register.php:40`, `login.php:36-47,63-111`, `config.php:83-85`; Thesis 4.3.3-4.3.4.
 
 ### F2. Is the 2FA bypassable?
-**Answer:** There is one design weakness: if the OTP email cannot be sent (mail disabled or SMTP failure), the code is shown on the page so local XAMPP still works. In production that means an SMTP outage removes the second factor. The fix is to show the code only when a `DEV_MODE` flag is set and otherwise fail closed.
-**BM:** Kalau email OTP gagal, kod dipapar atas skrin — patut fail-closed di produksi.
-**Proof:** `login.php:206,266-272`; STUDY_GUIDE W3.
+**Answer:** Not through mail failure any more: if mail is on and the OTP email cannot be sent, login fails closed and the code is never shown. The code appears on the page only when mail is switched off entirely (local XAMPP). The remaining limit is the factor itself: an emailed code is not a phishing-resistant authenticator (not NIST 800-63B AAL2), and whoever controls the mailbox controls it. Next step: TOTP or passkeys.
+**BM:** Email gagal = login ditolak, kod tak dipapar; had: OTP email bukan authenticator kuat, rancang TOTP/passkey.
+**Proof:** `login.php` (fail-closed branches); `docs/FRAMEWORK_MAPPING.md` gap 1; STUDY_GUIDE W3 (fixed).
 
 ### F3. How do you stop SQL injection and XSS?
 **Answer:** All queries use PDO prepared statements with native prepares (`ATTR_EMULATE_PREPARES=false`); the only interpolated value is a constant cast to int. Output goes through `htmlspecialchars` via `e()`. Stored files are served from a fixed MIME map with `nosniff`, and HTML/SVG/JS are not in the extension allow-list.
@@ -201,14 +201,14 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `db.php:13-17`, `auth.php:47-49`, `decrypt.php:78-89,325-343`, `config.php:77-78`.
 
 ### F4. Is there CSRF protection? Brute-force protection?
-**Answer:** Yes for CSRF: a per-session random token is required on every POST handler. Brute-force is weaker: OTP attempts are limited, but stage-1 password attempts have no lockout or throttle, and the OTP resend resets the attempt counter. I would add per-account and per-IP rate limiting.
-**BM:** CSRF ada pada semua POST; tapi tiada had cubaan password — patut tambah rate limit.
-**Proof:** `auth.php:34-45`, `login.php:171-211`; STUDY_GUIDE W8.
+**Answer:** Yes to both. A per-session random CSRF token is required on every POST handler, including logout. Brute force is limited by `includes/ratelimit.php`: 5 failed logins per 15 minutes per account and 20 per IP, 10 wrong OTP codes and 5 code emails per hour per account, 8 registrations per hour per IP, 10 uploads per 10 minutes. The counters live in the database (Cloud Run instances do not share sessions) and their keys are hashed. Limit: the client IP is the last `X-Forwarded-For` entry behind Cloud Run.
+**BM:** CSRF pada semua POST; had cubaan login, OTP, daftar dan upload disimpan dalam DB.
+**Proof:** `auth.php`, `includes/ratelimit.php`, `login.php`; STUDY_GUIDE W8 (fixed).
 
 ### F5. What are your biggest security weaknesses?
-**Answer:** (1) The VirusTotal result is read without polling, so a "clean" may be unverified; (2) the QR fallback sends the key to qrserver.com; (3) 2FA and email verification fail open when mail fails; (4) CBC without integrity check; (5) the public Flask endpoint. I know them, have measured or traced each, and listed fixes.
-**BM:** Lima utama: VT tak poll, QR hantar key ke pihak ketiga, 2FA fail-open, CBC tiada integriti, Flask terbuka.
-**Proof:** STUDY_GUIDE 5.5 (W1-W3, W7, W11).
+**Answer:** (1) Not end-to-end encrypted: the server sees the file while it scans, and unknown files are uploaded to VirusTotal; (2) AES-CBC has no MAC (a post-decrypt hash check catches tampering; GCM is future work); (3) the key and the OTP go by email, so the mailbox is part of the trust; (4) no Content-Security-Policy; (5) the AI learned from one dataset and the false-positive rate is measured only for PDFs. The five from my 12 Oct audit (no VT polling, QR via a third party, 2FA fail-open, no integrity check, public Flask) are fixed.
+**BM:** Lima sekarang: bukan E2E, CBC tiada MAC, email sebahagian kepercayaan, tiada CSP, AI satu dataset. Lima lama dah dibaiki.
+**Proof:** `docs/THREAT_MODEL.md`; STUDY_GUIDE 5.5 (status table).
 
 ### F6. Are users isolated from each other?
 **Answer:** Every query that touches files, keys or folders includes `AND user_id = ?` with the session user, so guessing another file ID returns "not found". Decrypting also needs the correct key, so even a bug in ownership would still need the key. File IDs are sequential integers, which is acceptable given those checks.
@@ -254,8 +254,8 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** Thesis 5.3; STUDY_GUIDE 5.5.
 
 ### H2. What would you do next?
-**Answer:** In order: (1) poll VirusTotal with hash-first lookup and verify with EICAR; (2) PDF-only gate for the model; (3) AES-GCM or a post-decrypt hash check; (4) retrain with features computed by my own extractor so training and serving match; (5) test on an independent PDF set; (6) rate limiting and fail-closed OTP; (7) an authentication secret between PHP and Flask.
-**BM:** Susunan: poll VT, gate PDF, GCM/semak hash, latih semula dengan extractor sendiri, uji dataset bebas, rate-limit, rahsia PHP-Flask.
+**Answer:** Already done since my 12 Oct audit: VirusTotal hash lookup and polling, the PDF gate, a post-decrypt hash check, rate limiting and fail-closed OTP, a private Flask service (IAM), and a false-positive test on 200 independent PDFs. Next, in order: (1) AES-GCM; (2) retrain with features from my own extractor so training and serving match (`metadata_size`); (3) client-side encryption; (4) Content-Security-Policy; (5) a benign Office/ZIP set; (6) TOTP or passkeys.
+**BM:** Dah siap: poll VT, gate PDF, semak hash, rate-limit, Flask private, ujian FP. Seterusnya: GCM, latih semula, E2E, CSP, set Office/ZIP, TOTP.
 **Proof:** STUDY_GUIDE 5.5; Thesis 5.4.
 
 ### H3. Why did you not use a sandbox / dynamic analysis?

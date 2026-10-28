@@ -8,6 +8,26 @@ Companions: `STUDY_GUIDE.md` (full flows and file:line), `AUDIT_CLOUDIE.md` (ear
 
 ---
 
+## 0. Status on 2026-10-28
+
+This report is the 2026-10-12 read-only audit and is kept as it was written. Since then most findings were fixed.
+Status re-checked in the code on 2026-10-28:
+
+| Status | Findings |
+|---|---|
+| **Fixed** | A-01 (VT hash lookup + polling + 409 via `vt_client.scan_file`), A-02 (no QR fallback), A-03 (Flask private, Cloud Run IAM), A-04 (PDF magic-byte gate), A-05 (OTP fails closed), A-07 (rate limiting, `includes/ratelimit.php`), A-08 (SMTP timeout 10 s), A-14 (25 MB everywhere), A-15 (no VT result = ERROR, blocked), A-16 (report UI), A-29 (real credit links) |
+| **Mostly / partly fixed** | A-09 (post-decrypt SHA-256 check, `verify_plaintext_integrity()`; CBC still has no MAC), A-10 (magic-byte check on upload, deny-all `.htaccess` in `uploads/`; still under the web root), A-11 (Secure cookie, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, POST logout; **no CSP**), A-19 (README and 256 tests; requirements still unpinned), A-26 (one stale "second opinion" comment left in `app.py`), A-27 (integrity uses SHA-256; the `file_md5` column remains) |
+| **Open** | A-12 (verification fail-open, kept for the demo), A-13 (by design: not end-to-end), A-17 (metadata_size skew, `docs/METADATA_SIZE_INVESTIGATION.md`), A-18 (original training script), A-21, A-22, A-23, A-24, A-25, A-28 (message is generic but still says the name or email exists), A-30 (two old IPs) |
+| Thesis only | A-06, A-20 (the thesis is no longer a deliverable) |
+
+Added after this audit: sealed audit trail (HMAC hash chain), evasion layer for PDFs, structure layer for Office/ZIP/CSV/images/file
+names, explainable AI score, AI familiarity, 2-engine block rule, and a false-positive benchmark on 200 real PDFs
+(`docs/BENIGN_FP_BENCHMARK.md`: 1.0% tagged, 0 blocked).
+Open questions answered: 1 (`VT_API_KEY` attached, 2026-10-20), 2 (the 503 was GCP billing), 3 (min instances 1 on both services
+until the competition), 8 (decided: no VT result means blocked).
+
+---
+
 ## 1. Executive summary
 
 **Health score: 6.5 / 10.** Solid fundamentals (prepared statements everywhere, CSRF on all POSTs, bcrypt, hashed OTP, ownership checks on every query, CSPRNG keys, cleartext deleted after encryption) but the detection pipeline has one likely-broken link (VT read once) and several security claims in the thesis/UI are stronger than the code.
