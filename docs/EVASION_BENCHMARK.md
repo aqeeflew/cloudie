@@ -32,6 +32,7 @@ The evasion layer reads the file the way a PDF reader does and reports the trick
 |---|---|---|---|---|---|
 | synthetic plain PDFs | 100 | **100%** | 0% | 0% | 0% |
 | real benign PDFs under `docs\` | 10 | not measured | not measured | not measured | 0 (slowest analysis 133 ms) |
+| real benign PDFs from GovDocs1 (`docs/BENIGN_FP_BENCHMARK.md`) | 200 | 6.5% | 0.5% | 0.5% | 0% |
 
 ## How to read it honestly
 
@@ -42,8 +43,9 @@ The evasion layer reads the file the way a PDF reader does and reports the trick
    keyword, was hidden. The evasion layer supplies that evidence and restores 100%, with 0% on the plain controls.
 3. **These samples are synthetic and share one trick** (hex-escaped keyword names). Real evasive malware uses many
    more. 100% here means "this layer understands this trick", not "it detects evasive malware".
-4. The layer is rule-based and was designed together with the benchmark; the real-world check is only 10 benign
-   PDFs. A larger benign set is still the main open measurement (the false-positive rate on real documents).
+4. The layer is rule-based and was designed together with the benchmark. On 200 real benign PDFs from GovDocs1
+   (2026-10-28) it raised no strong finding, so it added no false positive there; the one AI tag in that set comes
+   from the risk gate (`/OpenAction`). Real benign Office and ZIP files are still not measured.
 5. VirusTotal stays the primary detector. This layer only adds a suspicious tag; it never blocks and never
    overrides a VirusTotal result.
 

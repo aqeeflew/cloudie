@@ -21,7 +21,7 @@ Say it in your own words; these are the facts and the order. Every number here m
 > refused. Two engines block a file, one engine only warns. Only then is the file encrypted with a random AES-256
 > key, and only a hash of that key is stored. Every action goes into a tamper-evident chain, so an edited history
 > shows up as "tampering detected". And we are open about the limits: the server sees a file while scanning, and
-> we have not yet measured false positives on real-world files.
+> false positives are measured only for PDFs: on 200 real government PDFs, 2 were tagged and none was blocked.
 
 ## 2 minutes: add these three points
 
@@ -50,8 +50,8 @@ Say it in your own words; these are the facts and the order. Every number here m
 > serta model Random Forest untuk PDF yang menerangkan skornya. Jika VirusTotal tidak memberi jawapan, muat naik
 > ditolak. Dua enjin menyekat fail, satu enjin hanya memberi amaran. Barulah fail disulitkan dengan kunci AES-256
 > rawak, dan hanya hash kunci disimpan. Setiap tindakan masuk ke dalam rantaian yang menunjukkan jika diusik. Kami
-> juga terbuka tentang had: pelayan nampak fail semasa mengimbas, dan kadar false positive pada fail sebenar belum
-> diukur.
+> juga terbuka tentang had: pelayan nampak fail semasa mengimbas, dan false positive hanya diukur untuk PDF: daripada
+> 200 PDF kerajaan sebenar, 2 ditanda dan tiada yang disekat.
 
 ## One-line takeaways (pick one for the close)
 
@@ -67,4 +67,4 @@ Say it in your own words; these are the facts and the order. Every number here m
 | Why not only the AI? | One dataset, and on real-world PDFs it sits near 50%. That is why VirusTotal is primary and the AI is gated. |
 | Is it end-to-end encrypted? | No. The server sees a file while it scans and encrypts it; client-side encryption is the first roadmap item. |
 | What if VirusTotal is down? | The upload is refused (fail closed). We chose safety over availability. |
-| False-positive rate? | Not yet measured on real-world files. We say so, and a single VirusTotal engine only warns instead of blocking. |
+| False-positive rate? | Measured on 200 real PDFs from GovDocs1: 2 tagged suspicious (1.0%, 95% interval 0.3-3.6%), 0 blocked. The AI alone would have tagged 13; the risk gate removed 12 of them. Office and ZIP files are not measured yet. Data and results are in the repo (`docs/BENIGN_FP_BENCHMARK.md`). |

@@ -79,8 +79,9 @@ PHP to GCS and Cloud SQL; PHP to the user's mailbox (Gmail SMTP).
 5. **No Content-Security-Policy**, and Cloud SQL has a public IP protected by an allow-list and a password.
 6. **The Random Forest is trained on one PDF dataset.** On real-world PDFs it is close to its 0.5 cut-off, which is
    why it is secondary and why a risk gate and the rule-based layer sit next to it.
-7. **Measured accuracy applies to the dataset**, not to all PDFs (see `docs/AUDIT_REPORT.md`). No real-world
-   false-positive rate has been measured yet for PDFs or Office files.
+7. **Measured accuracy applies to the dataset**, not to all PDFs (see `docs/AUDIT_REPORT.md`). The false-positive rate
+   on real files is measured for PDFs only (200 GovDocs1 PDFs: 1.0% tagged, 0 blocked, `docs/BENIGN_FP_BENCHMARK.md`);
+   there is no real-world rate yet for Office, ZIP, CSV or image files.
 
 ## 6. Design choices that follow from the threats
 
@@ -94,5 +95,5 @@ PHP to GCS and Cloud SQL; PHP to the user's mailbox (Gmail SMTP).
 ## 7. Future work
 
 AES-GCM with the key bound to the file; client-side encryption so the server never sees the plaintext; a private
-sandbox for unknown files; Content-Security-Policy; shared sessions; measuring false positives on a real benign set;
+sandbox for unknown files; Content-Security-Policy; shared sessions; measuring false positives on a real benign Office/ZIP set (PDFs: done);
 retroactive rescan of stored files when new signatures appear.

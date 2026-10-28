@@ -114,8 +114,9 @@ laptop (not only online).
 
 Short answers are in `docs/DEFENSE_QA.md`; the security reasoning is in `docs/THREAT_MODEL.md`. The honest limits to
 volunteer rather than hide: not end-to-end encrypted (the server sees the file while it scans and encrypts it),
-unknown files are uploaded to VirusTotal, the false-positive rate on real-world files is not measured, and the
-Random Forest is trained on a single PDF dataset.
+unknown files are uploaded to VirusTotal, the false-positive rate is measured only for PDFs (200 real GovDocs1 PDFs:
+1.0% tagged, 0 blocked, `docs/BENIGN_FP_BENCHMARK.md`) and not yet for Office or ZIP files, and the Random Forest is
+trained on a single PDF dataset.
 
 ## 7. After the demo
 

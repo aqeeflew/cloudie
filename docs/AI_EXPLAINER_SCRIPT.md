@@ -101,7 +101,7 @@ recall drops to 96%. We report both, because the harder number is the honest one
 | So is the AI useless on real files? | It is a supporting signal. Our own check shows real PDFs are unlike its training data, and it says so. VirusTotal and the structure checks carry the weight; broader real-world training data is the first AI item on the roadmap. |
 | Does the familiarity score change the verdict? | No. It is information for the reader. It says how much weight the AI score deserves; the verdict still comes from VirusTotal first. |
 | What happens to non-PDF files? | The model is PDF-only. Office files and ZIPs go through structure rules and VirusTotal. We say so on the report page. |
-| What is the false-positive rate on real files? | Not measured yet on a real-world set. On the dataset it was 0 on the standard split. |
+| What is the false-positive rate on real files? | On 200 real PDFs from GovDocs1: the AI alone would tag 13 (6.5%), after the risk gate 1 (0.5%); the final verdict tagged 2 (1.0%) and blocked none. On the dataset it was 0 on the standard split. Office and ZIP files are not measured yet. See `docs/BENIGN_FP_BENCHMARK.md`. |
 
 ## Do not say
 
