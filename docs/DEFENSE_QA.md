@@ -94,7 +94,7 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **Proof:** `flask_api\validation_report_size_holdout.json:59-78`, `validate_model.py:205-214`; Thesis 4.4.3 (update to 99.46/96.14).
 
 ### C4. Isn't the dataset overlapping with Contagio?
-**Answer:** Yes, CIC-Evasive-PDFMal2022 is built largely from Contagio and VirusTotal samples, so testing on raw Contagio would be circular, and I did not do that. All my validation is inside this one dataset, which is why I do not claim real-world accuracy and why VirusTotal is primary. A cross-dataset test needs a truly independent PDF collection and is listed as future work.
+**Answer:** Yes, CIC-Evasive-PDFMal2022 is built largely from Contagio and VirusTotal samples, so testing on raw Contagio would be circular, and I did not do that. All my validation is inside this one dataset, which is why I do not claim real-world accuracy and why VirusTotal is primary. Since 2026-10-28 there is one independent check, for false positives only: 200 benign PDFs from GovDocs1 (never in the dataset) gave a final 1.0% tagged and 0 blocked (`docs/BENIGN_FP_BENCHMARK.md`). Detection on independent malware is still not tested.
 **BM:** Ya, banyak bertindih; sebab tu saya tak uji atas Contagio & tak dakwa ketepatan dunia sebenar.
 **Proof:** `validate_model.py:22-28`; Thesis 5.4 (second recommendation).
 
@@ -249,7 +249,7 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 ## H. Limitations and future work
 
 ### H1. What are the main limitations?
-**Answer:** The model is PDF-only and trained on one dataset; real-world performance is unproven; VirusTotal needs internet and has quota limits; CBC lacks authentication; and the key is lost if the user loses it. The code currently runs the PDF model on every file type, which I will gate. Stating these myself is part of the validation.
+**Answer:** The model is PDF-only and trained on one dataset; real-world detection is unproven (false positives are measured on 200 real PDFs: 1.0% tagged, 0 blocked; not on Office/ZIP); VirusTotal needs internet and has quota limits; CBC lacks authentication; and the key is lost if the user loses it. Non-PDF files skip the model (magic-byte gate) and rely on VirusTotal and the structure checks. Stating these myself is part of the validation.
 **BM:** Model PDF sahaja, satu dataset, VT perlu internet & kuota, CBC tiada integriti, key hilang = fail hilang.
 **Proof:** Thesis 5.3; STUDY_GUIDE 5.5.
 

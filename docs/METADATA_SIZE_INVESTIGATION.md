@@ -83,6 +83,8 @@ We did **not** change the extractor before the competition:
 ## Recommended next steps (after the competition)
 
 1. Build a real-world benign PDF set (100 to 200 files) and measure the false-positive rate with both definitions.
+   (Partly done 2026-10-28: 200 GovDocs1 PDFs, current definition only, `docs/BENIGN_FP_BENCHMARK.md`. The
+   comparison with an `/Info`-based definition is still open.)
 2. Retrain on the training data **plus** real benign PDFs, with the extractor written to match, and validate on a
    frozen hold-out, a size-based hold-out, and the real set. Promote only if nothing gets worse.
 3. Replace `images` too: in training it is always 0 or -1, so it carries no signal (see `docs/AI_FAMILIARITY.md`).

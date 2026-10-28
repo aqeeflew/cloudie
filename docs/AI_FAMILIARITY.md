@@ -65,7 +65,8 @@ here, 0.60-0.61 on tiny PDFs). It is the quantitative answer to "why is VirusTot
 ## Honest limits
 
 * 13 files, all from this project plus the demo files. This is not a benign benchmark and does not measure a
-  false-positive rate.
+  false-positive rate. The separate benchmark on 200 real GovDocs1 PDFs (`docs/BENIGN_FP_BENCHMARK.md`) agrees:
+  197 unfamiliar, 3 unusual, none familiar.
 * A nearest-neighbour distance is a **measure of similarity, not of danger**: an unfamiliar PDF is not a malicious
   one, which is why the label is amber/cyan, never red.
 * Because the training set is dense (many near-duplicates), the yardstick is tight, so almost any real document
