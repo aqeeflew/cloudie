@@ -50,11 +50,14 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - URLs: `https://cloudie-php-800476519477.asia-southeast1.run.app`,
   `https://cloudie-flask-800476519477.asia-southeast1.run.app`
   (the `...-2q6nug2xha-as.a.run.app` URLs also work).
-- **Live status (2026-10-27):** deployed from `main` after PR #43 (php `cloudie-php-00056-v87`, flask `cloudie-flask-00019-zsx`).
+- **Live status (2026-10-28):** code from `main` after PR #43 (later PRs are docs/ml only); php `cloudie-php-00057-jmx`,
+  flask `cloudie-flask-00020-xmf` (new revisions only for the min-instances change).
   Cloud SQL automated backups ON (daily 19:00 UTC, 7 kept; on-demand backup `1792978507235` taken 2026-10-26).
   **Competition postponed to 2026-11-25 and 26** (was 2026-11-03; code freeze 2026-11-22).
-  **Min instances = 1** on both services, set for the old demo date (avoids cold starts, small extra cost): set back to 0 after the
-  competition with `gcloud run services update <svc> --region asia-southeast1 --min-instances 0`.
+  **Min instances = 0** on both services since 2026-10-28 (saves cost; first request after idle is a cold start).
+  **Set back to 1 on 2026-11-24** (before the competition) with
+  `gcloud run services update <svc> --region asia-southeast1 --min-instances 1`, and to 0 again after it.
+  **Cloud SQL Authorized Networks is empty** since 2026-10-28 (old IPs removed; Cloud Run uses the socket, not the public IP).
   The earlier HTTP 503 was **billing disabled** (Cloud SQL `SUSPENDED`, reason `BILLING_ISSUE`); billing is active again.
 - **Flask is private** (Cloud Run IAM): only the service account
   `800476519477-compute@developer.gserviceaccount.com` has `roles/run.invoker`; `allUsers` was removed.
@@ -221,6 +224,7 @@ fail-closed, QR, OTP, header and upload hardening live; Flask made private with 
 1. CSP. (Done: rate limiting, README, tests.) (Post-decrypt integrity check: done.)
    (Done 2026-10-28: real-world benign PDF set, `docs/BENIGN_FP_BENCHMARK.md`.) Still open: benign Office/ZIP set.
 2. (done) Credit links on `index.php` point to the repo, LinkedIn and email.
-3. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
+3. (Done 2026-10-28: old IPs removed from Cloud SQL Authorized Networks.) Remove your IP again after each admin session;
+   stop Cloud SQL when not demoing (cost).
 4. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,
    VT-as-teacher feedback loop) and platform (retroactive rescan, hash-chained audit log).
