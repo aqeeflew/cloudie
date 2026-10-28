@@ -1,0 +1,133 @@
+{
+  "source": "GovDocs1 (Digital Corpora)",
+  "files_in_set": 200,
+  "excluded_vt_flagged": 0,
+  "vt_status": {
+    "clean": 199,
+    "unknown": 0,
+    "weak": 1,
+    "flagged": 0
+  },
+  "all_kept": {
+    "n": 200,
+    "rf_alone_fp": 13,
+    "rf_alone_fp_pct": 6.5,
+    "ai_tagged": 1,
+    "ai_tagged_pct": 0.5,
+    "strong_finding_files": 0,
+    "final_not_clean": 2,
+    "final_fp_pct": 1.0,
+    "verdicts": {
+      "clean": 198,
+      "suspicious": 2
+    },
+    "rf_proba_median": 0.1,
+    "rf_proba_min": 0.0,
+    "rf_proba_max": 0.65,
+    "familiarity": {
+      "familiar": 0,
+      "unusual": 3,
+      "unfamiliar": 197,
+      "": 0
+    },
+    "extraction_failed": 0,
+    "ms_median": 100
+  },
+  "vt_confirmed_clean": {
+    "n": 199,
+    "rf_alone_fp": 13,
+    "rf_alone_fp_pct": 6.53,
+    "ai_tagged": 1,
+    "ai_tagged_pct": 0.5,
+    "strong_finding_files": 0,
+    "final_not_clean": 1,
+    "final_fp_pct": 0.5,
+    "verdicts": {
+      "clean": 198,
+      "suspicious": 1
+    },
+    "rf_proba_median": 0.1,
+    "rf_proba_min": 0.0,
+    "rf_proba_max": 0.65,
+    "familiarity": {
+      "familiar": 0,
+      "unusual": 3,
+      "unfamiliar": 196,
+      "": 0
+    },
+    "extraction_failed": 0,
+    "ms_median": 101
+  },
+  "vt_unknown": {
+    "n": 0,
+    "rf_alone_fp": 0,
+    "rf_alone_fp_pct": null,
+    "ai_tagged": 0,
+    "ai_tagged_pct": null,
+    "strong_finding_files": 0,
+    "final_not_clean": 0,
+    "final_fp_pct": null,
+    "verdicts": {},
+    "rf_proba_median": null,
+    "rf_proba_min": null,
+    "rf_proba_max": null,
+    "familiarity": {
+      "familiar": 0,
+      "unusual": 0,
+      "unfamiliar": 0,
+      "": 0
+    },
+    "extraction_failed": 0,
+    "ms_median": null
+  },
+  "vt_weak_hit": {
+    "n": 1,
+    "rf_alone_fp": 0,
+    "rf_alone_fp_pct": 0.0,
+    "ai_tagged": 0,
+    "ai_tagged_pct": 0.0,
+    "strong_finding_files": 0,
+    "final_not_clean": 1,
+    "final_fp_pct": 100.0,
+    "verdicts": {
+      "suspicious": 1
+    },
+    "rf_proba_median": 0.045,
+    "rf_proba_min": 0.045,
+    "rf_proba_max": 0.045,
+    "familiarity": {
+      "familiar": 0,
+      "unusual": 0,
+      "unfamiliar": 1,
+      "": 0
+    },
+    "extraction_failed": 0,
+    "ms_median": 84
+  },
+  "kept_without_vt_weak": {
+    "n": 199,
+    "rf_alone_fp": 13,
+    "rf_alone_fp_pct": 6.53,
+    "ai_tagged": 1,
+    "ai_tagged_pct": 0.5,
+    "strong_finding_files": 0,
+    "final_not_clean": 1,
+    "final_fp_pct": 0.5,
+    "verdicts": {
+      "clean": 198,
+      "suspicious": 1
+    },
+    "rf_proba_median": 0.1,
+    "rf_proba_min": 0.0,
+    "rf_proba_max": 0.65,
+    "familiarity": {
+      "familiar": 0,
+      "unusual": 3,
+      "unfamiliar": 196,
+      "": 0
+    },
+    "extraction_failed": 0,
+    "ms_median": 101
+  },
+  "strong_finding_counts": {}
+}

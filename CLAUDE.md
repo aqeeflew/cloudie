@@ -105,6 +105,10 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
   - Stratified 75/25 hold-out: **99.87%** (FP 0, FN 6).
   - Size-based hold-out (top quartile of `pdf_size`): **99.46%** (FP 7, FN 18, recall 96.14%).
   - Replaces the old 99.80% / 99.53%, which came from a 33-column run with the encoding wrong.
+- **Real-world benign FP rate** (`docs/BENIGN_FP_BENCHMARK.md`, `ml/benign_fp_benchmark.py`, data in `ml/benign_set/`,
+  2026-10-28): 200 GovDocs1 PDFs through the real Flask route: RF alone 13 (6.5%), after the risk gate 1, final not-clean
+  **2 (1.0%, 95% CI 0.3–3.6%), 0 blocked**, 0 strong evasion/structure findings, familiarity 197 unfamiliar / 3 unusual.
+  PDFs only (no Office/ZIP FP rate yet).
 - **AES-256-CBC:** random 32-byte key and 16-byte IV per file (`includes/aes.php`).
   - Only `sha256(key)` is stored, in `file_keys.key_hash`.
   - The real key goes to the user by email/QR.
@@ -215,7 +219,7 @@ Done: billing/503 fixed and redeployed (2026-10-20); `VT_API_KEY` attached; VT p
 fail-closed, QR, OTP, header and upload hardening live; Flask made private with IAM (2026-10-21).
 
 1. CSP. (Done: rate limiting, README, tests.) (Post-decrypt integrity check: done.)
-   Also: build a real-world benign PDF set (100-200 files) to measure the false-positive rate.
+   (Done 2026-10-28: real-world benign PDF set, `docs/BENIGN_FP_BENCHMARK.md`.) Still open: benign Office/ZIP set.
 2. (done) Credit links on `index.php` point to the repo, LinkedIn and email.
 3. Clean old IPs in Cloud SQL Authorized Networks; stop Cloud SQL when not demoing (cost).
 4. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,
