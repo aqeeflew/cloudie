@@ -287,20 +287,41 @@ $qrSrc    = qr_image_src($keyHex);
 
 // Best-effort: email the key to the file owner. Never blocks the upload —
 // send_key_email() returns false quietly if mail is disabled/misconfigured.
-$emailSent = send_key_email(
-    (string)($user['email'] ?? ''),
-    (string)($user['username'] ?? ''),
-    $origName,
-    $keyHex,
-    $fileId
-);
-
 // Per-detector summary for the result chips (VirusTotal is the primary detector)
 $vtInfo      = is_array($report['virustotal'] ?? null) ? $report['virustotal'] : [];
 $vtAvailable = !empty($vtInfo['available']);
 $vtChip      = $vtAvailable
              ? 'VirusTotal ' . (int)($vtInfo['malicious'] ?? 0) . '/' . (int)($vtInfo['total'] ?? 0) . ' flagged'
              : 'VirusTotal: no result';
+
+// Why a stored file was tagged (same wording as the page below), for the email
+if ($vtWeak) {
+    $emailReason = 'only ' . (int)$vtHits . ' VirusTotal engine flagged it, below the blocking threshold of 2.';
+} elseif (!$aiFlagged && $evStrong) {
+    $emailReason = 'Cloudie\'s structure checks found: ' . $evTitles . '.';
+} else {
+    $emailReason = 'the AI structural analyzer flagged it as likely malicious.';
+}
+$emailScan = ($vtAvailable
+                ? 'VirusTotal: ' . (int)($vtInfo['malicious'] ?? 0) . ' of ' . (int)($vtInfo['total'] ?? 0) . ' engines flagged it'
+                : 'VirusTotal: no result')
+           . ($isSuspicious ? '.' : '; ' . (!empty($report['is_pdf']) ? 'AI analysis' : 'structure checks') . ': no flag.');
+
+$emailSent = send_key_email(
+    (string)($user['email'] ?? ''),
+    (string)($user['username'] ?? ''),
+    $origName,
+    $keyHex,
+    $fileId,
+    [
+        'size'     => (int)$f['size'],
+        'verdict'  => $verdict,
+        'reason'   => $isSuspicious ? $emailReason : '',
+        'scan'     => $emailScan,
+        'qr'       => $qrSrc,
+        'open_url' => app_url('dashboard.php'),
+    ]
+);
 $aiChip      = ($probPct !== null && !empty($report['is_pdf']))
              ? 'AI ' . $probPct . '% malicious'
              : '';
