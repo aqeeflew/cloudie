@@ -46,6 +46,7 @@ if (!$rec) {
 
 $storedName = $rec['stored_name'];
 $err        = null;
+$otherFile  = null;   // set when a wrong key belongs to another file of this user
 
 // -----------------------------------------------------------
 // POST -> perform action
@@ -64,6 +65,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_action($user['user_id'], 'DECRYPT_FAIL',
                        (int)$rec['file_id'], (int)$rec['key_id'],
                        'wrong key');
+            // Each file has its own key, so a mix-up is the common mistake: say which of
+            // the user's own files the key opens (only their files; the key is not echoed).
+            try {
+                $o = db()->prepare(
+                    "SELECT f.file_id, f.file_name
+                     FROM file_keys k INNER JOIN files f ON f.file_id = k.file_id
+                     WHERE f.user_id = ? AND k.key_hash = ? AND f.file_id <> ?
+                     LIMIT 1");
+                $o->execute([$user['user_id'], hash_aes_key($rawKey), (int)$rec['file_id']]);
+                $otherFile = $o->fetch() ?: null;
+            } catch (Throwable $e) {
+                $otherFile = null;
+            }
         } else {
             $iv     = base64_decode($rec['iv_b64']);
             $cipher = storage_get_encrypted($storedName);
@@ -146,7 +160,14 @@ require_once __DIR__ . '/includes/header.php';
       <?php endif; ?>
 
       <?php if ($err): ?>
-        <div class="alert alert-danger" role="alert" id="keyErr"><?= e($err) ?></div>
+        <div class="alert alert-danger" role="alert" id="keyErr">
+          <?= e($err) ?>
+          <?php if ($otherFile): ?>
+            <br>It is the key for your file
+            <a href="decrypt.php?action=<?= e($action) ?>&amp;id=<?= (int)$otherFile['file_id'] ?>"><strong><?= e($otherFile['file_name']) ?></strong></a>
+            (#<?= (int)$otherFile['file_id'] ?>). Each file has its own key.
+          <?php endif; ?>
+        </div>
       <?php endif; ?>
 
       <form method="post" id="keyForm" autocomplete="off">
@@ -188,12 +209,21 @@ require_once __DIR__ . '/includes/header.php';
           <div id="qrScanMsg" class="qr-scan-msg d-none" role="status"></div>
         </div>
 
-        <details class="dk-help">
+        <details class="dk-help"<?= $err ? ' open' : '' ?>>
           <summary>Where do I find my key?</summary>
           <p>
             It was shown once right after you uploaded the file (as text and a QR code), and a copy was
             emailed to <strong><?= e((string)($user['email'] ?? 'your account email')) ?></strong>.
-            Cloudie stores only a SHA-256 hash of it, so it cannot be shown again or recovered.
+          </p>
+          <ul>
+            <li>In your inbox, search for <code>encryption key for "<?= e($rec['file_name']) ?>"</code>.
+                Newer emails also end with <strong>(file #<?= (int)$rec['file_id'] ?>)</strong>.</li>
+            <li>If you downloaded it, look for a file whose name starts with <code>cloudie-key-<?= (int)$rec['file_id'] ?></code>
+                or the QR image <code>...-qr.png</code> (use <em>Upload QR image</em> above).</li>
+          </ul>
+          <p>
+            Cloudie stores only a SHA-256 hash of the key, so it cannot be shown again or recovered by anyone,
+            including Cloudie.
           </p>
         </details>
 
@@ -232,6 +262,9 @@ require_once __DIR__ . '/includes/header.php';
 .dk-help{margin-top:16px;font-size:13px;color:var(--txt-dim)}
 .dk-help summary{cursor:pointer;color:var(--cyan);font-weight:500}
 .dk-help p{margin-top:8px;line-height:1.5}
+.dk-help ul{margin:6px 0 0;padding-left:18px;line-height:1.5}
+.dk-help li{margin-bottom:4px}
+.dk-help code{font-size:12px;word-break:break-all}
 .btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 </style>
 
