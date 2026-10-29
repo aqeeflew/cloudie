@@ -322,6 +322,35 @@ $emailSent = send_key_email(
         'open_url' => app_url('dashboard.php'),
     ]
 );
+// Key kit: a self-explaining .txt the user can keep (e.g. in a password manager).
+$keyStem = trim(preg_replace('/[^A-Za-z0-9._-]+/', '_', pathinfo($origName, PATHINFO_FILENAME)), '._-');
+$keyStem = substr($keyStem, 0, 40);
+$keyBase = 'cloudie-key-' . (int)$fileId . ($keyStem !== '' ? '-' . $keyStem : '');
+$keyKit  = implode("\r\n", [
+    'CLOUDIE ENCRYPTION KEY',
+    '======================',
+    '',
+    'File:       ' . $origName,
+    'Reference:  file #' . (int)$fileId,
+    'Stored:     ' . cloudie_email_now(),
+    'Encryption: AES-256-CBC',
+    '',
+    'Key (64 characters, one line):',
+    $keyHex,
+    '',
+    'How to open the file',
+    '  1. Sign in to Cloudie and go to My files.',
+    '  2. Choose View or Download on this file.',
+    '  3. Paste the key above (or scan the QR) and confirm.',
+    '',
+    'Keep this key safe',
+    '  - Cloudie stores only a SHA-256 hash of the key, never the key itself.',
+    '  - If you lose it, nobody (not even Cloudie) can open or delete this file.',
+    '  - Anyone with this key and access to your account can open the file.',
+    '    Keep it private, for example in a password manager. Do not share it.',
+    '',
+]);
+
 $aiChip      = ($probPct !== null && !empty($report['is_pdf']))
              ? 'AI ' . $probPct . '% malicious'
              : '';
@@ -419,15 +448,24 @@ require_once __DIR__ . '/includes/header.php';
         <div class="key-box mb-3" id="keyBox"><?= e($keyHex) ?></div>
 
         <div class="d-flex flex-wrap gap-2 justify-content-center">
-          <button class="btn btn-cloudie-outline" onclick="copyKey()">Copy key</button>
+          <button type="button" class="btn btn-cloudie-outline" id="copyKeyBtn" onclick="copyKey()">Copy key</button>
           <a class="btn btn-cloudie-outline"
-             href="data:application/octet-stream;base64,<?= base64_encode("Cloudie AES key for: $origName\n$keyHex\n") ?>"
-             download="cloudie-key-<?= e($fileId) ?>.txt">Download key (.txt)</a>
+             href="data:text/plain;charset=utf-8;base64,<?= base64_encode($keyKit) ?>"
+             download="<?= e($keyBase) ?>.txt">Download key file (.txt)</a>
+          <?php if (strncmp($qrSrc, 'data:image/', 11) === 0): ?>
+          <a class="btn btn-cloudie-outline" href="<?= e($qrSrc) ?>"
+             download="<?= e($keyBase) ?>-qr.png">Save QR image</a>
+          <?php endif; ?>
           <a class="btn btn-cloudie-outline" href="view_report.php?id=<?= (int)$fileId ?>">View report</a>
           <a class="btn btn-cloudie" href="dashboard.php" id="goFiles"
              aria-disabled="true" tabindex="-1"
              style="opacity:.45;pointer-events:none">Go to my files</a>
         </div>
+
+        <p class="key-tip">
+          Tip: keep the key file or QR in a password manager or a private folder, not only in your email.
+          Each file has its own key; the file name and reference <strong>#<?= (int)$fileId ?></strong> tell you which is which.
+        </p>
 
         <label class="key-saved">
           <input type="checkbox" id="keySaved">
@@ -459,6 +497,7 @@ require_once __DIR__ . '/includes/header.php';
   color:var(--amber);border-radius:12px;padding:12px 16px;font-size:14px;margin-bottom:16px}
 
 .key-section{border-top:1px solid var(--line);padding-top:22px;margin-top:6px}
+.key-tip{font-size:12.5px;color:var(--txt-dim);margin:14px auto 0;max-width:520px}
 .key-saved{display:flex;align-items:flex-start;justify-content:center;gap:10px;
   margin-top:18px;font-size:13.5px;font-weight:500;color:var(--txt);cursor:pointer;text-align:left}
 .key-saved input{margin-top:3px;flex:none}
@@ -484,8 +523,26 @@ require_once __DIR__ . '/includes/header.php';
   });
 })();
 function copyKey() {
-  navigator.clipboard.writeText(document.getElementById('keyBox').innerText);
-  alert('Key copied to clipboard.');
+  var box = document.getElementById('keyBox');
+  var btn = document.getElementById('copyKeyBtn');
+  var key = box.innerText.trim();
+  function done(ok) {
+    btn.textContent = ok ? 'Copied \u2713' : 'Select and copy (Ctrl+C)';
+    setTimeout(function () { btn.textContent = 'Copy key'; }, 2500);
+  }
+  function selectBox() {
+    var r = document.createRange(); r.selectNodeContents(box);
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(key).then(function () { done(true); },
+      function () { selectBox(); done(false); });
+  } else {
+    selectBox();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    done(ok);
+  }
 }
 </script>
 <?php require_once __DIR__ . '/includes/footer.php';
