@@ -14,6 +14,7 @@
 
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/rescan.php';
 
 require_login();
 $user = current_user();
@@ -29,7 +30,8 @@ if ($file_id <= 0) {
 // Fetch the file + its stored report — must belong to the current user
 $stmt = db()->prepare(
     "SELECT file_id, file_name, file_type, file_size, file_md5,
-            is_clean, scan_report, uploaded_at
+            is_clean, verdict, scan_report, uploaded_at,
+            recheck_at, recheck_verdict, recheck_hits, recheck_total, recheck_analysed_at
      FROM files
      WHERE file_id = ? AND user_id = ?
      LIMIT 1");
@@ -54,6 +56,13 @@ if ($dl === 'json') {
     $safe = preg_replace('/[^A-Za-z0-9._-]/', '_', $rec['file_name']);
     header('Content-Type: application/json; charset=utf-8');
     header('Content-Disposition: attachment; filename="cloudie-report-' . $safe . '.json"');
+    if (!empty($rec['recheck_verdict'])) {
+        $report['recheck'] = [
+            'checked_at' => $rec['recheck_at'], 'verdict' => $rec['recheck_verdict'],
+            'engines_flagged' => (int)$rec['recheck_hits'], 'engines_total' => (int)$rec['recheck_total'],
+            'effective_verdict' => rescan_effective($rec),
+        ];
+    }
     echo json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     exit;
 }
@@ -109,6 +118,54 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 
 <?php
+$reVerdict = strtolower((string)($rec['recheck_verdict'] ?? ''));
+$reLater   = rescan_flagged_later($rec);
+$reQuar    = rescan_quarantined($rec);
+$reHash    = rescan_hash($rec['scan_report'] ?? null, $rec['file_md5'] ?? null);
+$reColor   = $reLater ? ($reQuar ? 'var(--red)' : 'var(--amber)') : 'var(--line)';
+?>
+<div class="cl-card" style="margin-bottom:1.2rem;border-color:<?= $reColor ?>">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.8rem">
+    <div style="flex:1;min-width:240px">
+      <h3 style="margin:0 0 .35rem;font-size:1rem">
+        <?= $reLater ? ($reQuar ? 'Flagged after upload: quarantined' : 'Flagged after upload') : 'Re-check with VirusTotal' ?>
+      </h3>
+      <?php if ($reVerdict === ''): ?>
+        <p class="text-muted small m-0">Not re-checked yet. Everything below is the result from upload time.</p>
+      <?php else: ?>
+        <p class="small m-0" style="color:var(--txt)">
+          Last re-checked <?= e(date('Y-m-d H:i', strtotime((string)$rec['recheck_at']))) ?>:
+          <strong><?= (int)$rec['recheck_hits'] ?> of <?= (int)$rec['recheck_total'] ?></strong> VirusTotal engines flag this file.
+          <?php if ($reLater): ?>
+            The upload scan passed it<?= $reQuar ? ', so it is now blocked from opening in the browser and needs a confirmation to download' : '' ?>.
+            The report below is still the result from upload time. The flag is removed if VirusTotal stops reporting it.
+          <?php endif; ?>
+        </p>
+        <?php if (!empty($rec['recheck_analysed_at'])): ?>
+          <p class="text-muted small m-0" style="margin-top:.25rem">VirusTotal last analysed it on <?= e($rec['recheck_analysed_at']) ?> UTC.</p>
+        <?php endif; ?>
+      <?php endif; ?>
+      <p class="text-muted small" style="margin:.4rem 0 0">
+        Uses only the fingerprint saved at upload: no key needed, and the file is never decrypted.
+        <?php if (strlen($reHash) === 64): ?>
+          <a href="https://www.virustotal.com/gui/file/<?= e($reHash) ?>" target="_blank" rel="noopener noreferrer">Open on VirusTotal</a>
+        <?php endif; ?>
+      </p>
+    </div>
+    <form method="post" action="rescan.php" style="margin:0">
+      <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+      <input type="hidden" name="mode" value="one">
+      <input type="hidden" name="id"   value="<?= $fileId ?>">
+      <button type="submit" class="btn btn-sm btn-cloudie-outline">Re-check now</button>
+    </form>
+  </div>
+</div>
+
+<?php if ($reLater): ?>
+  <h3 style="font-size:.9rem;margin:0 0 .6rem;color:var(--txt-dim)">Result at upload time</h3>
+<?php endif; ?>
+
+<?php
 require_once __DIR__ . '/includes/scan_report.php';
 require_once __DIR__ . '/includes/footer.php';
 
@@ -135,6 +192,10 @@ function build_text_report(array $rec, array $report): string {
     $out .= $nl;
 
     $out .= 'FINAL VERDICT : ' . strtoupper($report['verdict'] ?? 'unknown') . $nl;
+    if (!empty($rec['recheck_verdict'])) {
+        $out .= 'LATEST RE-CHECK: ' . strtoupper(rescan_effective($rec)) . ' (VirusTotal ' . (int)$rec['recheck_hits']
+              . '/' . (int)$rec['recheck_total'] . ', ' . $rec['recheck_at'] . ')' . $nl;
+    }
     if (!empty($cmb['reason'])) {
         $out .= 'Reason        : ' . $cmb['reason'] . $nl;
     }

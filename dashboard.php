@@ -3,11 +3,13 @@ require_once __DIR__ . '/includes/auth.php';
 require_login();
 $user = current_user();
 
+require_once __DIR__ . '/includes/rescan.php';
+
 $pageTitle = 'My files';
 
 $stmt = db()->prepare(
     "SELECT f.file_id, f.file_name, f.file_type, f.file_size,
-            f.is_clean, f.verdict, f.uploaded_at,
+            f.is_clean, f.verdict, f.recheck_verdict, f.uploaded_at,
             fo.folder_id, fo.folder_name, fo.color AS folder_color
      FROM files f
      LEFT JOIN folders fo ON fo.folder_id = f.folder_id
@@ -20,11 +22,13 @@ $files = $stmt->fetchAll();
 $total      = count($files);
 $clean      = 0;
 $suspicious = 0;
+$flaggedLater = [];
 $bytes      = 0;
 foreach ($files as $f) {
-    $v = strtolower((string)($f['verdict'] ?? ((int)$f['is_clean'] === 1 ? 'clean' : 'suspicious')));
+    $v = rescan_effective($f);
     if ($v === 'clean')           $clean++;
-    elseif ($v === 'suspicious')  $suspicious++;
+    else                          $suspicious++;   // a file flagged malicious later is also not clean
+    if (rescan_flagged_later($f)) $flaggedLater[] = $f;
     $bytes += (int)$f['file_size'];
 }
 
@@ -45,11 +49,9 @@ function type_class(string $ext): string {
     return 't-doc';
 }
 
-// normalise a row to one of: clean | suspicious
+// clean | suspicious | malicious: the worse of the upload verdict and the latest re-check
 function row_verdict(array $row): string {
-    $v = strtolower((string)($row['verdict'] ?? ''));
-    if (in_array($v, ['clean', 'suspicious'], true)) return $v;
-    return ((int)$row['is_clean'] === 1) ? 'clean' : 'suspicious';
+    return rescan_effective($row);
 }
 ?>
 <style>
@@ -77,6 +79,8 @@ function row_verdict(array $row): string {
 .empty{text-align:center;padding:40px 20px}
 .empty svg{width:46px;height:46px;color:var(--txt-faint);margin-bottom:14px}
 .v-susp{background:rgba(255,194,75,.14);color:var(--amber)}
+.v-mal{background:rgba(255,93,108,.14);color:var(--red)}
+.verdict-later{display:block;font-size:11px;color:var(--txt-faint);margin-top:3px}
 .fa-group{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}
 .fa-sep{width:1px;height:20px;background:var(--line-2);margin:0 3px;flex:none}
 @media(max-width:1200px){.summary{grid-template-columns:repeat(2,1fr)}}
@@ -94,6 +98,17 @@ function row_verdict(array $row): string {
 <p class="small mb-3"><strong>Suspicious</strong> = VirusTotal found nothing, but the AI or the structure checks flagged the file. It is stored and encrypted; open it with caution. Malicious files are blocked and never stored.</p>
 
 <!-- summary cards -->
+<?php if ($flaggedLater): ?>
+<div class="alert alert-danger" role="alert">
+  <strong>VirusTotal now flags <?= count($flaggedLater) === 1 ? 'a file' : count($flaggedLater) . ' files' ?> that passed the scan when uploaded:</strong>
+  <?php foreach ($flaggedLater as $i => $f): ?><?= $i ? ', ' : ' ' ?><a href="view_report.php?id=<?= (int)$f['file_id'] ?>"><?= e($f['file_name']) ?></a><?php endforeach; ?>.
+  Open the report before using <?= count($flaggedLater) === 1 ? 'it' : 'them' ?>.
+</div>
+<?php endif; ?>
+<div id="rescanNews" class="alert alert-warning d-none" role="status">
+  A background re-check changed a file's verdict. <a href="dashboard.php">Refresh this page</a> to see it.
+</div>
+
 <div class="summary">
   <div class="scard">
     <div class="scard-ico i-green"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -155,7 +170,9 @@ function row_verdict(array $row): string {
         </td>
         <td class="fcol" data-label="Size"><?= e(fmt_size((int)$row['file_size'])) ?></td>
         <td data-label="Verdict">
-          <?php if ($rv === 'suspicious'): ?>
+          <?php if ($rv === 'malicious'): ?>
+            <span class="verdict v-mal" title="VirusTotal flagged this file after it was stored. It is quarantined: it cannot be opened in the browser. See the report."><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Malicious</span>
+          <?php elseif ($rv === 'suspicious'): ?>
             <span class="verdict v-susp" title="VirusTotal found nothing, but the AI or the structure checks flagged it. Stored; open with caution.">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Suspicious
             </span>
@@ -164,15 +181,20 @@ function row_verdict(array $row): string {
               <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Clean
             </span>
           <?php endif; ?>
+          <?php if (rescan_flagged_later($row)): ?><span class="verdict-later">found after upload</span><?php endif; ?>
         </td>
         <td class="fcol" data-label="Uploaded"><?= e(date('M j, Y', strtotime($row['uploaded_at']))) ?></td>
         <td data-label="Actions">
           <div class="fa-group">
+            <?php if ($rv === 'malicious'): ?>
+            <a href="view_report.php?id=<?= (int)$row['file_id'] ?>" class="btn btn-sm btn-danger" title="Quarantined: see the report">Quarantined</a>
+            <?php else: ?>
             <a href="decrypt.php?action=view&id=<?= (int)$row['file_id'] ?>"
                class="btn btn-sm btn-cloudie" title="View decrypted file">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
               View
             </a>
+            <?php endif; ?>
             <a href="decrypt.php?action=download&id=<?= (int)$row['file_id'] ?>"
                class="btn btn-sm btn-cloudie-outline" title="Download decrypted file">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M12 16V4m0 12-4-4m4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -261,6 +283,19 @@ document.querySelectorAll('[data-delete-name]').forEach(function(a){
       q.blur();
     }
   });
+})();
+
+// Quietly re-check the most overdue file with VirusTotal (hash only; see rescan.php)
+(function () {
+  var body = new URLSearchParams();
+  body.set('mode', 'auto');
+  body.set('csrf', <?= json_encode(csrf_token()) ?>);
+  fetch('rescan.php', { method: 'POST', body: body, credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.changed) document.getElementById('rescanNews').classList.remove('d-none');
+    })
+    .catch(function () { /* a failed background check changes nothing */ });
 })();
 </script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

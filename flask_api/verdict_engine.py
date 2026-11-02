@@ -47,6 +47,13 @@ def risk_indicators(features):
     return [n for n in STRONG_RISK_FEATURES if (features or {}).get(n, 0)]
 
 
+def recheck_label(vt_positives):
+    """Verdict for a later hash-only re-check. Same VirusTotal thresholds as an upload; no AI, no file."""
+    if vt_positives >= VT_MALICIOUS_MIN_HITS:
+        return "malicious"
+    return "suspicious" if vt_positives else "clean"
+
+
 class Verdict(str, Enum):
     MALICIOUS = "malicious"     # blocked, never stored
     CLEAN = "clean"            # stored normally

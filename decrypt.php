@@ -16,6 +16,7 @@ require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/aes.php';
 require_once __DIR__ . '/includes/storage.php';
+require_once __DIR__ . '/includes/rescan.php';
 
 require_login();
 $user = current_user();
@@ -31,7 +32,7 @@ if (!in_array($action, ['view', 'download', 'delete'], true) || $file_id <= 0) {
 // Look up the file (and key metadata) - must belong to current user
 $stmt = db()->prepare(
     "SELECT f.file_id, f.file_name, f.stored_name, f.file_type, f.file_size,
-            f.file_md5, f.scan_report,
+            f.file_md5, f.scan_report, f.verdict, f.is_clean, f.recheck_verdict, f.recheck_hits, f.recheck_total,
             k.key_id, k.key_hash, k.iv_b64
      FROM files f
      INNER JOIN file_keys k ON k.file_id = f.file_id
@@ -42,6 +43,14 @@ $rec = $stmt->fetch();
 if (!$rec) {
     flash_set('error', 'File not found.');
     header('Location: dashboard.php'); exit;
+}
+
+// Flagged malicious by a re-check after upload: never rendered inline; download needs an explicit OK.
+// Delete stays open (removing a dangerous file must not get harder).
+$quarantined = rescan_quarantined($rec);
+if ($quarantined && $action === 'view') {
+    flash_set('error', 'This file is quarantined because VirusTotal flagged it after upload, so it cannot be opened in the browser.');
+    header('Location: view_report.php?id=' . $file_id); exit;
 }
 
 $storedName = $rec['stored_name'];
@@ -58,7 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $keyHex = trim($_POST['aes_key'] ?? '');
         $rawKey = key_from_hex($keyHex);
 
-        if ($rawKey === null) {
+        if ($quarantined && $action === 'download' && empty($_POST['ack_risk'])) {
+            $err = 'This file is quarantined. Tick the box to confirm you understand the risk.';
+        } elseif ($rawKey === null) {
             $err = 'AES key must be 64 hexadecimal characters.';
         } elseif (!hash_equals($rec['key_hash'], hash_aes_key($rawKey))) {
             $err = 'That key does not match this file.';
@@ -103,7 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            'method=' . $integrity['method'] . '; action=' . $action);
             } else {
                 log_action($user['user_id'], strtoupper($action),
-                           (int)$rec['file_id'], (int)$rec['key_id']);
+                           (int)$rec['file_id'], (int)$rec['key_id'],
+                           $quarantined ? 'quarantined file; user accepted the warning' : null);
 
                 if ($action === 'view' || $action === 'download') {
                     $mime = mime_content_type_for($rec['file_type']);
@@ -159,6 +171,13 @@ require_once __DIR__ . '/includes/header.php';
         </div>
       <?php endif; ?>
 
+      <?php if ($quarantined && $action === 'download'): ?>
+        <div class="alert alert-danger">
+          <strong>Quarantined file.</strong> It passed the scan when uploaded, but VirusTotal now reports
+          <?= (int)$rec['recheck_hits'] ?> of <?= (int)$rec['recheck_total'] ?> engines flagging it. Delete it unless you are sure you need it.
+        </div>
+      <?php endif; ?>
+
       <?php if ($err): ?>
         <div class="alert alert-danger" role="alert" id="keyErr">
           <?= e($err) ?>
@@ -174,6 +193,13 @@ require_once __DIR__ . '/includes/header.php';
         <input type="hidden" name="csrf"   value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="action" value="<?= e($action) ?>">
         <input type="hidden" name="id"     value="<?= (int)$file_id ?>">
+
+        <?php if ($quarantined && $action === 'download'): ?>
+          <label class="d-flex gap-2 mb-3" style="align-items:flex-start;cursor:pointer">
+            <input type="checkbox" name="ack_risk" value="1" required style="margin-top:4px">
+            <span>I understand this file is flagged as malicious and may harm my device.</span>
+          </label>
+        <?php endif; ?>
 
         <label for="aesKeyInput">Your AES key (64 characters, 0-9 and a-f)</label>
         <div class="dk-field">

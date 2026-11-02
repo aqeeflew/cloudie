@@ -176,6 +176,11 @@ Numbers to keep in your head: **32 features · 200 trees · Gini · balanced · 
 **BM:** Hilang key = fail tak boleh dipulih (dan tak boleh delete). Sebab itu key ditunjuk sekali dengan QR, butang copy, fail key .txt, simpan QR, wajib tanda "saved", dan salinan email. Key salah → Cloudie beritahu key itu milik fail mana.
 **Proof:** `scan_and_encrypt.php` (section 5, key kit + Save QR), `decrypt.php` (wrong key → `$otherFile`, help box); Thesis 4.2/5.1 (mismatch row 1).
 
+### E6b. A file was clean when uploaded and is detected as malware next week. What happens?
+**Answer:** Cloudie re-checks stored files with VirusTotal using only the SHA-256 saved at upload, so it needs no key and never decrypts anything. The most overdue file is checked when the owner opens My files (at most once per 24 h per file), or on demand from the report. At 2 or more engines the file becomes malicious and is quarantined: no opening in the browser, download only after a logged warning, delete still allowed. At 1 engine it is tagged suspicious. The upload result is kept, and a later clean answer lifts the flag, so a false alarm is reversible; files are never deleted automatically. Limits: it runs only when the owner visits, it covers one file per visit because of the free quota, VirusTotal must have re-analysed the file (Cloudie requests that when the last analysis is over 7 days old), and I have no measured rate of late detections.
+**BM:** Cloudie tanya VT semula guna hash sahaja, tanpa key dan tanpa decrypt. 2+ enjin = kuarantin (tak boleh buka dalam browser, download perlu amaran), 1 enjin = suspicious, boleh ditarik balik. Had: jalan bila owner buka My files sahaja.
+**Proof:** `includes/rescan.php`, `rescan.php`, `decrypt.php`, Flask `/vt_lookup`; `docs/RETROACTIVE_RESCAN.md`; tests.
+
 ### E7. Is the plaintext ever written to disk?
 **Answer:** Briefly, yes: the uploaded cleartext sits in `uploads/` while it is scanned and encrypted, then `unlink()` removes it (also on every error path). Decryption for view/download is done in memory and streamed, never written. `uploads/` has a deny-all `.htaccess`, so the temp file cannot be fetched over HTTP; a temp directory outside the web root would be cleaner.
 **BM:** Masa scan ada fail asal sekejap dalam uploads/, lepas enkripsi dipadam; decrypt dalam memori sahaja.

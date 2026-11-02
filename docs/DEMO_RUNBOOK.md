@@ -20,7 +20,7 @@ Three things to show, in this order: (1) a clean file goes through, (2) a file V
 - [ ] `powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1` passes.
 - [ ] Billing is active, Cloud SQL is `RUNNABLE`:
   `gcloud sql instances describe cloudie-db --format="value(state,settings.activationPolicy)"`
-- [ ] Both services have min instances 1 (already set 2026-10-26):
+- [ ] Both services have min instances 1 (they are at 0 until 24 Nov; check again that day):
   `gcloud run services describe cloudie-php --region asia-southeast1 --format="value(spec.template.metadata.annotations.'autoscaling.knative.dev/minScale')"`
 - [ ] Flask is still private: `gcloud run services get-iam-policy cloudie-flask --region asia-southeast1` lists only the compute service account.
 - [ ] Generate the demo files:
@@ -42,6 +42,8 @@ test account, and write down the verdict. Then the live demo only does fast hash
 - [ ] Delete old test files from the demo account so the dashboard looks clean.
 - [ ] For the tamper demo (section 4, step 6): add your current IP to Cloud SQL Authorized Networks and confirm the
   mysql command in section 4 connects. Remove the IP afterwards.
+- [ ] For the re-check demo (section 4, step 6b): upload a throwaway file on the demo account and run the SQL in
+  `docs/RETROACTIVE_RESCAN.md` just before you present.
 - [ ] Charge the laptop, close other tabs, set the browser zoom so the report is readable on the projector.
 
 ### 30 minutes before
@@ -90,9 +92,14 @@ blocked by VirusTotal instead, say so: it shows VirusTotal is the primary detect
    ```
    Reload the page: "Tampering detected" and the changed row is pinpointed. Say honestly: it detects edits; someone
    with both database access and the secret key could rewrite it (see THREAT_MODEL).
+6b. **Retroactive re-check** (1 min). Open the throwaway file's report: it says clean at upload. Say: "scanners only
+   know what is known today, so Cloudie asks again later, using only the fingerprint, without the key. I am simulating
+   the day VirusTotal learns about this file by pointing its fingerprint at a known test file; the answer is VirusTotal's
+   real answer." Click **Re-check now**: flagged after upload and quarantined. Show My files (banner, red badge, no View
+   button) and the sealed audit entry. Costs one VirusTotal request.
 7. **Download or decrypt a file** (30 s): enter the key, the file comes back; mention the integrity hash check.
 
-If time is short, drop step 4 and step 7.
+If time is short, drop step 4 and step 7. Keep 6b: it is the most original part.
 
 ## 5. When something goes wrong
 

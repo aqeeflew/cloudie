@@ -72,6 +72,17 @@ function db_ensure_folders(): void {
         } catch (PDOException $e) {
             if ((int)($e->errorInfo[1] ?? 0) !== 1060) throw $e;
         }
+        // Latest retroactive re-check (includes/rescan.php); files.verdict stays the upload result
+        try {
+            db()->exec("ALTER TABLE files
+                ADD COLUMN recheck_at DATETIME NULL DEFAULT NULL,
+                ADD COLUMN recheck_verdict VARCHAR(20) NULL DEFAULT NULL,
+                ADD COLUMN recheck_hits INT NULL DEFAULT NULL,
+                ADD COLUMN recheck_total INT NULL DEFAULT NULL,
+                ADD COLUMN recheck_analysed_at DATETIME NULL DEFAULT NULL");
+        } catch (PDOException $e) {
+            if ((int)($e->errorInfo[1] ?? 0) !== 1060) throw $e;
+        }
     } catch (Throwable $t) {
         error_log('db_ensure_folders: ' . $t->getMessage());
     }

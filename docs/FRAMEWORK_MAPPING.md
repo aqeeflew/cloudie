@@ -81,7 +81,7 @@ Demo files for most rows: `python tests/make_demo_files.py <folder>` and `python
 | 8.24 Use of cryptography | AES-256-CBC, SHA-256, HMAC-SHA256 | `includes/aes.php`, `includes/audit.php` |
 | 8.26 Application security requirements | Threat model | `docs/THREAT_MODEL.md` |
 | 8.28 Secure coding | Prepared statements, input validation, escaping | `includes/validate.php` |
-| 8.29 Security testing | 81 PHP checks + 175 Flask tests | `tests/run_all.ps1` |
+| 8.29 Security testing | 92 PHP checks + 188 Flask tests | `tests/run_all.ps1` |
 
 Clauses 4-10 (the management system itself) are out of scope.
 
