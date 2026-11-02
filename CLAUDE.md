@@ -50,8 +50,8 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 - URLs: `https://cloudie-php-800476519477.asia-southeast1.run.app`,
   `https://cloudie-flask-800476519477.asia-southeast1.run.app`
   (the `...-2q6nug2xha-as.a.run.app` URLs also work).
-- **Live status (2026-10-29):** php from `main` after PR #52 (new email templates), `cloudie-php-00058-qvk`;
-  flask `cloudie-flask-00020-xmf` (code from PR #43, new revision only for the min-instances change).
+- **Live status (2026-11-02):** both from `main` after PR #55 (key safekeeping, retroactive re-check):
+  php `cloudie-php-00059-gx8`, flask `cloudie-flask-00021-vwz`. Real VirusTotal through `/vt_lookup` not yet confirmed (needs a logged-in "Re-check now").
   Cloud SQL automated backups ON (daily 19:00 UTC, 7 kept; on-demand backup `1792978507235` taken 2026-10-26).
   **Competition postponed to 2026-11-25 and 26** (was 2026-11-03; code freeze 2026-11-22).
   **Min instances = 0** on both services since 2026-10-28 (saves cost; first request after idle is a cold start).
