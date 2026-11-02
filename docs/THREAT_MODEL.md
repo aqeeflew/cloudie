@@ -96,4 +96,4 @@ PHP to GCS and Cloud SQL; PHP to the user's mailbox (Gmail SMTP).
 
 AES-GCM with the key bound to the file; client-side encryption so the server never sees the plaintext; a private
 sandbox for unknown files; Content-Security-Policy; shared sessions; measuring false positives on a real benign Office/ZIP set (PDFs: done);
-retroactive rescan of stored files when new signatures appear.
+a scheduled sweep for the retroactive re-check (today it runs when the owner opens My files, see `docs/RETROACTIVE_RESCAN.md`).

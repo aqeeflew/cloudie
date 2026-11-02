@@ -16,6 +16,7 @@ require_once $ROOT . '/includes/upload_check.php';
 require_once $ROOT . '/includes/ratelimit.php';   // db.php is loaded but no connection is opened
 require_once $ROOT . '/includes/audit.php';
 require_once $ROOT . '/includes/validate.php';
+require_once $ROOT . '/includes/rescan.php';
 
 $passed = 0;
 $failed = 0;
@@ -254,6 +255,33 @@ foreach ($it as $f) {
     if ($code !== 0) $bad[] = $path;
 }
 check("$n PHP files have no syntax errors" . ($bad ? ' (bad: ' . implode(', ', $bad) . ')' : ''), $n > 10 && !$bad);
+
+// ---------------------------------------------------------------------------
+echo "Retroactive re-check\n";
+$clean = ['verdict' => 'clean', 'is_clean' => 1, 'recheck_verdict' => null];
+$susp  = ['verdict' => 'suspicious', 'is_clean' => 1, 'recheck_verdict' => null];
+check('no re-check keeps the upload verdict', rescan_effective($clean) === 'clean' && !rescan_flagged_later($clean));
+check('clean + malicious re-check = malicious, quarantined, flagged later',
+      rescan_effective(['recheck_verdict' => 'malicious'] + $clean) === 'malicious'
+      && rescan_quarantined(['recheck_verdict' => 'malicious'] + $clean)
+      && rescan_flagged_later(['recheck_verdict' => 'malicious'] + $clean));
+check('clean + weak re-check = suspicious, not quarantined',
+      rescan_effective(['recheck_verdict' => 'suspicious'] + $clean) === 'suspicious'
+      && !rescan_quarantined(['recheck_verdict' => 'suspicious'] + $clean));
+check('clean re-check never hides an AI/structure tag from upload',
+      rescan_effective(['recheck_verdict' => 'clean'] + $susp) === 'suspicious'
+      && !rescan_flagged_later(['recheck_verdict' => 'clean'] + $susp));
+check('suspicious + malicious re-check = malicious', rescan_effective(['recheck_verdict' => 'malicious'] + $susp) === 'malicious');
+check('later clean re-check lifts an earlier flag (stored as latest result)',
+      rescan_effective(['recheck_verdict' => 'clean'] + $clean) === 'clean');
+check('old row without verdict uses is_clean', rescan_upload_verdict(['verdict' => null, 'is_clean' => 0]) === 'suspicious'
+      && rescan_upload_verdict(['verdict' => null, 'is_clean' => 1]) === 'clean');
+check('unexpected re-check value is ignored', rescan_effective(['recheck_verdict' => 'weird'] + $clean) === 'clean');
+$sha = str_repeat('a', 64); $md5 = str_repeat('b', 32);
+check('SHA-256 from the report is preferred', rescan_hash(json_encode(['file_sha256' => $sha]), $md5) === $sha);
+check('older row falls back to MD5', rescan_hash(null, $md5) === $md5 && rescan_hash('{broken', $md5) === $md5);
+check('malformed hashes are not sent', rescan_hash(json_encode(['file_sha256' => 'x']), 'nope') === ''
+      && rescan_hash(json_encode(['file_sha256' => $sha . "\n"]), null) === '');
 
 // ---------------------------------------------------------------------------
 echo "\n$passed passed, $failed failed\n";

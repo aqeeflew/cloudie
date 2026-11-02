@@ -250,6 +250,8 @@ function audit_label(string $type): string {
         'DECRYPT_FAIL' => 'Wrong key entered', 'INTEGRITY_FAIL' => 'Integrity check failed',
         'PROFILE_UPDATE' => 'Profile updated', 'PASSWORD_CHANGE' => 'Password changed',
         'REPORT_DOWNLOAD' => 'Scan report downloaded',
+        'RESCAN' => 'File re-checked', 'RESCAN_FLAGGED' => 'File flagged after upload',
+        'RESCAN_CLEARED' => 'Later flag lowered or removed',
     ];
     return $m[$type] ?? $type;
 }

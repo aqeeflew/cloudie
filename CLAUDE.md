@@ -126,6 +126,11 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
   (`db_ensure_audit`). Concurrency: head row is created outside the transaction + `FOR UPDATE` + deadlock retry
   (a 25-process stress test found a deadlock in the first version; now 80 parallel writes give 80 sealed entries).
   Demo: edit a row (`UPDATE actions SET details='x' WHERE act_id=...`) and reload `audit.php`: "Tampering detected".
+- **Retroactive re-check** (`includes/rescan.php`, `rescan.php`, Flask `/vt_lookup`; see `docs/RETROACTIVE_RESCAN.md`): asks VirusTotal again using only the
+  hash saved at upload (no key, no decrypt). Result is in `files.recheck_*` and never overwrites `files.verdict`; shown verdict = worse of the two (`rescan_effective`), so a later
+  clean answer lifts the flag. Same thresholds: >= 2 engines = malicious = quarantine (no inline view, download needs a logged warning, delete allowed, enforced in `decrypt.php`),
+  1 engine = suspicious. Unknown/429/error change nothing. Runs on My files load (one file not checked for 24 h) or "Re-check now"; capped at 2/min app-wide to protect upload quota.
+  If VT's last analysis is > 7 days old it also requests a new one. No scheduled sweep; no measured late-detection rate.
 - **Storage:** Cloud Run is stateless, so blobs go to GCS via `includes/storage.php`. Local XAMPP uses `encrypted/`.
 - **Sign-up validation** (`includes/validate.php`, used by `register.php`, tested in `tests/php/run.php`): username 3-32 chars (letters, numbers, `. _ -`),
   email <= 120, optional phone 7-20, password 8-72 BYTES (bcrypt cuts at 72), no common/one-character/same-as-username-or-email passwords.
@@ -143,7 +148,7 @@ Everything is in ONE folder (git repo): `C:\xampp\htdocs\cloudie\`
 powershell -ExecutionPolicy Bypass -File C:\xampp\htdocs\cloudie\tests\run_all.ps1
 ```
 
-PHP tests in `tests\php\run.php` (81 checks, no DB), Flask tests in `flask_api\tests\` (175, `unittest`, VT mocked).
+PHP tests in `tests\php\run.php` (92 checks, no DB), Flask tests in `flask_api\tests\` (188, `unittest`, VT mocked).
 Run them before every deploy. `README.md` and `tests\` are in the ignore files (not shipped to Cloud Run).
 
 ## Run locally (Windows)
@@ -227,4 +232,4 @@ fail-closed, QR, OTP, header and upload hardening live; Flask made private with 
 3. (Done 2026-10-28: old IPs removed from Cloud SQL Authorized Networks.) Remove your IP again after each admin session;
    stop Cloud SQL when not demoing (cost).
 4. Innovation ideas discussed 2026-10-20: AI (explainable verdicts, calibration + out-of-distribution flag,
-   VT-as-teacher feedback loop) and platform (retroactive rescan, hash-chained audit log).
+   VT-as-teacher feedback loop) and platform (retroactive rescan: done 2026-11-02; hash-chained audit log: done).

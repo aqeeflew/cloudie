@@ -27,6 +27,8 @@ const RL_POLICY = [
     'verify_send' => [5, 3600],    // verification emails per IP per hour
     'register_ip' => [8, 3600],    // sign-up attempts per IP per hour
     'upload_user' => [10, 600],    // uploads (scans) per user per 10 min (protects the VirusTotal quota)
+    'rescan_user' => [10, 600],    // manual re-checks per user per 10 min
+    'rescan_all'  => [2, 60],      // re-checks per minute, whole app (uploads need the rest of the VirusTotal quota)
 ];
 
 /** Create the table if it does not exist (idempotent, once per request). */

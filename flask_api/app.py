@@ -21,7 +21,9 @@ expects exactly 32 features; mixing old and new files causes the 32/33 mismatch.
 """
 
 import os
+import re
 import json
+import time
 import tempfile
 import logging
 
@@ -32,7 +34,7 @@ import requests
 from flask import Flask, request, jsonify
 
 from feature_extractor import extract_features, FEATURE_NAMES
-from verdict_engine import (combine, PRIMARY_DETECTOR, risk_indicators, AI_HIGH_CONFIDENCE,
+from verdict_engine import (combine, recheck_label, PRIMARY_DETECTOR, risk_indicators, AI_HIGH_CONFIDENCE,
                             VT_MALICIOUS_MIN_HITS as MIN_BLOCK_HITS)
 from prediction_log import log_prediction
 import vt_client
@@ -190,6 +192,10 @@ def ai_predict(vector):
 # ---------------------------------------------------------------------------
 # VirusTotal second opinion
 # ---------------------------------------------------------------------------
+HASH_RE = re.compile(r"[0-9a-f]{32}|[0-9a-f]{64}")   # MD5 (older rows) or SHA-256
+REANALYSE_AFTER_DAYS = 7
+
+
 def vt_scan(file_path, original_name="upload"):
     """
     Ask VirusTotal (PRIMARY detector) and return (positives, total).
@@ -233,6 +239,51 @@ def health():
         "vt_configured": bool(VT_API_KEY),
         "metrics": METRICS,
     })
+
+
+@app.route("/vt_lookup", methods=["POST"])
+def vt_lookup():
+    """
+    Retroactive re-check: what does VirusTotal say about this hash TODAY?
+
+    Takes a hash only, so a stored file can be re-checked without its AES key.
+    VT shows its LAST analysis and does not re-scan by itself, so an analysis older than
+    REANALYSE_AFTER_DAYS also asks for a new one; a later re-check reads the result.
+
+    status: ok | unknown (VT has no such file) | error (no answer: never treated as clean)
+    """
+    file_hash = str((request.get_json(silent=True) or {}).get("hash") or "").lower()
+    if not HASH_RE.fullmatch(file_hash):
+        return jsonify({"status": "error", "reason": "invalid_hash"}), 400
+    if not VT_API_KEY:
+        return jsonify({"status": "error", "reason": "not_configured"}), 503
+    try:
+        rep = vt_client.lookup_hash(file_hash, api_key=VT_API_KEY)
+    except requests.RequestException as exc:
+        limited = getattr(getattr(exc, "response", None), "status_code", None) == 429
+        logger.warning("VT re-check error: %s", exc)
+        return jsonify({"status": "error", "reason": "rate_limited" if limited else "unavailable"}), 503
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("VT re-check unavailable: %s", exc)
+        return jsonify({"status": "error", "reason": "unavailable"}), 503
+
+    if rep is None or not rep.get("total"):
+        return jsonify({"status": "unknown"}), 200
+
+    positives = int(rep["malicious"]) + int(rep["suspicious"])
+    last_seen = int(rep.get("last_seen") or 0)
+    reanalysis = False
+    if last_seen and time.time() - last_seen > REANALYSE_AFTER_DAYS * 86400:
+        reanalysis = vt_client.request_reanalysis(file_hash, api_key=VT_API_KEY)
+    return jsonify({
+        "status": "ok",
+        "verdict": recheck_label(positives),
+        "positives": positives,
+        "total": int(rep["total"]),
+        "last_analysis": last_seen,
+        "reanalysis_requested": reanalysis,
+        "permalink": rep.get("permalink") or "",
+    }), 200
 
 
 @app.route("/scan", methods=["POST"])      # matches the existing Cloudie PHP caller

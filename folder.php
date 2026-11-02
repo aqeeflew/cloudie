@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/rescan.php';
 require_login();
 $user = current_user();
 
@@ -49,7 +50,7 @@ $pageTitle = $folder['folder_name'];
 
 // Files IN this folder
 $stmt = db()->prepare(
-    "SELECT file_id, file_name, file_type, file_size, is_clean, verdict, uploaded_at
+    "SELECT file_id, file_name, file_type, file_size, is_clean, verdict, recheck_verdict, uploaded_at
      FROM files WHERE user_id=? AND folder_id=? ORDER BY uploaded_at DESC"
 );
 $stmt->execute([$user['user_id'], $folder_id]);
@@ -78,9 +79,7 @@ function type_class(string $ext): string {
     return 't-doc';
 }
 function row_verdict(array $row): string {
-    $v = strtolower((string)($row['verdict'] ?? ''));
-    if (in_array($v,['clean','suspicious'],true)) return $v;
-    return ((int)$row['is_clean']===1)?'clean':'suspicious';
+    return rescan_effective($row);
 }
 
 $colorVar = ['cyan'=>'var(--cyan)','violet'=>'var(--violet)','green'=>'var(--green)',
@@ -109,6 +108,8 @@ $fcolor = $colorVar[$folder['color']] ?? 'var(--cyan)';
 .fn-main{font-weight:500}
 .fcol{font-family:'JetBrains Mono';font-size:13px;color:var(--txt-dim)}
 .v-susp{background:rgba(255,194,75,.14);color:var(--amber)}
+.v-mal{background:rgba(255,93,108,.14);color:var(--red)}
+.verdict-later{display:block;font-size:11px;color:var(--txt-faint);margin-top:3px}
 .fa-group{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}
 .fa-sep{width:1px;height:20px;background:var(--line-2);margin:0 3px;flex:none}
 /* add-files panel */
@@ -207,19 +208,26 @@ $fcolor = $colorVar[$folder['color']] ?? 'var(--cyan)';
         </td>
         <td class="fcol" data-label="Size"><?= fmt_size((int)$row['file_size']) ?></td>
         <td data-label="Verdict">
-          <?php if ($rv==='suspicious'): ?>
+          <?php if ($rv === 'malicious'): ?>
+            <span class="verdict v-mal" title="VirusTotal flagged this file after it was stored. It is quarantined: it cannot be opened in the browser. See the report."><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Malicious</span>
+          <?php elseif ($rv === 'suspicious'): ?>
             <span class="verdict v-susp" title="VirusTotal found nothing, but the AI or the structure checks flagged it. Stored; open with caution."><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Suspicious</span>
           <?php else: ?>
             <span class="verdict v-clean"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Clean</span>
           <?php endif; ?>
+          <?php if (rescan_flagged_later($row)): ?><span class="verdict-later">found after upload</span><?php endif; ?>
         </td>
         <td class="fcol" data-label="Uploaded"><?= e(date('M j, Y',strtotime($row['uploaded_at']))) ?></td>
         <td data-label="Actions">
           <div class="fa-group">
+            <?php if ($rv === 'malicious'): ?>
+            <a href="view_report.php?id=<?= (int)$row['file_id'] ?>" class="btn btn-sm btn-danger" title="Quarantined: see the report">Quarantined</a>
+            <?php else: ?>
             <a href="decrypt.php?action=view&id=<?= (int)$row['file_id'] ?>" class="btn btn-sm btn-cloudie" title="View file">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
               View
             </a>
+            <?php endif; ?>
             <a href="decrypt.php?action=download&id=<?= (int)$row['file_id'] ?>" class="btn btn-sm btn-cloudie-outline" title="Download">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M12 16V4m0 12-4-4m4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
               Download

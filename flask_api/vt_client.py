@@ -139,6 +139,28 @@ def _lookup_hash(sha256: str, api_key: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def lookup_hash(file_hash: str, api_key: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Hash-only lookup for re-checks (the file itself is not needed). None = VT does not know it."""
+    api_key = api_key or os.environ.get("VT_API_KEY") or ""
+    if not api_key:
+        raise VTConfigError("VT_API_KEY environment variable is not set.")
+    return _lookup_hash(file_hash, api_key)
+
+
+def request_reanalysis(file_hash: str, api_key: Optional[str] = None) -> bool:
+    """Ask VT to re-run its engines on a file it already has. The result appears in a later lookup."""
+    api_key = api_key or os.environ.get("VT_API_KEY") or ""
+    if not api_key:
+        return False
+    try:
+        r = requests.post(f"{VT_BASE}/files/{file_hash}/analyse",
+                          headers=_headers(api_key), timeout=VT_TIMEOUT)
+        return r.status_code == 200
+    except requests.RequestException as exc:
+        log.warning("VT reanalysis request failed: %s", exc)
+        return False
+
+
 def _upload_and_wait(path: str, name: str, api_key: str,
                      sha256: str, deadline: float) -> Dict[str, Any]:
     """POST /files, then poll /analyses/{id} until it completes."""

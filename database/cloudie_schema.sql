@@ -75,6 +75,11 @@ CREATE TABLE IF NOT EXISTS files (
     is_clean       TINYINT(1) DEFAULT 1,     -- legacy flag: 1 = stored, 0 = rejected
     verdict        VARCHAR(20) NULL DEFAULT NULL, -- clean | suspicious | malicious (VT primary, RF supporting)
     scan_report    TEXT NULL,                -- JSON report from the analyzer (VT + RF)
+    recheck_at     DATETIME NULL DEFAULT NULL,    -- last retroactive re-check (includes/rescan.php)
+    recheck_verdict VARCHAR(20) NULL DEFAULT NULL, -- its result; verdict above stays the upload result
+    recheck_hits   INT NULL DEFAULT NULL,
+    recheck_total  INT NULL DEFAULT NULL,
+    recheck_analysed_at DATETIME NULL DEFAULT NULL, -- UTC, VirusTotal's last analysis of the file
     folder_id      INT NULL DEFAULT NULL,
     uploaded_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_files_user FOREIGN KEY (user_id)
