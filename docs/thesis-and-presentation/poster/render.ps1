@@ -3,7 +3,7 @@
 $dir    = Split-Path -Parent $MyInvocation.MyCommand.Path
 $chrome = 'C:\Program Files\Google\Chrome\Application\chrome.exe'
 $prof   = Join-Path $env:TEMP 'cloudie-poster-chrome'
-foreach ($name in @('cloudie-poster', 'cloudie-business-model')) {
+foreach ($name in @('cloudie-poster', 'cloudie-business-model', 'cloudie-pitch-poster')) {
     $html = Join-Path $dir "$name.html"
     if (-not (Test-Path $html)) { continue }
     $url = 'file:///' + ($html -replace '\\', '/')
