@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cloudie Business Poster</title>
+<!-- A1 portrait business-model poster for the pitch (594 x 841 mm = 2245 x 3179 CSS px). Rendered by render.ps1.
+     Prices are the proposed ones from cloudie-business-model.html; keep both in step. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800;1,900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: 594mm 841mm; margin: 0; }
+:root { --ink: #170530; --cyan: #2fd8e6; --pink: #e879f9; --soft: #eadff9; --green: #22c55e; --red: #ef4444; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--ink); }
+body {
+  width: 594mm; height: 841mm; overflow: hidden; position: relative;
+  font-family: 'Poppins', Arial, sans-serif; color: #fff; font-size: 26px; line-height: 1.4;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  background:
+    radial-gradient(1300px 1000px at 50% 52%, rgba(192,38,211,.55), transparent 70%),
+    radial-gradient(900px 700px at 8% 6%, rgba(47,216,230,.14), transparent 60%),
+    radial-gradient(900px 800px at 95% 95%, rgba(123,47,247,.35), transparent 60%),
+    linear-gradient(180deg, #1a0533 0%, #3a0a5e 30%, #5b0f86 55%, #3a0a5e 80%, #170530 100%);
+}
+body::before { content: ""; position: absolute; left: 0; top: 0; width: 46%; height: 8px;
+  background-image: radial-gradient(#8fb4ff 2.4px, transparent 2.8px); background-size: 16px 8px; }
+.page { position: relative; height: 100%; padding: 44px 90px 40px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 26px; }
+.page > * { flex-shrink: 0; width: 100%; }
+
+/* header (same as the pitch poster) */
+.head { text-align: center; }
+.logos { display: inline-flex; align-items: center; gap: 30px; }
+.logo-card { background: #fff; border-radius: 22px; padding: 14px 26px; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+.logo-card img { height: 96px; display: block; }
+.mark { width: 122px; height: 122px; border-radius: 38px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #4f8dff, var(--cyan)); box-shadow: 0 0 70px rgba(47,216,230,.55); }
+.mark svg { width: 80px; height: 80px; }
+h1 { font-weight: 800; font-size: 76px; line-height: 1.06; margin-top: 18px; text-transform: uppercase; text-shadow: 0 6px 30px rgba(0,0,0,.45); }
+h1 .brand { background: linear-gradient(90deg, #8ff3fb, var(--cyan) 40%, var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+h1 small { display: block; font-size: 52px; font-weight: 800; }
+.byline { margin-top: 10px; font-size: 26px; color: var(--soft); }
+.byline b { color: #fff; }
+
+/* centred pill, like the reference */
+.pillrow { text-align: center; }
+.pill { display: inline-block; font-weight: 900; font-style: italic; font-size: 66px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 6px 70px 12px; border-radius: 70px;
+  background: linear-gradient(180deg, #2563eb 0%, #1e3a8a 55%, #0b1440 100%); border-top: 4px solid #60a5fa;
+  box-shadow: 0 12px 34px rgba(0,0,0,.45), 0 0 50px rgba(37,99,235,.35); }
+.lead { text-align: center; font-size: 28px; color: var(--soft); margin-top: 10px; }
+
+/* marketing strategy */
+.mkt { display: grid; grid-template-columns: repeat(5, 1fr); gap: 26px; }
+.m { text-align: center; }
+.m .ico { width: 220px; height: 220px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.28), rgba(255,255,255,.06) 60%);
+  border: 3px solid rgba(255,255,255,.35); box-shadow: 0 14px 40px rgba(0,0,0,.35), inset 0 0 40px rgba(232,121,249,.25); }
+.m .ico svg { width: 112px; height: 112px; }
+.m b { display: block; font-size: 30px; font-weight: 700; line-height: 1.2; }
+.m span { display: block; font-size: 21px; color: var(--soft); margin-top: 8px; line-height: 1.35; }
+
+/* pricing table */
+table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 26px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+th, td { border-right: 3px solid #5b1a8c; border-bottom: 3px solid #5b1a8c; text-align: center; vertical-align: middle; }
+th:last-child, td:last-child { border-right: 0; }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+thead th { padding: 26px 14px; font-size: 36px; font-weight: 800; color: #fff;
+  background: radial-gradient(circle at 50% 0%, #d946ef 0%, #9333ea 55%, #7e22ce 100%); }
+thead th small { display: block; font-size: 20px; font-weight: 500; color: #f5e8ff; margin-top: 2px; }
+thead th.pop { background: radial-gradient(circle at 50% 0%, #67e8f9 0%, #0891b2 60%, #155e75 100%); position: relative; }
+thead th.pop em { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 16px; letter-spacing: 1.5px;
+  background: #fff; color: #155e75; padding: 1px 12px; border-radius: 12px; white-space: nowrap; }
+tbody th { width: 22%; padding: 24px 20px; font-size: 29px; font-weight: 700; color: #fff; line-height: 1.2;
+  background: linear-gradient(90deg, #7e22ce, #a855f7); }
+tbody th small { display: block; font-size: 18px; font-weight: 500; color: #f3e8ff; margin-top: 4px; }
+tbody td { padding: 24px 16px; font-size: 27px; color: #1a1033; line-height: 1.3; background: #fff; }
+tbody tr:nth-child(even) td { background: #e2e0e8; }
+td .price { font-size: 40px; font-weight: 800; color: #3b0764; line-height: 1.1; }
+td .price small { font-size: 22px; font-weight: 500; color: #4b3a6b; }
+td.pop { box-shadow: inset 6px 0 0 #22d3ee, inset -6px 0 0 #22d3ee; }
+.yes, .no, .soon { display: inline-grid; place-items: center; width: 64px; height: 64px; }
+.yes svg, .no svg, .soon svg { width: 64px; height: 64px; }
+td .note { display: block; font-size: 18px; color: #4b3a6b; margin-top: 4px; }
+.legend { text-align: center; font-size: 22px; color: var(--soft); margin-top: 14px; }
+.legend svg { width: 28px; height: 28px; vertical-align: -7px; margin: 0 4px 0 18px; }
+
+/* bottom band */
+.band { display: grid; grid-template-columns: 1.15fr 1fr .62fr; gap: 26px; align-items: stretch; }
+.box { border-radius: 26px; padding: 24px 28px; background: rgba(23,5,48,.62); border: 3px solid rgba(232,121,249,.45); }
+.box h3 { font-weight: 900; font-style: italic; font-size: 34px; text-transform: uppercase; color: var(--cyan); }
+.box li { list-style: none; position: relative; padding-left: 30px; font-size: 22px; line-height: 1.38; color: var(--soft); margin-top: 10px; }
+.box li::before { content: ""; position: absolute; left: 4px; top: 11px; width: 12px; height: 12px; border-radius: 50%; background: var(--pink); }
+.box li b { color: #fff; }
+.tg { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.tg div { background: rgba(255,255,255,.07); border-radius: 18px; padding: 12px 14px; text-align: center; }
+.tg b { display: block; font-size: 46px; font-weight: 800; line-height: 1; background: linear-gradient(90deg, #8ff3fb, var(--cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tg span { font-size: 19px; color: var(--soft); }
+.qrbox { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.qrbox .q { width: 230px; height: 230px; background: #fff; border-radius: 20px; padding: 10px; }
+.qrbox img { width: 100%; height: 100%; display: block; }
+.qrbox p { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 22px; color: var(--cyan); margin-top: 10px; }
+.qrbox small { display: block; font-size: 19px; color: var(--soft); margin-top: 4px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="yes" viewBox="0 0 64 64"><circle cx="30" cy="34" r="22" fill="none" stroke="#111" stroke-width="4.5"/><path d="M18 34l9 9 26-30" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="no" viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="none" stroke="#dc2626" stroke-width="5"/><path d="M17 17l30 30" stroke="#dc2626" stroke-width="5" stroke-linecap="round"/></symbol>
+  <symbol id="soon" viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-dasharray="6 5"/><path d="M32 20v13l8 5" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round"/></symbol>
+</defs></svg>
+<div class="page">
+
+  <header class="head">
+    <div class="logos">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.3 4.35 4.35 0 0 0 7 18z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 10.2l2.6 1.1v1.9c0 1.6-1.1 2.9-2.6 3.5-1.5-.6-2.6-1.9-2.6-3.5v-1.9L12 10.2z" fill="#fff"/></svg></div>
+      <div class="logo-card"><img src="assets/logo-uitm-mdti.png" alt="UiTM and MDTI logos"></div>
+    </div>
+    <h1><span class="brand">Cloudie:</span> Secure Cloud Storage<small>with Layered Malware Detection &amp; AES-256 Encryption</small></h1>
+    <p class="byline"><b>MUHAMMAD AQEEF BIN AZHAR</b> &nbsp;|&nbsp; Supervisor: <b>DR. FAKARIAH HANI BINTI MOHD ALI</b> &nbsp;|&nbsp; BSc (Hons) Netcentric Computing, UiTM Shah Alam</p>
+  </header>
+
+  <!-- ===== MARKETING STRATEGY ===== -->
+  <div class="pillrow"><span class="pill">Marketing Strategy</span>
+    <p class="lead">Start where files are shared every day, then grow through people who already advise small organisations.</p></div>
+  <section class="mkt">
+    <div class="m">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M2 9l10-5 10 5-10 5z" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 11v5c0 1.6 2.7 3 6 3s6-1.4 6-3v-5" stroke="#e879f9" stroke-width="1.3"/><path d="M22 9v6" stroke="#2fd8e6" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <b>Campus Pilot</b><span>One UiTM faculty uses Cloudie for assignment and document uploads</span>
+    </div>
+    <div class="m">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="#fff" stroke-width="1.3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#e879f9" stroke-width="1.3"/><path d="M3 12h18M11 12v2h2v-2" stroke="#2fd8e6" stroke-width="1.3"/></svg></div>
+      <b>Specific Organisations</b><span>SMEs, clinics, law and accounting firms through SME associations and IT resellers</span>
+    </div>
+    <div class="m">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="11" rx="1.5" stroke="#fff" stroke-width="1.3"/><path d="M12 15v3M8 21h8" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="9.5" r="1.6" stroke="#e879f9" stroke-width="1.2"/><path d="M11.5 8.5h6M11.5 11h4" stroke="#2fd8e6" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <b>Competitions &amp; Conferences</b><span>Live demos at innovation competitions, talks and security events</span>
+    </div>
+    <div class="m">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2.5" width="12" height="19" rx="2.4" stroke="#fff" stroke-width="1.3"/><path d="M10.5 9.5v5l4-2.5z" fill="#e879f9"/><path d="M10 19h4" stroke="#2fd8e6" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <b>Social Media Campaigns</b><span>Short demo videos on LinkedIn and TikTok: "the file your antivirus missed"</span>
+    </div>
+    <div class="m">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.3"/><path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18" stroke="#e879f9" stroke-width="1.2"/><path d="M16.5 16.5l3.5 3.5" stroke="#2fd8e6" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <b>Web Application</b><span>Live on Google Cloud: sign up free in any browser, nothing to install</span>
+    </div>
+  </section>
+
+  <!-- ===== BUSINESS MODEL ===== -->
+  <div class="pillrow"><span class="pill">Business Model</span>
+    <p class="lead">Freemium: free for individuals, paid plans for teams and institutions (proposed prices, to be tested in the pilot).</p></div>
+  <section>
+    <table>
+      <thead>
+        <tr>
+          <th>Pricing Table</th>
+          <th>Free Plan<small>students &amp; individuals</small></th>
+          <th>Personal Plan<small>freelancers</small></th>
+          <th class="pop"><em>MOST POPULAR</em>Team Plan<small>SMEs &amp; firms</small></th>
+          <th>Institution Plan<small>universities &amp; agencies</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th>Price</th>
+          <td><div class="price">RM 0</div></td>
+          <td><div class="price">RM 59 <small>/ year</small></div></td>
+          <td class="pop"><div class="price">RM 19 <small>/ user / month</small></div></td>
+          <td><div class="price">Quote</div><span class="note">volume pricing</span></td></tr>
+        <tr><th>Encrypted Storage</th>
+          <td>1 GB</td><td>25 GB</td><td class="pop">100 GB per user</td><td>Scalable to needs</td></tr>
+        <tr><th>Malware Scans<small>VirusTotal + structure checks + AI</small></th>
+          <td>30 files / month</td><td>300 files / month</td><td class="pop">Unlimited (fair use)</td><td>Unlimited, dedicated scanner<span class="note">planned</span></td></tr>
+        <tr><th>AES-256 Encryption<small>unique key per file</small></th>
+          <td><span class="yes"><svg><use href="#yes"/></svg></span></td><td><span class="yes"><svg><use href="#yes"/></svg></span></td>
+          <td class="pop"><span class="yes"><svg><use href="#yes"/></svg></span></td><td><span class="yes"><svg><use href="#yes"/></svg></span></td></tr>
+        <tr><th>QR Code Key &amp; 2-Step Login</th>
+          <td><span class="yes"><svg><use href="#yes"/></svg></span></td><td><span class="yes"><svg><use href="#yes"/></svg></span></td>
+          <td class="pop"><span class="yes"><svg><use href="#yes"/></svg></span></td><td><span class="yes"><svg><use href="#yes"/></svg></span></td></tr>
+        <tr><th>Retroactive Re-check<small>stored files checked again</small></th>
+          <td><span class="yes"><svg><use href="#yes"/></svg></span></td><td><span class="yes"><svg><use href="#yes"/></svg></span></td>
+          <td class="pop"><span class="yes"><svg><use href="#yes"/></svg></span><span class="note">+ daily sweep (planned)</span></td>
+          <td><span class="yes"><svg><use href="#yes"/></svg></span><span class="note">+ daily sweep (planned)</span></td></tr>
+        <tr><th>Tamper-Evident Audit Log</th>
+          <td><span class="no"><svg><use href="#no"/></svg></span></td><td><span class="yes"><svg><use href="#yes"/></svg></span></td>
+          <td class="pop"><span class="yes"><svg><use href="#yes"/></svg></span><span class="note">+ export</span></td><td><span class="yes"><svg><use href="#yes"/></svg></span><span class="note">+ export</span></td></tr>
+        <tr><th>Admin Console &amp; Shared Folders</th>
+          <td><span class="no"><svg><use href="#no"/></svg></span></td><td><span class="no"><svg><use href="#no"/></svg></span></td>
+          <td class="pop"><span class="soon"><svg><use href="#soon"/></svg></span></td><td><span class="soon"><svg><use href="#soon"/></svg></span></td></tr>
+        <tr><th>Single Sign-On</th>
+          <td><span class="no"><svg><use href="#no"/></svg></span></td><td><span class="no"><svg><use href="#no"/></svg></span></td>
+          <td class="pop"><span class="no"><svg><use href="#no"/></svg></span></td><td><span class="soon"><svg><use href="#soon"/></svg></span></td></tr>
+        <tr><th>Support</th>
+          <td>Help pages</td><td>Email</td><td class="pop">Onboarding help</td><td>Training &amp; dedicated support</td></tr>
+      </tbody>
+    </table>
+    <p class="legend"><svg><use href="#yes"/></svg>included &nbsp; <svg><use href="#soon"/></svg>planned &nbsp; <svg><use href="#no"/></svg>not included</p>
+  </section>
+
+  <!-- ===== BOTTOM BAND ===== -->
+  <section class="band">
+    <div class="box">
+      <h3>Why now in Malaysia</h3>
+      <ul>
+        <li><b>PDPA (Amendment) Act 2024:</b> breach notification and data protection officers are now required.</li>
+        <li><b>Cyber Security Act 2024 (Act 854):</b> new duties for critical information infrastructure sectors.</li>
+        <li><b>Files are the way in:</b> invoices, CVs and forms arrive as attachments every day.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Year-1 targets <span style="font-size:20px;font-style:normal;font-weight:500;color:var(--soft);text-transform:none">(goals, not results)</span></h3>
+      <div class="tg">
+        <div><b>1</b><span>campus pilot</span></div>
+        <div><b>500</b><span>free users</span></div>
+        <div><b>20</b><span>paying teams</span></div>
+        <div><b>3</b><span>reseller partners</span></div>
+      </div>
+    </div>
+    <div class="box qrbox">
+      <div class="q"><img src="assets/qr-live.svg" alt="QR code to the live Cloudie site"></div>
+      <p>Try it live</p><small>free plan, no install</small>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
