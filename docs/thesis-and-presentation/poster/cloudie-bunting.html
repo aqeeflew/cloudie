@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cloudie Bunting</title>
+<!-- Roll-up bunting, 2 x 5 ft portrait (609.6 x 1524 mm = 2304 x 5760 CSS px). No bleed: ask the printer to add it.
+     Keep important content out of the bottom 200 px (about 53 mm): the roll-up base covers it. Rendered by render.ps1. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+@page { size: 609.6mm 1524mm; margin: 0; }
+:root { --ink: #150430; --cyan: #2fd8e6; --pink: #e879f9; --violet: #a855f7; --soft: #ece2fb; --red: #ff6b7d; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--ink); }
+body {
+  width: 609.6mm; height: 1524mm; overflow: hidden; position: relative;
+  font-family: 'Poppins', Arial, sans-serif; color: #fff; line-height: 1.3;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  background:
+    radial-gradient(1500px 1300px at 50% 30%, rgba(192,38,211,.45), transparent 70%),
+    radial-gradient(1400px 1200px at 0% 62%, rgba(47,216,230,.16), transparent 65%),
+    radial-gradient(1500px 1300px at 100% 80%, rgba(123,47,247,.45), transparent 65%),
+    linear-gradient(180deg, #120328 0%, #2c0a52 20%, #4a0f7a 45%, #33095e 72%, #150430 100%);
+}
+body::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,.10) 2.5px, transparent 3px); background-size: 72px 72px; }
+.page { position: relative; height: 100%; padding: 110px 130px 260px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; }
+.page > * { flex-shrink: 0; width: 100%; }
+
+/* top */
+.logos { display: flex; justify-content: center; align-items: center; gap: 50px; }
+.logo-card { background: #fff; border-radius: 40px; padding: 26px 46px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.logo-card img { height: 170px; display: block; }
+.word { display: flex; align-items: center; justify-content: center; gap: 56px; }
+.mark { width: 320px; height: 320px; border-radius: 96px; display: grid; place-items: center; flex: none;
+  background: linear-gradient(135deg, #4f8dff, var(--cyan)); box-shadow: 0 0 140px rgba(47,216,230,.6); }
+.mark svg { width: 210px; height: 210px; }
+.word h1 { font-weight: 900; font-size: 330px; line-height: .9; letter-spacing: -6px;
+  background: linear-gradient(90deg, #ffffff 0%, #b8f6fc 45%, var(--cyan) 70%, var(--pink) 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 12px 40px rgba(0,0,0,.45)); }
+.sub { font-weight: 800; font-size: 88px; line-height: 1.12; text-transform: uppercase; letter-spacing: 1px; }
+.sub span { color: var(--cyan); }
+.tag { display: inline-block; width: auto; font-weight: 800; font-style: italic; font-size: 82px; line-height: 1.15; padding: 30px 80px 38px; border-radius: 120px;
+  background: linear-gradient(180deg, #2563eb 0%, #1e3a8a 60%, #0b1440 100%); border-top: 6px solid #60a5fa;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45), 0 0 80px rgba(37,99,235,.35); }
+.tagwrap { text-align: center; }
+
+/* hero: laptop with the real dashboard, re-check card on top */
+.hero { position: relative; height: 1190px; }
+.laptop { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 1980px; }
+.screen { background: #0d0a1c; border-radius: 44px 44px 0 0; padding: 40px 40px 46px; border: 6px solid #3a2a63;
+  box-shadow: 0 50px 120px rgba(0,0,0,.6), 0 0 120px rgba(168,85,247,.35); }
+.screen img { width: 100%; display: block; border-radius: 14px; }
+.base { height: 64px; margin: 0 -110px; border-radius: 0 0 60px 60px; background: linear-gradient(180deg, #d9d4ea, #8f86b0);
+  box-shadow: 0 30px 70px rgba(0,0,0,.5); position: relative; }
+.base::before { content: ""; position: absolute; left: 50%; top: 0; width: 360px; height: 24px; transform: translateX(-50%);
+  border-radius: 0 0 24px 24px; background: #7c7399; }
+.float { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 1900px; border-radius: 28px; overflow: hidden;
+  border: 8px solid var(--cyan); box-shadow: 0 0 0 10px rgba(47,216,230,.18), 0 40px 100px rgba(0,0,0,.6); }
+.float img { width: 100%; display: block; }
+.float .lbl { position: absolute; top: -2px; left: 40px; transform: translateY(-100%); }
+.badge { position: absolute; left: 230px; bottom: 262px; z-index: 2; font-weight: 900; font-size: 46px; letter-spacing: 4px; padding: 10px 40px;
+  border-radius: 60px; background: var(--cyan); color: var(--ink); box-shadow: 0 16px 40px rgba(0,0,0,.45); white-space: nowrap; }
+
+/* how it works */
+.h2 { font-weight: 900; font-style: italic; font-size: 92px; text-transform: uppercase; letter-spacing: 1px; }
+.h2 span { color: var(--cyan); }
+.steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 46px; position: relative; }
+.steps::before { content: ""; position: absolute; left: 10%; right: 10%; top: 125px; height: 12px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--cyan), #4f8dff, var(--violet), var(--pink), var(--cyan)); }
+.st { position: relative; }
+.st .c { width: 250px; height: 250px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, #4b1f86, #1d0840 70%); border: 8px solid rgba(255,255,255,.85); box-shadow: 0 20px 50px rgba(0,0,0,.45); }
+.st .c svg { width: 130px; height: 130px; }
+.st b { display: block; font-size: 58px; font-weight: 800; margin-top: 24px; }
+.st span { display: block; font-size: 38px; color: var(--soft); margin-top: 6px; line-height: 1.2; }
+.st.new .c { border-color: var(--cyan); box-shadow: 0 0 80px rgba(47,216,230,.6); }
+.st.new b { color: var(--cyan); }
+
+/* features */
+.feats { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+.f { text-align: left; border-radius: 56px; padding: 48px 52px 44px; position: relative;
+  background: linear-gradient(145deg, #4a1494 0%, #2a0a58 60%, #170535 100%); border: 6px solid rgba(232,121,249,.6);
+  box-shadow: 0 30px 80px rgba(0,0,0,.45), inset 0 0 80px rgba(192,38,211,.15); }
+.f.new { border-color: var(--cyan); box-shadow: 0 0 100px rgba(47,216,230,.4), inset 0 0 80px rgba(47,216,230,.12); }
+.f .i { width: 150px; height: 150px; border-radius: 44px; display: grid; place-items: center; background: rgba(255,255,255,.1); border: 4px solid rgba(255,255,255,.3); }
+.f .i svg { width: 96px; height: 96px; }
+.f b { display: block; font-size: 66px; font-weight: 800; line-height: 1.08; margin-top: 34px; text-transform: uppercase; }
+.f p { font-size: 42px; line-height: 1.32; color: var(--soft); margin-top: 20px; }
+.f .tagx { position: absolute; top: -36px; right: 50px; font-weight: 900; font-size: 38px; letter-spacing: 3px; padding: 6px 30px; border-radius: 40px; background: var(--cyan); color: var(--ink); }
+
+/* numbers */
+.nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 34px; }
+.n { border-radius: 44px; padding: 40px 18px 34px; background: rgba(15,4,40,.6); border: 4px solid rgba(255,255,255,.25); }
+.n .v { font-weight: 900; font-size: 116px; line-height: 1; background: linear-gradient(90deg, #b8f6fc, var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.n .l { font-size: 36px; color: var(--soft); margin-top: 16px; line-height: 1.25; }
+
+/* QR + footer */
+.try { display: grid; grid-template-columns: 1fr auto; gap: 70px; align-items: center; text-align: left;
+  border-radius: 64px; padding: 60px 70px; background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04)); border: 5px solid rgba(255,255,255,.35); }
+.try h3 { font-weight: 900; font-size: 128px; line-height: 1; text-transform: uppercase; }
+.try h3 span { color: var(--cyan); }
+.try p { font-size: 50px; color: var(--soft); margin-top: 22px; line-height: 1.3; }
+.try .url { font-family: 'JetBrains Mono', monospace; font-size: 34px; color: var(--cyan); margin-top: 26px; word-break: break-all; }
+.qr { width: 600px; height: 600px; background: #fff; border-radius: 44px; padding: 26px; box-shadow: 0 0 90px rgba(47,216,230,.45); }
+.qr img { width: 100%; height: 100%; display: block; }
+.foot { font-size: 46px; color: var(--soft); line-height: 1.45; }
+.foot b { color: #fff; font-weight: 800; }
+.foot .fw { display: block; font-size: 34px; margin-top: 18px; color: #cbb8ef; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="logos">
+    <div class="logo-card"><img src="assets/logo-uitm-mdti.png" alt="UiTM and MDTI logos"></div>
+  </div>
+
+  <div class="word">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.3 4.35 4.35 0 0 0 7 18z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 10.2l2.6 1.1v1.9c0 1.6-1.1 2.9-2.6 3.5-1.5-.6-2.6-1.9-2.6-3.5v-1.9L12 10.2z" fill="#fff"/></svg></div>
+    <h1>Cloudie</h1>
+  </div>
+
+  <p class="sub">Secure Cloud Storage with<br><span>Layered Malware Detection</span><br>&amp; AES-256 Encryption</p>
+
+  <div class="tagwrap"><span class="tag">Checks before it keeps.<br>Keeps watching after.</span></div>
+
+  <section class="hero">
+    <div class="laptop">
+      <div class="screen"><img src="assets/shots/hi-dashboard.jpg" alt="Cloudie dashboard"></div>
+      <div class="base"></div>
+    </div>
+    <span class="badge">FLAGGED AFTER UPLOAD</span>
+    <div class="float"><img src="assets/shots/hi-recheck.jpg" alt="Retroactive re-check result"></div>
+  </section>
+
+  <section>
+    <p class="h2">How it <span>works</span></p>
+    <div class="steps">
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="#e879f9" stroke-width="1.8" stroke-linecap="round"/></svg></div><b>Upload</b><span>any file</span></div>
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#fff" stroke-width="1.8"/><path d="M15.5 15.5L21 21" stroke="#e879f9" stroke-width="2" stroke-linecap="round"/></svg></div><b>Scan</b><span>~70 engines,<br>structure, AI</span></div>
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="11" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#e879f9" stroke-width="1.8"/></svg></div><b>Encrypt</b><span>AES-256,<br>key per file</span></div>
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.3 4.35 4.35 0 0 0 7 18z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 13.5l1.8 1.8 3.4-3.6" stroke="#e879f9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><b>Store</b><span>key as QR,<br>only you hold it</span></div>
+      <div class="st new"><div class="c"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.4-5.7" stroke="#2fd8e6" stroke-width="1.9" stroke-linecap="round"/><path d="M20 4v4.5h-4.5" stroke="#2fd8e6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.6 1.6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div><b>Re-check</b><span>again after<br>upload</span></div>
+    </div>
+  </section>
+
+  <section class="feats">
+    <div class="f">
+      <div class="i"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l8 3.2v6.1c0 4.8-3.4 8.4-8 9.7-4.6-1.3-8-4.9-8-9.7V5.7z" stroke="#2fd8e6" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 12l2.3 2.3 4.7-4.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <b>Layered Malware Detection</b><p>VirusTotal first, then structure checks and an AI model catch disguised files.</p>
+    </div>
+    <div class="f">
+      <div class="i"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#2fd8e6" stroke-width="1.6"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#2fd8e6" stroke-width="1.6"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#2fd8e6" stroke-width="1.6"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3" stroke="#fff" stroke-width="1.5"/></svg></div>
+      <b>AES-256 &amp; QR Key</b><p>Every file gets its own key. Cloudie never stores it: you keep it as a QR.</p>
+    </div>
+    <div class="f new"><span class="tagx">INNOVATION</span>
+      <div class="i"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.4-5.7" stroke="#2fd8e6" stroke-width="1.7" stroke-linecap="round"/><path d="M20 4v4.5h-4.5" stroke="#2fd8e6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.6 1.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <b>Retroactive Re-check</b><p>Stored files are checked again later. Flagged ones are quarantined, without the key.</p>
+    </div>
+    <div class="f">
+      <div class="i"><svg viewBox="0 0 24 24" fill="none"><path d="M9 7h-2a3 3 0 0 0 0 6h2M15 7h2a3 3 0 0 1 0 6h-2M8 10h8" stroke="#2fd8e6" stroke-width="1.7" stroke-linecap="round"/><path d="M6 18h12" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <b>Tamper-Evident Audit</b><p>Every action sealed in a hash chain. Any edit shows "Tampering detected".</p>
+    </div>
+  </section>
+
+  <section class="nums">
+    <div class="n"><div class="v">99.87%</div><div class="l">AI accuracy,<br>held-out PDFs</div></div>
+    <div class="n"><div class="v">1.0%</div><div class="l">false alarms on<br>200 real PDFs</div></div>
+    <div class="n"><div class="v">~70</div><div class="l">antivirus<br>engines</div></div>
+    <div class="n"><div class="v">280</div><div class="l">automated<br>tests</div></div>
+  </section>
+
+  <section class="try">
+    <div>
+      <h3>Try it <span>live</span></h3>
+      <p>Scan the QR. Free sign-up,<br>nothing to install.</p>
+      <p class="url">cloudie-php-800476519477<br>.asia-southeast1.run.app</p>
+    </div>
+    <div class="qr"><img src="assets/qr-live.svg" alt="QR code to the live Cloudie site"></div>
+  </section>
+
+  <p class="foot"><b>MUHAMMAD AQEEF BIN AZHAR</b><br>Supervisor: <b>DR. FAKARIAH HANI BINTI MOHD ALI</b><br>BSc (Hons) Netcentric Computing, UiTM Shah Alam
+    <span class="fw">Mapped to MITRE ATT&amp;CK · NIST CSF 2.0 · ISO/IEC 27001 Annex A · OWASP &nbsp;|&nbsp; UN SDG 9 &amp; 16</span></p>
+
+</div>
+</body>
+</html>
