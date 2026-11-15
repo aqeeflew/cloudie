@@ -11,6 +11,8 @@ $posters = [ordered]@{
     'cloudie-pitch-poster'   = @('2245,3179', '0.5')    # A1
     'cloudie-pitch-business' = @('2245,3179', '0.5')    # A1
     'cloudie-bunting'        = @('2304,5760', '0.25')   # roll-up bunting 2 x 5 ft
+    'cloudie-pamphlet'       = @('1123,1588', '1.5')    # A4 tri-fold, both sides stacked
+    'cloudie-pamphlet-nologo'= @('1123,1588', '1.5')    # same, without UiTM / MDTI logo
 }
 $only = $args
 foreach ($name in $posters.Keys) {

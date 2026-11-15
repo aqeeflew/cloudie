@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cloudie Pamphlet</title>
+<!-- Tri-fold pamphlet, A4 landscape, 2 sides (297 x 210 mm = 1123 x 794 CSS px per side). Rendered by render.ps1.
+     Page 1 = outside: [inside flap | back cover | front cover]. Page 2 = inside: [panel 1 | panel 2 | panel 3].
+     Print double-sided, flip on the SHORT edge, then fold in three (letter fold). No bleed: ask the printer to add it. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+@page { size: 297mm 210mm; margin: 0; }
+:root { --p1: #7b2ff7; --p2: #5b18b8; --p3: #3a0d72; --pink: #e879f9; --cyan: #2fd8e6; --ink: #1b1240; --mute: #5d5480; --bg: #f7f4fd; --line: #e2daf5; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #d9d4ea; }
+body { font-family: 'Poppins', Arial, sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.sheet { width: 297mm; height: 209.6mm; display: grid; grid-template-columns: repeat(3, 1fr); overflow: hidden; position: relative; background: var(--bg); break-after: page; page-break-after: always; }
+.sheet:last-child { break-after: auto; page-break-after: auto; }
+.panel { position: relative; padding: 34px 30px 28px; overflow: hidden; display: flex; flex-direction: column; }
+.panel + .panel { border-left: 1px dashed rgba(91,24,184,.18); }
+.purple { color: #fff; border-left: 0 !important;
+  background:
+    radial-gradient(320px 260px at 15% 12%, rgba(232,121,249,.45), transparent 65%),
+    radial-gradient(360px 300px at 95% 70%, rgba(47,216,230,.25), transparent 65%),
+    linear-gradient(165deg, #3a0d72 0%, #5b18b8 50%, #7b2ff7 100%); }
+.purple::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,.12) 1.2px, transparent 1.5px); background-size: 22px 22px; }
+.purple > * { position: relative; }
+
+h2 { font-weight: 900; font-size: 28px; line-height: 1.1; color: var(--p2); }
+h2 span { color: var(--p1); }
+.purple h2, .purple h2 span { color: #fff; }
+.kick { font-weight: 700; font-size: 10.5px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--p1); margin-bottom: 6px; }
+.purple .kick { color: var(--cyan); }
+p { font-size: 12.5px; line-height: 1.5; }
+.mute { color: var(--mute); }
+
+/* ===== front cover ===== */
+.front { text-align: center; align-items: center; justify-content: space-between; padding-top: 30px; }
+.front .logos { background: #fff; border-radius: 14px; padding: 8px 14px; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+.front .logos img { height: 46px; display: block; }
+.front .mascot { width: 230px; filter: drop-shadow(0 12px 24px rgba(10,0,40,.4)); margin-top: 6px; }
+.front h1 { font-weight: 900; font-size: 64px; line-height: .95; letter-spacing: -1.5px;
+  background: linear-gradient(90deg, #ffffff, #b8f6fc 55%, var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.front .sub { font-weight: 700; font-size: 14px; line-height: 1.35; text-transform: uppercase; letter-spacing: .5px; margin-top: 8px; }
+.front .sub b { color: var(--cyan); }
+.front .tag { display: inline-block; margin-top: 16px; font-weight: 800; font-style: italic; font-size: 16px; line-height: 1.3; padding: 10px 22px; border-radius: 40px;
+  background: rgba(255,255,255,.14); border: 1.5px solid rgba(255,255,255,.4); }
+.front .who { font-size: 10.5px; line-height: 1.5; color: #e6defa; }
+.front .who b { color: #fff; }
+
+/* ===== back cover ===== */
+.back { text-align: center; align-items: center; justify-content: space-between; }
+.back h2 { font-size: 34px; }
+.qrc { width: 200px; height: 200px; border-radius: 50%; display: grid; place-items: center; margin: 14px auto 8px;
+  background: linear-gradient(135deg, var(--p1), #4a0f9a); box-shadow: 0 12px 30px rgba(91,24,184,.35); }
+.qrc .q { width: 128px; height: 128px; background: #fff; border-radius: 14px; padding: 8px; }
+.qrc img, .qr2 img { width: 100%; height: 100%; display: block; }
+.url { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--p2); word-break: break-all; margin-top: 4px; }
+.qr2row { display: flex; gap: 14px; align-items: center; justify-content: center; margin-top: 10px; text-align: left; }
+.qr2 { width: 74px; height: 74px; background: #fff; border-radius: 10px; padding: 5px; border: 2px solid var(--line); flex: none; }
+.contact { width: 100%; border-top: 1px solid var(--line); padding-top: 14px; font-size: 11px; line-height: 1.55; color: var(--mute); }
+.contact b { color: var(--ink); }
+.fw { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 8px; }
+.fw span { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #fff; border: 1px solid #c4b5fd; color: var(--p2); }
+.note { font-size: 9px; color: #8a80aa; margin-top: 6px; }
+
+/* ===== problem flap ===== */
+.prob { display: flex; gap: 12px; margin-top: 26px; align-items: flex-start; }
+.prob .n { width: 38px; height: 38px; border-radius: 12px; flex: none; display: grid; place-items: center; font-weight: 800; font-size: 15px;
+  background: #fde8ec; color: #e11d48; }
+.prob b { display: block; font-size: 15px; line-height: 1.25; }
+.prob p { margin-top: 4px; font-size: 12.5px; }
+.why { margin-top: auto; border-radius: 16px; padding: 14px 16px; background: #fff; border: 1.5px solid var(--line); }
+.why b { font-size: 12.5px; color: var(--p2); }
+.why li { font-size: 12px; line-height: 1.45; margin: 5px 0 0 16px; color: var(--mute); }
+
+/* ===== inside: how it works ===== */
+.steps { margin-top: 24px; position: relative; }
+.steps::before { content: ""; position: absolute; left: 22px; top: 24px; bottom: 24px; width: 4px; border-radius: 2px;
+  background: linear-gradient(180deg, var(--cyan), var(--p1), var(--pink)); }
+.st { display: flex; gap: 14px; align-items: center; margin-bottom: 24px; position: relative; }
+.st .c { width: 48px; height: 48px; border-radius: 50%; flex: none; display: grid; place-items: center; background: #fff; border: 3px solid rgba(255,255,255,.9);
+  box-shadow: 0 6px 16px rgba(10,0,40,.3); }
+.st .c svg { width: 24px; height: 24px; }
+.st b { display: block; font-size: 15.5px; }
+.st span { display: block; font-size: 12px; line-height: 1.35; color: #e6defa; }
+.st.new .c { background: var(--cyan); }
+.st.new b { color: var(--cyan); }
+.verd { margin-top: auto; display: grid; gap: 6px; }
+.verd div { display: flex; align-items: center; gap: 8px; font-size: 11px; line-height: 1.3; background: rgba(255,255,255,.12); border-radius: 10px; padding: 6px 10px; }
+.verd i { font-style: normal; font-weight: 800; font-size: 9.5px; letter-spacing: 1px; padding: 2px 8px; border-radius: 8px; color: #fff; flex: none; }
+
+/* ===== inside: features ===== */
+.f { display: grid; grid-template-columns: 46px 1fr; gap: 0 12px; margin-top: 16px; }
+.f .i { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--p1), #4a0f9a); }
+.f .i svg { width: 24px; height: 24px; }
+.f.new .i { background: linear-gradient(135deg, #18c3d4, #0e7f9a); }
+.f b { display: block; font-size: 13.5px; line-height: 1.2; margin-top: 2px; }
+.f p { font-size: 11px; line-height: 1.42; color: var(--mute); margin-top: 2px; }
+.f .tagx { display: inline-block; font-weight: 800; font-size: 8.5px; letter-spacing: 1.5px; padding: 1px 7px; border-radius: 8px; background: var(--cyan); color: #0b2a33; vertical-align: 2px; margin-left: 4px; }
+.shot { margin-top: auto; border-radius: 12px; overflow: hidden; border: 4px solid #1d1238; box-shadow: 0 10px 24px rgba(20,0,60,.25); }
+.shot img { width: 100%; display: block; }
+
+/* ===== inside: results + plans ===== */
+.nums { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.nm { border-radius: 12px; background: #fff; border: 1.5px solid var(--line); padding: 8px 10px; }
+.nm .v { font-weight: 900; font-size: 24px; line-height: 1; color: var(--p2); }
+.nm .l { font-size: 9.5px; line-height: 1.3; color: var(--mute); margin-top: 3px; }
+.plans { margin-top: 14px; border-radius: 14px; overflow: hidden; border: 1.5px solid var(--line); background: #fff; }
+.plan { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; font-size: 11px; }
+.plan + .plan { border-top: 1px solid var(--line); }
+.plan b { font-size: 12px; }
+.plan small { display: block; font-size: 9.5px; color: var(--mute); }
+.plan .pr { font-weight: 800; color: var(--p2); text-align: right; white-space: nowrap; }
+.plan.pop { background: linear-gradient(90deg, #f1e9ff, #fff); }
+.plan.pop b::after { content: "POPULAR"; font-size: 8px; letter-spacing: 1px; font-weight: 800; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--p1); color: #fff; vertical-align: 1px; }
+.users { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.users span { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 12px; background: #efe7fd; color: var(--p2); }
+.honest { margin-top: auto; font-size: 9.5px; line-height: 1.45; color: #8a80aa; }
+.links { display: grid; gap: 5px; margin: 10px auto 0; width: fit-content; text-align: left; }
+.links div { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--ink); }
+.links i { width: 22px; height: 22px; border-radius: 50%; flex: none; display: grid; place-items: center; background: linear-gradient(135deg, var(--p1), #4a0f9a); }
+.links i svg { width: 12px; height: 12px; }
+.links span { font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1: OUTSIDE ================= -->
+<section class="sheet">
+
+  <!-- inside flap (seen first when the cover is opened) -->
+  <div class="panel">
+    <p class="kick">The problem</p>
+    <h2>"Clean" today is not<br><span>clean forever</span></h2>
+    <p class="mute" style="margin-top:10px">Cloud storage is where people keep their most important files, and where malware travels with them.</p>
+
+    <div class="prob"><span class="n">1</span><div><b>New and disguised malware slips past scanners</b>
+      <p class="mute">Signatures only know files someone has already reported. A macro hides in a Word file; a program is named <i>invoice.pdf.exe</i>.</p></div></div>
+    <div class="prob"><span class="n">2</span><div><b>Files are scanned only once</b>
+      <p class="mute">If a stored file is recognised as malware next week, nobody tells the owner.</p></div></div>
+    <div class="prob"><span class="n">3</span><div><b>Stored files and logs can be read or changed</b>
+      <p class="mute">Unencrypted files leak in one breach, and an editable activity log cannot prove what happened.</p></div></div>
+
+    <p style="margin-top:22px;font-weight:700;font-size:13.5px;color:var(--p2);border-left:4px solid var(--pink);padding-left:12px">A file uploaded "clean" on Monday can be recognised as malware on Friday. Cloudie keeps checking.</p>
+    <div class="why"><b>Why now in Malaysia</b>
+      <ul>
+        <li>PDPA (Amendment) Act 2024: breach notification and data protection officers.</li>
+        <li>Cyber Security Act 2024 (Act 854): new duties for critical sectors.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- back cover -->
+  <div class="panel back">
+    <div>
+      <p class="kick">Try it yourself</p>
+      <h2>Try it <span>live</span></h2>
+      <div class="qrc"><div class="q"><img src="assets/qr-live.svg" alt="QR code to the live Cloudie site"></div></div>
+      <p class="mute">Scan the QR. Free sign-up,<br>nothing to install.</p>
+      <p class="url">cloudie-php-800476519477.asia-southeast1.run.app</p>
+      <div class="qr2row">
+        <div class="qr2"><img src="assets/qr-repo.svg" alt="QR code to the source code"></div>
+        <p class="mute" style="font-size:11px"><b style="color:var(--ink)">Source code</b><br>Open for review on GitHub</p>
+      </div>
+    </div>
+    <div class="contact">
+      <b>MUHAMMAD AQEEF BIN AZHAR</b><br>
+      Supervisor: <b>DR. FAKARIAH HANI BINTI MOHD ALI</b><br>
+      BSc (Hons) Netcentric Computing, UiTM Shah Alam
+      <div class="links">
+        <div><i><svg viewBox="0 0 24 24" fill="#fff"><path d="M6.5 8.5h-3V20h3zM5 3.5a1.75 1.75 0 1 0 0 3.5 1.75 1.75 0 0 0 0-3.5zM20.5 13.2c0-3-1.6-4.9-4.2-4.9-1.4 0-2.4.7-2.9 1.5V8.5h-3V20h3v-6c0-1.6.8-2.6 2.1-2.6 1.3 0 2 .9 2 2.6v6h3z"/></svg></i><span>linkedin.com/in/aqeefazhar</span></div>
+        <div><i><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5.5" width="18" height="13" rx="2" stroke="#fff" stroke-width="2"/><path d="M3.5 7l8.5 6 8.5-6" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg></i><span>aqeef1303@gmail.com</span></div>
+        <div><i><svg viewBox="0 0 24 24" fill="none"><path d="M6.6 3.5h2.6l1.4 4-2 1.4a11 11 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg></i><span>+60 10-426 4417</span></div>
+        <div><i><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.5.1.7-.2.7-.5v-1.8c-2.7.6-3.2-1.2-3.2-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.1-.2-4.4-1.1-4.4-4.8 0-1.1.4-1.9 1-2.6-.1-.2-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 0 1 4.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.3.1 2.5.6.7 1 1.5 1 2.6 0 3.7-2.3 4.6-4.4 4.8.3.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5z"/></svg></i><span>github.com/aqeeflew/cloudie</span></div>
+      </div>
+      <div class="fw"><span>MITRE ATT&amp;CK</span><span>NIST CSF 2.0</span><span>ISO/IEC 27001 Annex A</span><span>OWASP</span><span>UN SDG 9 &amp; 16</span></div>
+      <p class="note">Controls are mapped to these frameworks, not certified.</p>
+    </div>
+  </div>
+
+  <!-- front cover -->
+  <div class="panel purple front">
+    <div class="logos"><img src="assets/logo-uitm-mdti.png" alt="UiTM and MDTI logos"></div>
+    <div>
+      <img class="mascot" src="assets/cloudie-mascot.svg" alt="Cloudie mascot">
+      <h1>Cloudie</h1>
+      <p class="sub">Secure cloud storage with<br><b>layered malware detection</b><br>&amp; AES-256 encryption</p>
+      <span class="tag">Checks before it keeps.<br>Keeps watching after.</span>
+    </div>
+    <p class="who"><b>Muhammad Aqeef bin Azhar</b><br>Universiti Teknologi MARA, Shah Alam</p>
+  </div>
+</section>
+
+<!-- ================= PAGE 2: INSIDE ================= -->
+<section class="sheet">
+
+  <!-- how it works -->
+  <div class="panel purple">
+    <p class="kick">How it works</p>
+    <h2>Five steps for<br>every file</h2>
+    <div class="steps">
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="#5b18b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="#c026d3" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div><b>Upload</b><span>Any file, from any browser or phone</span></div></div>
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#5b18b8" stroke-width="2"/><path d="M15.5 15.5L21 21" stroke="#c026d3" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+        <div><b>Scan</b><span>VirusTotal (~70 engines), structure checks, AI for PDFs</span></div></div>
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="11" rx="2" stroke="#5b18b8" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#c026d3" stroke-width="2"/></svg></div>
+        <div><b>Encrypt</b><span>AES-256 with its own key for each file</span></div></div>
+      <div class="st"><div class="c"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#5b18b8" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#5b18b8" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#5b18b8" stroke-width="1.8"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z" stroke="#c026d3" stroke-width="1.6"/></svg></div>
+        <div><b>Store</b><span>You keep the key as text, QR or key file</span></div></div>
+      <div class="st new"><div class="c"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.4-5.7" stroke="#0b2a33" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v4.5h-4.5" stroke="#0b2a33" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><b>Re-check</b><span>Asked again after upload, using only the file's fingerprint</span></div></div>
+    </div>
+    <div class="verd">
+      <div><i style="background:#10b981">CLEAN</i>Encrypted and stored</div>
+      <div><i style="background:#f59e0b">SUSPICIOUS</i>Stored, tagged with the reason</div>
+      <div><i style="background:#ef4444">MALICIOUS</i>Blocked, never stored</div>
+    </div>
+  </div>
+
+  <!-- features -->
+  <div class="panel">
+    <p class="kick">What makes it different</p>
+    <h2>Four layers of<br><span>protection</span></h2>
+    <div class="f"><div class="i"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#fff" stroke-width="2"/><path d="M15.5 15.5L21 21" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+      <div><b>Layered Malware Detection</b><p>VirusTotal first. Rule-based checks catch macros in macro-free files, zip-slip paths and fake extensions. A Random Forest model reads 32 features of each PDF.</p></div></div>
+    <div class="f"><div class="i"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="11" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#fff" stroke-width="2"/></svg></div>
+      <div><b>AES-256 &amp; QR Key</b><p>Each file has its own key. Cloudie stores only a SHA-256 fingerprint of it, so a database leak alone opens no file.</p></div></div>
+    <div class="f new"><div class="i"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.4-5.7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v4.5h-4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><b>Retroactive Re-check<span class="tagx">NEW</span></b><p>If VirusTotal later recognises a stored file, Cloudie quarantines it and warns the owner, without the key and without decrypting it.</p></div></div>
+    <div class="f"><div class="i"><svg viewBox="0 0 24 24" fill="none"><path d="M9 7h-2a3 3 0 0 0 0 6h2M15 7h2a3 3 0 0 1 0 6h-2M8 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div><b>Tamper-Evident Audit</b><p>Every action is sealed in an HMAC-SHA256 hash chain. Edit one row and the page shows "Tampering detected".</p></div></div>
+    <div class="shot"><img src="assets/shots/secured.jpg" alt="File secured page with the AES key and QR"></div>
+  </div>
+
+  <!-- results + plans -->
+  <div class="panel">
+    <p class="kick">Tested, not just claimed</p>
+    <h2>Results &amp; <span>plans</span></h2>
+    <div class="nums">
+      <div class="nm"><div class="v">99.87%</div><div class="l">AI accuracy on held-out PDFs (18,126-file dataset)</div></div>
+      <div class="nm"><div class="v">1.0%</div><div class="l">of 200 real-world PDFs tagged, 0 blocked</div></div>
+      <div class="nm"><div class="v">~70</div><div class="l">antivirus engines check every upload</div></div>
+      <div class="nm"><div class="v">280</div><div class="l">automated tests (92 PHP + 188 Python)</div></div>
+    </div>
+    <div class="plans">
+      <div class="plan"><div><b>Free</b><small>1 GB · 30 scans / month</small></div><div class="pr">RM 0</div></div>
+      <div class="plan"><div><b>Personal</b><small>25 GB · 300 scans / month</small></div><div class="pr">RM 59 / year</div></div>
+      <div class="plan pop"><div><b>Team</b><small>100 GB per user · audit log export</small></div><div class="pr">RM 19 / user / mo</div></div>
+      <div class="plan"><div><b>Institution</b><small>scalable storage · training</small></div><div class="pr">Quote</div></div>
+    </div>
+    <p class="mute" style="font-size:9.5px;margin-top:4px">Proposed prices, to be tested in a campus pilot.</p>
+    <p style="font-weight:700;font-size:12px;margin-top:10px">Built for</p>
+    <div class="users"><span>Students</span><span>SMEs</span><span>Clinics</span><span>Law &amp; accounting firms</span><span>Universities</span><span>NGOs</span><span>Government offices</span></div>
+    <p class="honest">Honest limits: not end-to-end encrypted (the server sees a file while scanning it); the AI covers PDFs only; false alarms on Office files are not measured yet.</p>
+  </div>
+</section>
+
+</body>
+</html>
