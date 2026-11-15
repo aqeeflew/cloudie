@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 150 1050 790">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e6f5f9"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5dd9e7"/><stop offset="1" stop-color="#1eabc0"/>
+    </linearGradient>
+  </defs>
+  <!-- shadow -->
+  <ellipse cx="570" cy="892" rx="330" ry="40" fill="#000" opacity=".22"/>
+  <!-- cloud body -->
+  <path d="M150 610 C82 588 70 525 86 470 C76 398 112 356 215 352 C242 272 302 245 395 258 C442 200 512 168 615 198
+           C702 170 772 202 815 275 C910 268 970 302 990 395 L1048 470 C1062 515 1052 555 1040 578
+           C1060 672 1000 725 915 740 L330 748 C222 748 162 700 150 610 Z"
+        fill="url(#body)" stroke="#bfe8f0" stroke-width="14" stroke-linejoin="round"/>
+  <!-- eyes -->
+  <circle cx="450" cy="450" r="45" fill="#1a3a4a"/><circle cx="465" cy="435" r="14" fill="#fff"/>
+  <circle cx="690" cy="450" r="45" fill="#1a3a4a"/><circle cx="705" cy="435" r="14" fill="#fff"/>
+  <!-- cheeks -->
+  <circle cx="366" cy="545" r="39" fill="#bfe8f0"/><circle cx="773" cy="545" r="39" fill="#bfe8f0"/>
+  <!-- smile -->
+  <path d="M492 532 C542 576 600 576 648 532" fill="none" stroke="#1a3a4a" stroke-width="15" stroke-linecap="round"/>
+  <!-- arm holding a magnifier -->
+  <path d="M895 632 C982 590 1016 540 1026 470" fill="none" stroke="#bfe8f0" stroke-width="32" stroke-linecap="round"/>
+  <circle cx="1037" cy="437" r="47" fill="#e8f6fa" stroke="#bfe8f0" stroke-width="12"/>
+  <!-- shield -->
+  <path d="M570 598 L456 636 V730 C456 802 508 842 570 870 C632 842 684 802 684 730 V636 Z" fill="#fff"/>
+  <path d="M570 610 L467 644 V730 C467 795 512 832 570 857 C628 832 673 795 673 730 V644 Z" fill="url(#shield)"/>
+  <path d="M524 731 L558 772 L620 688" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
